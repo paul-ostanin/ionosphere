@@ -1,0 +1,31 @@
+#! /bin/bash
+
+	compiler=ifort
+
+	exe=solver
+
+	$compiler -c vector_class.f90
+	$compiler -c tridiagonal_matrix_class.f90
+	$compiler -c solver4.f90
+	$compiler -o $exe *.o
+
+#	if [ $? -eq 0 ]; then
+#		echo "success"
+#	fi
+
+#	if [ -e $exe ]; then
+#		echo $exe created
+#	else
+#		echo file $exe was not created
+#	fi
+
+#	ext="o mod"
+#	for i in $ext; do
+#		ls -l *.$i
+#	done
+
+#	for (( i=0; i<10; i++ )) ; do
+#		echo "Hello"
+#	done
+
+
