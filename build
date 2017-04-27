@@ -1,0 +1,14 @@
+#! /bin/bash
+
+	compiler=ifort
+
+	exe=solver
+
+	$compiler -c vector_class.f90 -fpe0
+	$compiler -c tridiagonal_matrix_class.f90 -fpe0
+	$compiler -c solver.f90 -fpe0
+	$compiler -o $exe *.o -fpe0
+
+
+
+

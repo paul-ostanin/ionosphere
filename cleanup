@@ -1,0 +1,8 @@
+#! /bin/bash
+
+
+	rm *.o
+	rm *.mod
+	rm solver
+	rm solver2
+
