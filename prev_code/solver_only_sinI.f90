@@ -11,12 +11,13 @@ integer i, j, out_file, scheme_type, Te0, Tn0, Ti0, day
 real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI
 
 !opening the file res.txt for writing the output
-open(unit=10, name='res_+70.txt')
+open(unit=10, name='res.txt')
+open(unit=11, name='res_gnp_-88.txt')
 
 pi = 3.141592653589793238462643
 
 !latitude
-phi = +70 * pi / 180
+phi = -88 * pi / 180
 !angle velocity of the earth 
 omega = 2*pi/24/60/60
 !sinus of magnetic inclination angle I
@@ -270,7 +271,7 @@ delta_norm = 1
 print *, "phi="
 write(*, *) phi / pi * 180
 
-do j = 1, 86400/tau * 2
+do j = 1, 86400/tau
 
 	day = (j*tau)/86400 + 1/2 !starting from the afternoon of the 1-st day, day starts from 1/2
 	tgdelta = tan(pi/180*23.5) * sin(2*pi/365 * (day - 80))
@@ -314,7 +315,13 @@ do j = 1, 86400/tau * 2
 
 	njold = njnew
 !	write(10, '(e14.7)') p.d
-	call njnew.print(10)
+!	call njnew.print(10)
+
+		call njnew.print(10)
+		do i = 1, z.n
+			write(11,*) 5*j, 100+400/(z.n-1)*(i-1), njnew.d(i)
+		end do
+		write(11, *)
 
 !	call pcurr.print(10)
 end do

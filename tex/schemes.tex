@@ -269,12 +269,82 @@ $\tau_0$&$4\cdot 10^2$&$3\cdot 10^{-1}$&$2\cdot 10^{-4}$\\
 
 \bigskip
 
-\subsection*{Квазидвумерные обобщения}
-\subsectionmark{Суточный ход}
+\newpage 
+
+\subsection*{Учёт проекции на магнитную силовую линию}
+\subsectionmark{Учёт проекции на магнитную силовую линию}
+
+Учтём теперь широтную зависимость в уравнении. Простейший способ~---~замена коэффициента диффузии $D$ на $D\sin^2I$, где $I$~---~угол наклонения магнитных силовых линий, $I \approx \arctg(2\tg \varphi)$, $\varphi$~---~широта ($\varphi \in [-90^\circ; +90^\circ]$). При этом уравнение заменится на следующее:
+$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\left[\sin^2I\left(D\dfrac{\partial n}{\partial z} + \left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right) n\right)\right]$$
+
+В рассматриваемой постановке широта $\varphi$~---~внешний задаваемый параметр. При фиксированном $\varphi$ уравнение, как и раньше, имеет стационарное решение.
+
+Особенность данной постановки состоит в том, что на экваторе при $\varphi=0$ уравнение вырождается: ненулевыми остаются только производная по времени в левой части и $P-kn$ в правой. Этот эффект не соответствует никакому физическому явлению
+
+Результаты расчётов суточного хода при $\varphi = -70^\circ, -40^\circ, -10^\circ$ приведены на следующих графиках:
+
+\begin{figure}[H]
+\center{
+\includegraphics[scale=0.3]{diurnal_projection_-88}}
+\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -88^\circ$.}
+\end{figure}
+
+\begin{figure}[H]
+\center{
+\includegraphics[scale=0.3]{diurnal_projection_-66}}
+\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -66^\circ$.}
+\end{figure}
+
+\begin{figure}[H]
+\center{
+\includegraphics[scale=0.3]{diurnal_projection_-30}}
+\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -30^\circ$.}
+\end{figure}
+
+\begin{figure}[H]
+\center{
+\includegraphics[scale=0.3]{diurnal_projection_-1}}
+\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -1^\circ$.}
+\end{figure}
+
+\newpage 
+
+\subsection*{Квазидвумерная постановка}
+\subsectionmark{Квазидвумерная постановка}
+
+Более точный учёт широтной зависимости решения приводит к двумерной задаче:
+
+$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr]$$
+
+Заменим $u = \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}$. Для использования уже имеющегося программного кода в применении уже к данной двумерной задаче используем следующую разностную схему: для смешанной производной $\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}$ запишем $$\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}=\dfrac{\partial}{\partial z}\left(n\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}\right) = \dfrac{\partial}{\partial z}\left(n\dfrac{\partial \ln n}{\partial \varphi}\right)$$
+
+Введём обозначение $$u_\varphi=-\dfrac{1}{a}D\sin I \cos I\dfrac{\partial \ln n}{\partial \varphi}=-\dfrac{1}{a}D\sin I \cos I\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}.$$ Для рассматриваемого уравнения $u_\varphi$~---~это добавка к эффективной скорости, связанная со смешанной производной по $\varphi$.
+
+Используем для численного решения нелинейную схему: будем вычислять решение, последовательно перемещаясь по временным слоям, причем $u_\varphi$ будем брать на основании данных с предыдущего временного слоя, а $n$~---~со следующего.
+
+Для рассматриваемого уравнения в результате применяется та же разностная схема с центральными разностями, что и для одномерного уравнения, но возникает добавка, связанная с последним слагаемым. Для этого слагаемого использованы две различные разностные аппроксимации:
+
+\begin{itemize}
+
+\item[•] Схема направленных разностей с учётом возможной знакопеременности эффективной скорости: $\dfrac{|u_\varphi|+u_\varphi}{2}\cdot\dfrac{n_{i+1}-n_i}{h_i} + \dfrac{|u_\varphi|-u_\varphi}{2}\cdot\dfrac{n_{i-1}-n_i}{h_{i-1}}$
+
+\item[•] Схема центральных разностей: $\dfrac{(u_\varphi)_{i+1}n_{i+1}-(u_\varphi)_{i-1}n_{i-1}}{h_{i-1}+h_{i+1}}$
+
+\end{itemize}
+
+В обоих случаях концентрации $n$ берутся со следующего временного слоя~---~схема неявная.
+
+\smallskip
+
+При этом сама эффективная скорость может быть вычислена двумя способами: 
+\begin{itemize}
+\item[•] Первый способ~---~применение формулы центральной разности к производной по $\varphi$ для логарифма в формуле $u_\varphi$ $$u_\varphi\approx \dfrac{\ln\frac{n^j_i(\varphi+\Delta\varphi)}{n^j_i(\varphi-\Delta\varphi)}}{2\Delta\varphi};$$ 
+\item[•] Второй способ~---~без привлечения логарифма использовать формулу $$u\varphi \approx \dfrac{2}{n_i^j(\varphi+\Delta\varphi)+n_i^j(\varphi-\Delta\varphi)}\cdot\dfrac{n_i^j(\varphi+\Delta\varphi)-n_i^j(\varphi-\Delta\varphi)}{2\Delta\varphi}.$$
+\end{itemize}
+
+Численные эксперименты показали, что обе формулы для $u_\varphi$ дают один и тот же результат. Более того, на практике решение никогда не достигает чистого нуля, поэтому отдельные кусочные задания формул для $u_\varphi$ при нулевых значениях $n$ на предыдущем временном слое никак не отражаются на получаемом решении. Тем не менее, вторая формула более удобна для анализа асимптотического поведения $u_\varphi$ при приближении $n$ к нулю.
 
 \end{document}
-
-
 
 
 
