@@ -1,0 +1,8 @@
+set terminal png size 1024, 768
+set output "nO-sensitivity (log).png"
+set format x "%g"
+set title "nO-sensitivity in log-scale"
+set xlabel "n, cm^{-3}"
+set ylabel "z, km"
+set logscale x
+plot "nO_08.txt" using 2:1 wi li lw 2 title "0.8*nO", "nO_09.txt" using 2:1 wi li lw 2 title "0.9*nO", "nO_10.txt" using 2:1 wi li lw 2 title "1.0*nO", "nO_11.txt" using 2:1 wi li lw 2 title "1.1*nO", "nO_12.txt" using 2:1 wi li lw 2 title "1.2*nO"

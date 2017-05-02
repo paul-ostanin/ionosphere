@@ -1,0 +1,8 @@
+set terminal png size 1024, 768
+set output "nN2-sensitivity (log).png"
+set format x "%g"
+set title "nN2-sensitivity in log-scale"
+set xlabel "n, cm^{-3}"
+set ylabel "z, km"
+set logscale x
+plot "nN2_08.txt" using 2:1 wi li lw 2 title "0.8*nN2", "nN2_09.txt" using 2:1 wi li lw 2 title "0.9*nN2", "nN2_10.txt" using 2:1 wi li lw 2 title "1.0*nN2", "nN2_11.txt" using 2:1 wi li lw 2 title "1.1*nN2", "nN2_12.txt" using 2:1 wi li lw 2 title "1.2*nN2"

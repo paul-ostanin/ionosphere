@@ -1,0 +1,7 @@
+set xrange [0:80]
+set yrange [0:287]
+set xlabel "z-nodes: z(i) = 100 + (i-1) * 5 km"
+set ylabel "tau*j"
+set zlabel ""
+set format z "%1.0e"
+splot "Evolution after p=0.txt" matrix with lines title "Electron concentration evolution after setting P = 0; n = n(z, t) in cm^{-3}"

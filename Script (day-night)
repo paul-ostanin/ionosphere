@@ -1,0 +1,6 @@
+set xrange [0:80]
+set xlabel "z-nodes: z(i) = 100 + (i-1) * 5 km"
+set ylabel "tau*j"
+set zlabel ""
+set format z "%1.0e"
+splot "res.txt" matrix wi li title "convergence of n, (only sin(I) in z-projection), phi = -70 degrees" linecolor rgb "purple"

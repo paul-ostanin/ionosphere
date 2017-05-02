@@ -1,0 +1,6 @@
+set xlabel "t, min"
+set ylabel "z, km"
+set zlabel ""
+set format z "%1.0e"
+unset logscale z
+splot "res_gnp.txt" wi li title "Diurnal evolution (1d)" linecolor rgb "purple"

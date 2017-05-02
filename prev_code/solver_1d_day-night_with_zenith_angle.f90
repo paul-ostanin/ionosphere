@@ -12,6 +12,7 @@ real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, phi, coschi
 
 !opening the file res.txt for writing the output
 open(unit=10, name='res.txt')
+open(unit=11, name='res_gnp.txt')
 
 pi = 3.141592653589793238462643
 
@@ -19,13 +20,13 @@ pi = 3.141592653589793238462643
 !0 - old monotone scheme
 !1 - symmetric scheme with old boundary condition approximation
 !2 - symmetric scheme with new boundary condition approximation
-scheme_type = 0
+scheme_type = 2
 
 !Time step (in seconds) 5 min
 tau = 300
 
 !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
-call z.init(401)
+call z.init(81)
 
 !Space step (in cm) 5 km
 h0 = 400E+5 / (z.n - 1)
@@ -254,7 +255,7 @@ delta_norm = 1
 	nday = njold
 
 
-	call nday.print_column(10)
+!	call nday.print_column(10)
 
 
 !A block to calculate the solution evolution after setting P = 0
@@ -334,6 +335,13 @@ do j = 1, 86400/tau
 	end do
 
 	njold = njnew
+
+	call njnew.print(10)
+	do i = 1, z.n
+		write(11,*) 5*j, 100+400/(z.n-1)*(i-1), njnew.d(i)
+	end do
+	write(11, *)
+
 !	write(10, '(e14.7)') p.d
 !	call njnew.print(10)
 
