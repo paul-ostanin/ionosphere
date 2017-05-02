@@ -7,7 +7,7 @@ implicit none
 
 type (tridiagonal_matrix) A, S
 type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, njold, njnew, delta, D, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, nnew(91), nold(91)
-integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type
+integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on
 real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_N, u_phi_Nm1
 
 !opening the file res.txt for writing the output
@@ -19,7 +19,7 @@ pi = 3.141592653589793238462643
 !nonlinear_scheme_type variable switches the u_phi-approximation. 
 !If n_s_t = 1, u_phi = 1/n d(ln n)/dphi
 !If n_s_t = 2, u_phi = (n(phi+dphi)-n(phi-dphi))/(n(phi+dphi)+n(phi-dphi)) * 1/dphi
-nonlinear_scheme_type = 1
+nonlinear_scheme_type = 2
 
 
 !latitude
@@ -254,15 +254,43 @@ do j = 0, 288+288
 do q = 1, 89
 ! angles phi from -90 to 90; conditions in -90 and 90 are set, the step is dphi = 2
 
+diurnal_on = 1 !switcher for the diurnal evolution mode. 0 corresponds to stationary solutions.
+
+if(diurnal_on .eq. 1) then
+
+	day = (j*tau)/86400 + 1/2 !starting from the middle of the 1-st day
+	tgdelta = tan(pi/180*23.5) * sin(2*pi/365 * (day - 80))
+	sindelta = tgdelta/sqrt(1+tgdelta**2)
+	cosdelta = sqrt(1-sindelta**2) !cos of the zenith angle is > 0
 
         do i = 2, z.n - 1
-		        b.d(i) = nold(q).d(i) + tau * p.d(i)
+		coschi = sin(-pi/2+q*dphi)*sindelta - cos(-pi/2+q*dphi)*cosdelta*cos(omega * (tau * j + 86400/2)) !start: middle of the 1 day
+		if(coschi > 1E-6) then 
+		        b.d(i) = nold(q).d(i) + tau * p.d(i) * exp(tau0.d(i) * (1-1/coschi))
+        	else 
+			b.d(i) = nold(q).d(i)
+        	end if
+	end do
+
+	b.d(z.n) = tau/h.d(z.n-1) * Fub + nold(q).d(z.n)
+
+	if(coschi > 1E-6) then 
+	        b.d(1) = p.d(1)/k.d(1) * exp(tau0.d(1) * (1-1/coschi))
+       	else 
+		b.d(1) = 0
+       	end if
+
+else if(diurnal_on .eq. 0) then
+
+        do i = 2, z.n - 1
+		b.d(i) = nold(q).d(i) + tau * p.d(i)
 	end do
 
 	b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n)
 
 	b.d(1) = p.d(1)/k.d(1)
-       
+
+end if       
 
 
 	!sinus and cosinus of magnetic inclination angle I
@@ -320,13 +348,20 @@ do q = 1, 89
 	nnew(q) = tridiagonal_matrix_algorithm(S, b)
 
 
-	if (q .eq. 40 .and. j .eq. 200) then
-		call nnew(q).print(10)
+!	if (q .eq. 20 ) then
+!		call nnew(q).print(10)
+!		do i = 1, z.n
+!			write(11,*) (j-288)*5, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!		end do
+!		write(11, *)
+!	end if
+
+	if (q .eq. 44 .and. j.eq. 288) then
 		do i = 1, z.n
-			write(*,*) 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+			write(11,*) 100+400/(z.n-1)*(i-1), nnew(q).d(i)
 		end do
-		write(11, *)
 	end if
+
 
 end do	
 
