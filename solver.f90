@@ -19,6 +19,7 @@ pi = 3.141592653589793238462643
 !nonlinear_scheme_type variable switches the u_phi-approximation. 
 !If n_s_t = 1, u_phi = 1/n d(ln n)/dphi
 !If n_s_t = 2, u_phi = (n(phi+dphi)-n(phi-dphi))/(n(phi+dphi)+n(phi-dphi)) * 1/dphi
+!If n_s_t = 3, u_phi is approximated with a logarithm and the directed difference scheme is implemented in the equation approximation
 nonlinear_scheme_type = 2
 
 
@@ -254,7 +255,7 @@ do j = 0, 288+288
 do q = 1, 89
 ! angles phi from -90 to 90; conditions in -90 and 90 are set, the step is dphi = 2
 
-diurnal_on = 1 !switcher for the diurnal evolution mode. 0 corresponds to stationary solutions.
+diurnal_on = 0 !switcher for the diurnal evolution mode. 0 corresponds to stationary solutions.
 
 if(diurnal_on .eq. 1) then
 
@@ -303,7 +304,7 @@ end if
 	if (nold(q+1).d(z.n) .eq. 0 .or. nold(q-1).d(z.n) .eq. 0 .or. nold(q+1).d(z.n-1) .eq. 0 .or. nold(q+1).d(z.n-1) .eq. 0) then
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2
-	else if (nonlinear_scheme_type .eq. 1) then
+	else if (nonlinear_scheme_type .eq. 1 .or. nonlinear_scheme_type .eq. 3) then
 		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(z.n-1)/nold(q-1).d(z.n-1))/(2*dphi)
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
 		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(z.n)/nold(q-1).d(z.n))/(2*dphi)
@@ -335,7 +336,17 @@ end if
 
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi*tau/(h.d(i)+h.d(i-1))
 		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 
-		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi*tau/(h.d(i)+h.d(i-1)) 
+		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi*tau/(h.d(i)+h.d(i-1))
+	else if (nonlinear_scheme_type .eq. 3) then
+	!directed difference scheme
+		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(i)/nold(q-1).d(i))/(2*dphi)
+
+		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
+				(abs(u_phi)-u_phi)/(2*h.d(i-1))
+		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 - &
+				(abs(u_phi)+u_phi)/(2*h.d(i)) - (abs(u_phi)-u_phi)/(2*h.d(i-1))
+		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
+				(abs(u_phi)+u_phi)/(2*h.d(i))	
 	end if	
 	end do
 
@@ -348,7 +359,8 @@ end if
 	nnew(q) = tridiagonal_matrix_algorithm(S, b)
 
 
-!	if (q .eq. 20 ) then
+!block to output the diurnal evolution
+!	if (q .eq. 44 .and. j .ge. 288) then
 !		call nnew(q).print(10)
 !		do i = 1, z.n
 !			write(11,*) (j-288)*5, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
@@ -356,7 +368,8 @@ end if
 !		write(11, *)
 !	end if
 
-	if (q .eq. 44 .and. j.eq. 288) then
+!block to output the stationary solution
+	if (q .eq. 1 .and. j .eq. 288) then
 		do i = 1, z.n
 			write(11,*) 100+400/(z.n-1)*(i-1), nnew(q).d(i)
 		end do

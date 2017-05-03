@@ -3,4 +3,4 @@ set ylabel "z, km"
 set zlabel ""
 set format z "%1.0e"
 unset logscale z
-splot "res_gnp.txt" wi li title "Diurnal evolution (2d), phi=-2" linecolor rgb "purple"
+splot "res_gnp.txt" wi li title "Diurnal evolution (2d), inconsistent boundary condition (directed difference scheme), phi=-2" linecolor rgb "purple"
