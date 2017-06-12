@@ -1,4 +1,4 @@
-set xlabel "t, min"
+set xlabel "phi"
 set ylabel "z, km"
 set zlabel ""
 set format z "%1.0e"

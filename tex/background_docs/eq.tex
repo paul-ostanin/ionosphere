@@ -1,0 +1,148 @@
+\documentclass[12pt, a5paper, fleqn, twoside]{article}
+\usepackage[top=20.5mm,left=12.5mm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+%\oddsidemargin=-12.9mm
+\evensidemargin=-12.9mm
+\textwidth=123mm
+%\headheight=10mm
+%\topmargin=-22.9mm
+\textheight=175mm
+\tolerance=200
+\pagestyle{plain}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\RequirePackage{caption2}
+\renewcommand\captionlabeldelim{}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+\newtheorem{Lemma}{Лемма}
+\theoremstyle{definiton}
+\newtheorem{Remark}{Замечание}
+%%\newtheorem{Def}{Определение}
+\newtheorem{Claim}{Утверждение}
+\newtheorem{Cor}{Следствие}
+\newtheorem{Theorem}{Теорема}
+\newtheorem{Th}{Теорема}
+\newtheorem{Example}{Пример}
+\newtheorem*{known}{Теорема}
+\def\proofname{Доказательство}
+\theoremstyle{definition}
+\newtheorem{Def}{Определение}
+\newtheorem{De}{Определение}
+%% \newenvironment{Example} % имя окружения
+%% {\par\noindent{\bf Пример.}} % команды для \begin
+%% {\hfill$\scriptstyle\qed$} % команды для \end
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+% Header and Footer with logo
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfootoffset{0in}
+
+%\fancyhead[LE, RO]{Летняя Школа <<Phystech.International>>}
+%\fancyhead[LO, RE]{\thepage}
+
+\newpagestyle{main}{%
+	\setheadrule{.4pt}%
+	\sethead
+		[\subsectiontitle][][\thepage]
+		{\thepage}{}{\sectiontitle} }
+\pagestyle{main}
+
+%\renewcommand{\footrule}{\hrule height 0.5pt \vspace{2mm}}
+
+
+\begin{document}
+
+$$\begin{cases}
+-\nabla p_i + n_im_i\vec{g}+en_i(\vec{E}+\vec{v_i}\times\vec{B})-n_im_i\nu_i(\vec{v_i}-\vec{u})=0\\
+-\nabla p_e + n_em_e\vec{g}-en_e(\vec{E}+\vec{v_e}\times\vec{B})-n_em_e\nu_e(\vec{v_e}-\vec{u})=0 
+\end{cases}$$
+
+Обозначим $$\vec{f} = e\vec{E}+m_i\nu_i \vec{u}-\dfrac{1}{n_i}\nabla p_i+m_i \vec{g}$$
+
+Уравнение для ионов: $$\vec{f}+e\vec{v_i}\times\vec{B}-m_i\nu_i\vec{v_i}=0 \eqno(1)$$
+
+Выражаем $\vec{v_i}$: $$\vec{v_i}=\dfrac{\vec{f}}{m_i\nu_i}+\dfrac{e}{m_i\nu_i}\vec{v_i}\times\vec{B} \eqno(2)$$
+
+Множим $(2)$ на $\vec{B}$ векторно и скалярно: 
+
+$$\begin{cases}
+\vec{v_i}\times \vec{B} = \dfrac{1}{m_i\nu_i}[\vec{f}\times \vec{B}-eB^2\vec{v_i}+e(\vec{v_i};\vec{B})\vec{B}]\\
+(\vec{v_i}; \vec{B})= \dfrac{(\vec{f};\vec{B})}{m_i\nu_i}
+\end{cases}$$
+
+Подставим найденное скалярное произведение в правую часть выражения для векторного произведения:
+$$\vec{v_i}\times \vec{B} = \dfrac{1}{m_i\nu_i}\left[\vec{f}\times \vec{B}-eB^2\vec{v_i}+e\dfrac{(\vec{f};\vec{B})}{m_i\nu_i}\vec{B}\right] $$
+
+Теперь это векторное произведение подставим в уравнение движения $(1)$:
+$$\vec{v_i} = \dfrac{\vec{f}}{m_i\nu_i}+\dfrac{e}{(m_i\nu_i)^2}\left(\vec{f}\times\vec{B}-eB^2\vec{v_i}+e\dfrac{(\vec{f};\vec{B})}{m_i\nu_i}\vec{B}\right)\eqno(3)$$
+
+Подставим $\vec{f}$: предполагаем, что компоненты сил тяжести и градиента давления, ортогональные магнитному полю, малы по сравнению с силой Лоренца $$\left(1+\left(\dfrac{eB}{m_i\nu_i}\right)^2\right)\vec{v_i}=\dfrac{e\vec{E}}{m_i\nu_i}+\vec{u}-\dfrac{\nabla p_i}{n_im_i\nu_i}+\dfrac{\vec{g}}{\nu_i}+\dfrac{(m_i\nu_i\vec{u}-\frac{1}{n_i}\nabla p_i + m_i \vec{g};\vec{B})}{m_i\nu_i}\vec{B}$$
+
+\end{document}
+
+
+
+
+

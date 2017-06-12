@@ -6,8 +6,8 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) A, S
-type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, njold, njnew, delta, D, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, nnew(91), nold(91)
-integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on
+type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, njold, njnew, delta, D, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, nnew(721), nold(721)
+integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi
 real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_N, u_phi_Nm1
 
 !opening the file res.txt for writing the output
@@ -22,9 +22,10 @@ pi = 3.141592653589793238462643
 !If n_s_t = 3, u_phi is approximated with a logarithm and the directed difference scheme is implemented in the equation approximation
 nonlinear_scheme_type = 2
 
-
+!number of nodes in phi
+Nphi = 90
 !latitude
-dphi = 2 * pi / 180
+dphi = pi / Nphi
 !angle velocity of the earth 
 omega = 2*pi/24/60/60
 !magnetic inclination sin I
@@ -242,17 +243,17 @@ delta_norm = 1
 
 	nday = njold
 
-do j = 0, 90
+do j = 0, Nphi
 	call nnew(j).init(z.n)
 	call nold(j).init(z.n)
 	call nold(j).gen()
 end do
 
 	nold( 0) = nday
-	nold(90) = nday
+	nold(Nphi) = nday
 
 do j = 0, 288+288 
-do q = 1, 89
+do q = 1, Nphi-1
 ! angles phi from -90 to 90; conditions in -90 and 90 are set, the step is dphi = 2
 
 diurnal_on = 0 !switcher for the diurnal evolution mode. 0 corresponds to stationary solutions.
@@ -369,16 +370,17 @@ end if
 !	end if
 
 !block to output the stationary solution
-	if (q .eq. 1 .and. j .eq. 288) then
+	if (j .eq. 200 .and. q .eq. 45) then
 		do i = 1, z.n
 			write(11,*) 100+400/(z.n-1)*(i-1), nnew(q).d(i)
 		end do
+!		write (11, *)
 	end if
 
 
 end do	
 
-	do i = 1, 89
+	do i = 1, Nphi-1
 		nold(i) = nnew(i)
 	end do
 
@@ -386,7 +388,8 @@ end do
 
 
  close(unit=10)
-do j = 0, 90
+ close(unit=11)
+do j = 0, Nphi
  call nnew(j).destroy()
  call nold(j).destroy()
 end do

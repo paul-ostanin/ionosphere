@@ -1,0 +1,377 @@
+\documentclass[12pt, a5paper, fleqn, twoside]{article}
+\usepackage[top=20.5mm,left=12.5mm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+%\oddsidemargin=-12.9mm
+\evensidemargin=-12.9mm
+\textwidth=123mm
+%\headheight=10mm
+%\topmargin=-22.9mm
+\textheight=175mm
+\tolerance=200
+\pagestyle{plain}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\RequirePackage{caption2}
+\renewcommand\captionlabeldelim{}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+\newtheorem{Lemma}{Лемма}
+\theoremstyle{definiton}
+\newtheorem{Remark}{Замечание}
+%%\newtheorem{Def}{Определение}
+\newtheorem{Claim}{Утверждение}
+\newtheorem{Cor}{Следствие}
+\newtheorem{Theorem}{Теорема}
+\newtheorem{Th}{Теорема}
+\newtheorem{Example}{Пример}
+\newtheorem*{known}{Теорема}
+\def\proofname{Доказательство}
+\theoremstyle{definition}
+\newtheorem{Def}{Определение}
+\newtheorem{De}{Определение}
+%% \newenvironment{Example} % имя окружения
+%% {\par\noindent{\bf Пример.}} % команды для \begin
+%% {\hfill$\scriptstyle\qed$} % команды для \end
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+% Header and Footer with logo
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfootoffset{0in}
+
+%\fancyhead[LE, RO]{Летняя Школа <<Phystech.International>>}
+%\fancyhead[LO, RE]{\thepage}
+
+\newpagestyle{main}{%
+	\setheadrule{.4pt}%
+	\sethead
+		[\subsectiontitle][][\thepage]
+		{\thepage}{}{\sectiontitle} }
+\pagestyle{main}
+
+%\renewcommand{\footrule}{\hrule height 0.5pt \vspace{2mm}}
+
+
+\begin{document}
+
+%\begin{titlepage}
+%\wpYoffset=0pt
+%\ThisCenterWallPaper{0.65}{back}
+
+%\begin{center}
+
+
+% Upper part of the page
+%\includegraphics[width=0.15\textwidth]{./logo}\\[1cm]
+%\vspace*{-40pt}
+%\textsc{\large Московский Физико-Технический Институт\\ (государственный университет)}\\
+%\vspace{12pt}
+%\textsc{\large Межвузовский центр воспитания и развития талантливой молодежи в области естественно-математических наук <<Физтех-центр>>}\\
+%\vspace{300pt}
+
+% Title
+%\HRule \\[0.4cm]
+%{ \LARGE \bfseries Вычисление сумм}\\
+
+
+%\vfill
+
+
+% Bottom of the page
+%\raggedleft{Составитель: Останин П.~А.}
+%\vspace{40pt}
+%\begin{center}{\large 2016 г. }\end{center}
+%22 июня 2011 г.
+
+
+%\end{center}
+
+%\end{titlepage}
+
+\newpage
+
+\setcounter{page}{2}
+
+
+%\tableofcontents
+
+\newpage
+
+
+\section*{Вывод основного уравнения}
+\sectionmark{Вывод основного уравнения}
+
+\subsection*{Уравнение непрерывности}
+\subsectionmark{Уравнение непрерывности}
+
+Ионосфера~---~это ионизованная часть верхней атмосферы, приблизительно от 60~км до 1000~км, целиком окружающая Землю. Основной источник плазмы~---~фотоионизация нейтральных молекул под действием солнечного ультрафиолета и рентгеновского излучения. Ионы вступают в химические реакции с нейтральными молекулами, рекомбинируют с электронами и диффундируют в другие высоты или перемещаются нейтральным ветром. Но диффузия и перенос подвержены влиянию собственного магнитного поля Земли.
+
+В средних широтах плазма слабо подвержена влиянию электромагнитного поля Земли, но может двигаться вдоль $\vec{B}$.
+
+\bigskip
+
+В рассматриваемом приближении моделируется эволюция концентрации $n_e$ электронов во времени и пространстве в верхней ионосфере (в F-слое).
+
+\medskip
+
+Основным используемым уравнением по существу является уравнение неразрывности для электронной концентрации, выражающее закон сохранения массы: $\dfrac{\partial n_e}{\partial t}+\vec{\nabla}(n_e \vec{u})=P_1-kn_e$, где $u$~---~средняя скорость диффузии. Слагаемые в правой части выражают наличие процессов образования (прямой ионизации при столкновении $O$ и $O^+$) и потерь (процессов рекомбинации).
+
+Считаем $n_e=n_i = n(O^+)$, т.~е. рассматриваем только электроны и ионы кислорода (в F-слое больше всего ионов $O^+$), а плазму считаем квазинейтральной (в связи с этим уравнение непрерывности можно было записать в том же виде и для $n_i$ вместо $n_e$).
+
+\bigskip
+
+За перенос в верхней атмосфере в рассматриваемой модели отвечает амбиполярная диффузия. Её суть заключается в следующем: масса электрона гораздо меньше, чем масса иона кислорода, вследствие чего электроны и ионы разделяются по высоте. Вследствие этого разделяются и заряды, и возникает электростатическое поле. Это поле препятствует дальнейшему разделению слоёв. После его создания электроны и ионы движутся как единый газ.
+
+Для вывода уравнения амбиполярной диффузии используем гораздо более общее уравнение движения: $$nm\dfrac{D\vec{u}}{Dt}+\vec{\nabla} p + \vec{\nabla}\cdot \hat{\tau} - ne(\vec{E}+\vec{u}\times \vec{B})+nm[-\vec{G}+2\vec{\Omega}\times \vec{u}+\vec{\Omega}\times(\vec{\Omega}\times\vec{r})]=$$
+$$=\sum_t nm\nu_t (\vec{u}_t-\vec{u})+ \vec{f}(\vec{q})$$
+В этом уравнении $\dfrac{D}{Dt}=\dfrac{\partial}{\partial t}+(\vec{u}; \vec{\nabla})\vec{u}$~---~полная производная; $u$~---~скорость диффузии; $n$~---~концентрация электронов; $m$~---~масса электрона; $\hat{\tau}$~---~тензор напряжений; $\vec{G}$~---~ускорение свободного падения; в квадратных скобках помимо $\vec{G}$ стоят слагаемые, связанные с неинерциальностью системы отсчета, вызыванной вращением Земли с угловой скоростью $\vec{\Omega}$; в правой части сумма отвечает за столкновения электронов с различными частицами (разные типы частиц нумеруются индексом $t$), а последнее слагаемое зависит от тепловых потоков, которые в частично ионизованной плазме малы и отбрасываются. Уравнение записано в системе координат, связанной с Землёй.
+
+\bigskip
+
+Далее используем т.~н. диффузионную аппроксимацию: отбросим всю полную производную в силу её малости по сравнению с градиентом давления:
+
+\begin{itemize}
+
+\item[•] $\dfrac{|nm(\vec{u}; \vec{\nabla})\vec{u}|}{|\vec{\nabla}p|}\approx \dfrac{nmu^2/L}{nkT}\approx \dfrac{u^2}{kT/m}=M^2$~---~число Маха. При малых числах Маха (т.~е. при дозвуковых течениях) первое слагаемое можно отбросить.
+
+\item[•] $\dfrac{|nm\partial\vec{u}/\partial t|)\vec{u}}{|\vec{\nabla}p|}\approx \dfrac{L}{\tau} \dfrac{u}{kT/m}\approx M\dfrac{L/\tau}{\sqrt{kT/m}}$, где $\tau$ и $L$~---~характерное время процессов в плазме и характерный размер области, в которой находится рассматриваемая часть плазмы.
+
+\end{itemize}
+
+Для медленно меняющихся и дозвуковых потоков диффузионная аппроксимация применима.
+
+\bigskip
+
+Помимо этого предполагаем квазинейтральность: $n_e=n_i$, движение электронов с ионами единым целым: $n_e \vec{u}_e=n_i \vec{u}_i$. 
+
+Как уже упоминалось выше, считаем, что имеются ионы всего одного вида~---~кислорода. Это справедливо в рассматриваемом F-слое (выше $\approx 130$~км и до $1000$~км).
+
+Запишем в приведенных приближениях общее уравнение движения для электронов и ионов в проекциях на магнитные силовые линии (индекс $\parallel$ указывает соответствующую проекцию):
+
+$$\begin{cases}
+\vec{\nabla}_\parallel p_i + (\vec{\nabla}\cdot \hat{\tau}_i)_\parallel + n_ie\vec{E}_\parallel-n_im_i\vec{G}_\parallel=\\
+\textrm{ }\textrm{ }\textrm{ }\textrm{ }\textrm{ }=n_im_i\nu_{ie}(\vec{u}_e-\vec{u}_i)_\parallel+n_im_i\nu_{in}(\vec{u}_n-\vec{u}_i)_\parallel\\
+\vec{\nabla}_\parallel p_e + (\vec{\nabla}\cdot \hat{\tau}_e)_\parallel - n_ee\vec{E}_\parallel-n_em_e\vec{G}_\parallel=\\
+\textrm{ }\textrm{ }\textrm{ }\textrm{ }\textrm{ }=n_em_e\nu_{ei}(\vec{u}_i-\vec{u}_e)_\parallel+n_em_e\nu_{en}(\vec{u}_n-\vec{u}_e)_\parallel
+\end{cases}$$
+
+Теперь исключим из уравнений магнитное поле. Сложив эти уравнения и учтя, что $n_e=n_i, \vec{u}_e=\vec{u}_i, n_im_i\nu_{ei}=n_em_e\nu_{ei}$, получим уравнение, не содержащее электрического поля, возникшего вследствие разделения электронов и ионов по слоям:
+$$\vec{\nabla}_\parallel (p_i+p_e) + (\vec{\nabla}\cdot (\hat{\tau}_i+\hat{\tau}_e))_\parallel-n_i(m_i+m_e)\vec{G}_\parallel=n_i(m_i\nu_{in}+m_e\nu_{en})(\vec{u}_n-\vec{u}_i)_\parallel$$
+
+Теперь можно отбросить все слагаемые, содержащие массу электрона по сравнению с такими же слагаемыми, но уже с массой иона. После этого заменим давление $p_i=n_ikT_i, p_e=n_ikT_e$ и обозначим $T_p=\dfrac{1}{2}(T_e+T_i)$. Выразив из правой части векторную разность скоростей, получим закон амбиполярной диффузии, дающий характеристику средней скорости диффундирующих ионов: 
+$$\vec{u}_{i\parallel} = \vec{u}_{n\parallel} - \dfrac{2kT_p}{m_i\nu_{in}}\left(\dfrac{1}{n_i}\vec{\nabla}_\parallel n_i+\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p-\dfrac{m_i\vec{G}_\parallel}{2kT_p}+\dfrac{(\vec{\nabla}\cdot\hat{\tau_i})_\parallel}{2n_ikT_p}\right)$$
+
+Обозначим $D_a=\dfrac{2kT_p}{m_i\nu_in}$~---~коэффициент амбиполярной диффузии.
+
+\subsection*{Окончательное получение уравнения}
+\subsectionmark{Окончательное получение уравнения}
+
+Заметим, что вывод уравнения амбиполярной диффузии полностью сохраняется, если считать, что диффузия происходит вдоль вертикальной оси $z$ и проекции брать на эту ось. Действительно, векторное произведение $\vec{B}\times\vec{u}$ в проекции также даст ноль, как и в случае проецирования на $\vec{B}$.
+
+После получения уравнения амбиполярной диффузии, можно подставить найденную скорость в дивергентный член уравнения непрерывности. Отбросим также тензор напряжений, оставив только давление. После этого задача сведется к одномерному уравнению:
+$$\dfrac{\partial n_e}{\partial t}=P_1-kn_e + \dfrac{\partial}{\partial z}\left(D_a\left[\dfrac{\partial n_e}{\partial z}+n_e\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{m_ig}{2kT_p}\right)\right]\right).$$
+
+\newpage
+
+\section*{Численное моделирование}
+\sectionmark{Численное моделирование}
+
+\subsection*{Разностная схема}
+\subsectionmark{Разностная схема}
+
+Рассмотрим дифференциальное уравнение $$\dfrac{\partial n_e}{\partial t}=P_1-kn_e + \dfrac{\partial}{\partial z}\left(D_a\left[\dfrac{\partial n_e}{\partial z}+n_e\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{m_ig}{2kT_p}\right)\right]\right).$$
+
+В используемой модели температура, концентрация нейтралов, зависимости $D_a(z), k(z)$ и $P_1(z)$~---~внешние параметры. Оценим характерные величины на разных высотах:
+
+\smallskip
+
+\begin{tabular}{|c|c|c|c|}
+\hline
+&$z_1=200$~км&$z_2=300$~км&$z_3=500$~км\\
+\hline
+$D_a$, см$^{2}\cdot$с$^{-1}$&$3{,}1\cdot 10^9$&$3{,}4\cdot 10^{10}$&$4{,}2\cdot 10^{12}$\\
+\hline
+$k$, с$^{-1}$&$5{,}2\cdot 10^{-3}$&$5{,}5\cdot 10^{-5}$&$1{,}3\cdot 10^{-8}$\\
+\hline
+$P_1$, см$^{-3}\cdot$с$^{-1}$&$1{,}5\cdot 10^3$&$1{,}2\cdot 10^{2}$&$1{,}3$\\
+\hline
+$u_\textrm{эфф}/D_a$, см$^{-1}$&$4{,}8\cdot 10^{-8}$&$4{,}5\cdot 10^{-8}$&$3{,}6\cdot 10^{-8}$\\
+\hline
+\end{tabular}
+
+\medskip
+
+Характерное время процессов варьируется от секунд (на нижних высотах) до суток (на верхних). Это означает, что исследуемая система жесткая, используем неявную схему.
+
+\medskip
+
+Для удобства (в силу линейности) разобъем задачу на три.
+
+\begin{itemize}
+
+\item[•] $\dfrac{\partial n_e}{\partial t}=P_1-kn_e.$
+
+Схема: $\dfrac{n_i^{j+1}-n_i^j}{\tau}=p_i^j-kn_i^j+1\Leftrightarrow n_i^{j+1} = \dfrac{n_i^j+p_i^j\tau}{1+k\tau}.$
+
+\bigskip
+
+\item[•] $\dfrac{\partial n_e}{\partial t}=\dfrac{\partial}{\partial z}\left(D_a\dfrac{\partial n_e}{\partial z}\right).$
+
+Схема: $\dfrac{n_i^{j+1}-n_i^j}{\tau} = \dfrac{D_{i+1/2}^j(n_{i+1}^{j+1}-n_i^{j+1})-D_{i-1/2}^j(n_{i}^{j+1}-n_{i-1}^{j+1})}{h^2}$. 
+
+Обозначим для краткости правую часть $\dfrac{1}{h^2}(S\vec{n}^{j+1})_i$.
+
+\bigskip
+
+\item[•] $\dfrac{\partial n_e}{\partial t}=\dfrac{\partial}{\partial z}\left(D_a\left[n_e\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{m_ig}{2kT_p}\right)\right]\right)=\dfrac{\partial}{\partial z}(u_\textrm{эфф.}n_e)$.
+
+Схема: $\dfrac{n_i^{j+1}-n_i^j}{\tau} = \dfrac{u_{i+1}n_{i+1}^{j+1}-u_i n_i^{j+1}}{h}$.
+
+Обозначим для краткости правую часть $\dfrac{1}{h}(A\vec{n}^{j+1})_i$.
+
+\end{itemize}
+
+\subsection*{Монотонность, сохранение массы}
+\subsectionmark{Монотонность, сохранение массы}
+
+В силу неотрицательности $n_e$ от схемы требуется свойство монотонности: если на каком-либо шаге $\vec{n}^j \geq 0$, то и на следующем шаге $\vec{n}^{j+1}\geq 0$. Для монотонности необходимо и достаточно неотрицательности элементов матрицы $B$ системы $\vec{n}^{j+1}=B\vec{n}^j$, эквивалентной нашей разностной схеме.
+
+\smallskip
+
+Докажем монотонность для нашей схемы. Перепишем её в виде $$\dfrac{\vec{n}^{j+1}-\vec{n}^j}{\tau}= \vec{p} - k\vec{n}^{j+1}+\dfrac{1}{h^2}S\vec{n}^{j+1}+\dfrac{1}{h}A\vec{n}^{j+1}$$
+
+Здесь $E$~---~единичная матрица подходящей размерности.
+
+Выпишем введенные матрицы $S$ и $A$:
+
+$$S = \left(\begin{smallmatrix}
+(-D_{1+1/2}-D_{1-1/2}) & D_{1+1/2}             & 0        & 0  & \cdots & 0 \\
+D_{2-1/2}              & (-D_{2+1/2}-D_{2-1/2}) & D_{2+1/2} & 0  & \cdots & 0 \\         
+\ddots & \ddots & \ddots & \ddots \\
+\cdots & D_{i-1/2} & (-D_{i+1/2}-D_{i-1/2}) & D_{i+1/2} &  \cdots &  \\
+\ddots & \ddots & \ddots & \ddots
+\end{smallmatrix}\right).$$
+
+$$A=\left(\begin{matrix}
+-u_1 &  u_2 & 0   & 0  & \cdots & 0 \\
+0    & -u_2 & u_3 & 0  & \cdots & 0 \\         
+\ddots & \ddots & \ddots & \ddots \\
+\cdots & \cdots & u_i & u_{i+1} &  \cdots &  \\
+& & \ddots & \ddots & \ddots\\
+& & & & \ddots& u_N\\
+& & & & & -u_N
+\end{matrix}\right).$$
+
+\smallskip
+
+Первая и последняя строки зависят от краевых условий.
+
+Перепишем систему в виде $$\vec{n}^{j+1}=(E+\tau k E-\dfrac{\tau}{h^2} S-\dfrac{\tau}{h}A)^{-1}(\tau \vec{p}+\vec{n}^j)=$$ $$=\left(E-\dfrac{\tau}{h^2(1+\tau k)}S-\dfrac{\tau}{h(1+\tau k)}A\right)^{-1}\cdot \dfrac{\tau \vec{p}+\vec{n}^j}{\tau k + 1}.$$
+
+Исследуем матрицу $B=\left(E-\dfrac{\tau}{h^2(1+\tau k)}S-\dfrac{\tau}{h(1+\tau k)}A\right)^{-1}$. 
+
+\smallskip
+Покажем, что элементы обратной матрицы неотрицательны при $v_k\geq 0$ для всех $k=1\cdots N$. Для этого обратимся к алгоритму Гаусса-Жордана поиска обратной матрицы: проводятся элементарные преобразования строк с приведением рассматриваемой матрицы к единичной. При этом справа записывается единичная матрица подходящего размера, и с ней проводятся все те же преобразования.
+
+\smallskip
+Воспользуемся тем фактом, что в рассматриваемой трёхдиагональной матрице $E-\dfrac{\tau}{h^2(1+\tau k)}S-\dfrac{\tau}{h(1+\tau k)}A$ на диагонали стоят положительные элементы, а вне неё~---~отрицательные. В этом случае можно элементарными преобразованиями привести её к единичной в следующем порядке:
+
+\begin{itemize}
+\item[1.] Сначала первая строка, домноженная на подходящее неотрицательное число, добавляется ко второй, при этом во второй строке первый элемент обнуляется. Затем вторая строка домножается на неотрицательное число и добавляется к третьей так, чтобы обнулить второй элемент третьей строки. Таким образом в рассматриваемой матрице все элементы ниже главной диагонали обнуляются, а параллельные преобразования с единичной матрицей оставляют элементы неотрицательными.
+
+\item[2.] Далее можно, начиная с предпоследней строки, вычитать из нее предыдущую, домноженную на некоторое положительное число. Таким образом мы обнулим и все элементы выше главной диагонали. Останутся только неотрицательные диагональные элементы, после деления на них (также не меняющего знака элементов в матрице справа) приходим к единичной матрице слева.
+\end{itemize}
+
+Получаем неотрицательность всех элементов обратной матрицы, которая и даёт монотонность схемы.
+\bigskip
+
+Исходное уравнение (в случае отсутствия рождения $P_1$ и уничтожения $(-kn_e)$) имеет закон сохранения массы. В непрерывном случае проинтегрируем уравнение на всём исследуемом отрезке высот $[H_1; H_2]$: 
+
+$$\int_{H_1}^{H_2} \dfrac{\partial n}{\partial t} dz = D(H_2)\dfrac{\partial n}{\partial z}\bigg|_{H_2}-D(H_1)\dfrac{\partial n}{\partial z}\bigg|_{H_1}+u(H_2)n(H_2)-u(H_1)n(H_1).$$
+
+При должном выборе граничных условий можно занулить слагаемые в правой части и получить $\displaystyle\int_{H_1}^{H_2}\dfrac{\partial n}{\partial t} dz = 0$.
+
+$\bigg($Если учесть рождение и уничтожение, то получим $\displaystyle\int_{H_1}^{H_2}\dfrac{\partial n}{\partial t} dz \hm= \displaystyle\int_{H_1}^{H_2} (P_1-kn)dz\bigg)$.
+
+\bigskip
+
+В дискретном случае также справедлив закон сохранения массы. Дискретизируем производные по $z$, сохранив сначала непрерывность по $t$: $$\dfrac{\partial}{\partial t} n_i = (D_{i+1/2}(n_{i+1}-n_i)-D_{i-1/2}(n_i-n_{i-1}))\dfrac{1}{h^2}+(u_{i+1}n_{i+1}-u_i n_i)\dfrac{1}{h}.$$
+
+Суммируя по всем узлам $i$, получим: $$\dfrac{\partial}{\partial t} \displaystyle\sum_{i=1}^{N} n_i = (D_{N-1/2}(n_{N}-n_{N-1})-D_{1/2}(n_1-n_0))\dfrac{1}{h^2}+(u_{N}n_{N}-u_1 n_1)\dfrac{1}{h}.$$
+
+Как и в непрерывном случае, считаем, что краевые условия обнуляют правую часть. Тогда $\dfrac{\partial}{\partial t} \displaystyle\sum_{i=1}^{N} n_i =0$.
+
+Теперь дискретизируем и оператор производной по времени: $$\displaystyle\sum_{i=1}^{N} \dfrac{n_i^{j+1}-n_i^j}{\tau}=0.$$ Домножая на $\tau$, получим $\displaystyle\sum_{i=1}^{N} n_i^{j+1}=\displaystyle\sum_{i=1}^{N} n_i^j$, что и требовалось.
+
+%\newpage
+%\begin{thebibliography}{00} % библиография
+%\bibitem{}
+%Виленкин~Н.~Я., Виленкин~А.~Н., Виленкин~П.~А. Комбинаторика.~---
+%М.: ФИМА, МЦНМО, 2010.~---~400~с.
+%\end{thebibliography}
+\end{document}
+
+
+
+
+
