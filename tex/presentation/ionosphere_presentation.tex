@@ -35,7 +35,6 @@
 \subsection{Уравнение неразрывности}
 \begin{frame}\frametitle{Постановка задачи}
 
-Уравнение, описывающее эволюцию ионной концентрации: $$\dfrac{\partial n_i}{\partial t} = -div(n_i \vec{u}_\parallel)-div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+div\left(D\left[\nabla_\parallel n_i +n_i\dfrac{1}{T_p}\nabla_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]$$
 
 Используемые приближения:
 \begin{itemize}
@@ -44,6 +43,9 @@
 \item[•] Дипольное магнитное поле Земли;
 \item[•] Приближение совпадения географических и магнитных полюсов;
 \end{itemize}
+
+Уравнение, описывающее эволюцию ионной концентрации: $$\dfrac{\partial n_i}{\partial t} = -div(n_i \vec{u}_\parallel)-div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+div\left(D\left[\nabla_\parallel n_i +n_i\dfrac{1}{T_p}\nabla_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]$$
+
 \end{frame}
 
 
@@ -71,8 +73,33 @@ $k=1{,}2\cdot10^{-12}n_{N_2}(z)+2{,}1\cdot10^{-11}n_{O_2}(z)$
 \end{frame}
 
 
-\subsection{Метод расщепления, три постановки}
-\begin{frame}\frametitle{Метод расщепления, три постановки}
+\section{Численное моделирование}
+\subsection{Требования к схемам и свойства решения}
+\begin{frame}\frametitle{Требования к схемам и свойства решения}
+
+\begin{itemize}
+\item[•] Концентрация неотрицательна, для сохранения этого свойства используем монотонные (по Годунову) схемы;
+\item[•] Уравнение имеет закон сохранения массы, схемы должны быть консервативны;
+\item[•] Характерные времена на нижней и верхней границах отличаются на несколько порядков, по времени используем неявные схемы;
+\item[•] При постоянных $P$ и $k$ уравнение имеет стационарное решение.
+\end{itemize}
+
+\end{frame}
+
+\subsection{Метод расщепления}
+\begin{frame}\frametitle{Метод расщепления}
+
+\begin{itemize}
+\item[•] На первом шаге расщепления решается уравнение для $z$-диффузии в проекции со смешанной производной;
+\item[•] В результате первых двух шагов решается двумерная $y-z$-постановка без нейтрального и поперечного переноса;
+\item[•] На третьем шаге добавляется перенос.
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Первый шаг метода расщепления, три постановки}
+\begin{frame}\frametitle{Первый шаг метода расщепления, три постановки}
 
 Первое приближение: диффузия вдоль оси $z$:
 $$\dfrac{\partial n}{\partial t} = P-kn+\dfrac{\partial}{\partial z}\left(D\dfrac{\partial n}{\partial z} + \left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right) n\right)$$
@@ -82,20 +109,6 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\left[D\sin^2
 
 Более точный учёт широтной зависимости: $z$-диффузия в проекции (со смешанной производной):
 $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr]$$ 
-
-\end{frame}
-
-
-\section{Численное моделирование}
-\subsection{Требования к схемам и свойства решения}
-\begin{frame}\frametitle{Требования к схемам и свойства решения}
-
-\begin{itemize}
-\item[•] Концентрация неотрицательна, для сохранения этого свойства используем монотонные схемы;
-\item[•] Уравнение имеет закон сохранения массы, схемы должны быть консервативны;
-\item[•] При постоянных $P$ и $k$ уравнение имеет стационарное решение;
-\item[•] Характерные времена на нижней и верхней границах отличаются на несколько порядков, по времени используем неявные схемы.
-\end{itemize}
 
 \end{frame}
 
@@ -193,9 +206,12 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 \begin{frame}\frametitle{Список использованной литературы}
 
 \begin{itemize}
-\item[1.] Kulyamin, D. V. and V. P. Dymnikov. A three-dimensional model of general thermospheric circulation. // Russian Journal of Numerical Analysis and Mathematical Modelling. 2013. 28(4): 353-380.
-\item[2.] Кулямин Д.В., Дымников В.П., Моделирование климата нижней ионосферы. // Известия Российской академии наук. Физика атмосферы и океана, 2015. Т. 51(3): С. 317–337.
-\item[3.] Schunk, R.W. and A.F. Nagy, IONOSPHERES Physics, Plasma Physics, and Chemistry. 2009, New York, United States: Cambridge University Press.
+\item[1.] \textit{Kulyamin D. V. and Dymnikov V. P.} A three-dimensional model of general thermospheric circulation. // Russian Journal of Numerical Analysis and Mathematical Modelling. --- 2013. --- 28(4). --- С. 353-380.
+\item[2.] \textit{Кулямин Д.~В., Дымников В.~П.} Моделирование климата нижней ионосферы. // Известия Российской академии наук. Физика атмосферы и океана. --- 2015. --- Т. 51(3). --- С. 317–337.
+\item[3.] \textit{Schunk R.W., Nagy A.F.} IONOSPHERES Physics, Plasma Physics, and Chemistry. --- New York, United States: Cambridge University Press, 2009. --- 628 p.
+\item[4.] \textit{Холодов А.~С., Холодов Я.~А.} О критериях монотонности разностных схем для уравнений гиперболического типа. // Журнал вычислительной математики и математической физики. --- 2006. --- Т. 46, № 9. --- C. 1560-1588.
+\item[5.] \textit{Федоренко Р.~П.} Введение в вычислительную физику: Учебное пособие для вузов / Под ред. А.~И. Лобанова. --- 2-е изд., испр. и доп. --- Долгопрудный: Издательский Дом <<Интеллект>>, 2008. --- 504 c.
+\item[6.] \textit{Калиткин Н.~Н.} Численные методы: учеб. пособие. --- 2-е изд., исправленное. --- СПб.: БХВ-Петербург, 2014. --- 592 с.
 \end{itemize}
 
 \end{frame}
