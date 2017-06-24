@@ -140,7 +140,7 @@ linkbordercolor=new,
 За перенос в верхней атмосфере в рассматриваемой модели отвечает амбиполярная диффузия. Её суть заключается в следующем: масса электрона гораздо меньше, чем масса иона кислорода, вследствие чего электроны и ионы разделяются пространственно. Вследствие этого разделяются и заряды, и возникает добавочное электрическое поле. Это поле препятствует дальнейшему разделению слоёв. После его создания электроны и ионы движутся как единый газ.
 
 Для вывода уравнения амбиполярной диффузии используем общее уравнение движения в следующей форме: $$nm\dfrac{D\vec{u}}{Dt}+\vec{\nabla} p + \vec{\nabla}\cdot \hat{\tau} - ne(\vec{E}+\vec{u}\times \vec{B})+nm[-\vec{G}+2\vec{\Omega}\times \vec{u}+\vec{\Omega}\times(\vec{\Omega}\times\vec{r})]=$$
-$$=\sum_t nm\nu_t (\vec{u}_t-\vec{u})+ \vec{f}(\vec{q}).$$
+$$=\sum_t nm\nu_t (\vec{u}_t-\vec{u})+ \vec{f}(\vec{q}). \eqno (1)$$
 В этом уравнении $\dfrac{D}{Dt}=\dfrac{\partial}{\partial t}+(\vec{u}; \vec{\nabla})\vec{u}$~---~полная производная; $u$~---~скорость диффузии; $n$~---~концентрация электронов; $m$~---~масса электрона; $\hat{\tau}$~---~тензор напряжений; $\vec{G}$~---~ускорение свободного падения; в квадратных скобках помимо $\vec{G}$ стоят слагаемые, связанные с неинерциальностью системы отсчета, вызванной вращением Земли с угловой скоростью $\vec{\Omega}$; в правой части сумма отвечает за столкновения электронов с различными частицами (разные типы частиц нумеруются индексом $t$), а последнее слагаемое зависит от тепловых потоков, которые в частично ионизованной плазме малы и отбрасываются. Уравнение записано в системе координат, связанной с Землёй.
 
 \bigskip
@@ -170,48 +170,44 @@ $$\begin{cases}
 \textrm{ }\textrm{ }\textrm{ }\textrm{ }\textrm{ }=n_im_i\nu_{ie}(\vec{u}_e-\vec{u}_i)_\parallel+n_im_i\nu_{in}(\vec{u}_n-\vec{u}_i)_\parallel\\
 \vec{\nabla}_\parallel p_e + (\vec{\nabla}\cdot \hat{\tau}_e)_\parallel - n_ee\vec{E}_\parallel-n_em_e\vec{G}_\parallel=\\
 \textrm{ }\textrm{ }\textrm{ }\textrm{ }\textrm{ }=n_em_e\nu_{ei}(\vec{u}_i-\vec{u}_e)_\parallel+n_em_e\nu_{en}(\vec{u}_n-\vec{u}_e)_\parallel
-\end{cases}$$
+\end{cases} \eqno(2)$$
 
 Сложив эти уравнения и учтя, что $n_e=n_i$, $\vec{u}_e=\vec{u}_i$, $n_im_i\nu_{ei}=n_em_e\nu_{ei}$, получим уравнение, не содержащее электрического поля, возникшего вследствие разделения электронов и ионов по слоям:
-$$\vec{\nabla}_\parallel (p_i+p_e) + (\vec{\nabla}\cdot (\hat{\tau}_i+\hat{\tau}_e))_\parallel-n_i(m_i+m_e)\vec{G}_\parallel=n_i(m_i\nu_{in}+m_e\nu_{en})(\vec{u}_n-\vec{u}_i)_\parallel.$$
+$$\vec{\nabla}_\parallel (p_i+p_e) + (\vec{\nabla}\cdot (\hat{\tau}_i+\hat{\tau}_e))_\parallel-n_i(m_i+m_e)\vec{G}_\parallel=n_i(m_i\nu_{in}+m_e\nu_{en})(\vec{u}_n-\vec{u}_i)_\parallel.\eqno(3)$$
 
 Теперь можно отбросить все слагаемые, содержащие массу электрона по сравнению с такими же слагаемыми, но уже с массой иона. После этого заменим давление $p_i=n_ikT_i$, $p_e=n_ikT_e$ и обозначим $T_p=\dfrac{1}{2}(T_e+T_i)$. Выразив из правой части векторную разность скоростей, получим закон амбиполярной диффузии, дающий характеристику средней скорости диффундирующих ионов: 
-$$\vec{u}_{i\parallel} = \vec{u}_{n\parallel} - \dfrac{2kT_p}{m_i\nu_{in}}\left(\dfrac{1}{n_i}\vec{\nabla}_\parallel n_i+\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p-\dfrac{m_i\vec{G}_\parallel}{2kT_p}+\dfrac{(\vec{\nabla}\cdot\hat{\tau_i})_\parallel}{2n_ikT_p}\right).$$
+$$\vec{u}_{i\parallel} = \vec{u}_{n\parallel} - \dfrac{2kT_p}{m_i\nu_{in}}\left(\dfrac{1}{n_i}\vec{\nabla}_\parallel n_i+\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p-\dfrac{m_i\vec{G}_\parallel}{2kT_p}+\dfrac{(\vec{\nabla}\cdot\hat{\tau_i})_\parallel}{2n_ikT_p}\right).\eqno(4)$$
 
 Обозначим $D=\dfrac{2kT_p}{m_i\nu_{in}}$~---~коэффициент амбиполярной диффузии.
 
 Теперь обратимся к компоненте скорости, ортогональной вектору $\vec{B}$. В соответствии с оценками, приведёнными в [3], будем считать, что в плоскости, ортогональной вектору $\vec{B}$ главный процесс~---~дрейф, связанный с внешними полями (это справедливо ввиду сильной замагниченности плазмы). Тогда в проекции на плоскость, ортогональную $\vec{B}$, уравнение движения для ионов можно записать в форме 
-$$n_ie\vec{E}_\perp + n_ie[\vec{u}_{i\perp}\times \vec{B}]+n_im_i\nu_{in}\vec{u}_{i\perp}=0.$$
-Домножим векторно на $\vec{B}$: $$[e\vec{E}_\perp\times\vec{B}]+e[[\vec{u}_{i\perp}\times\vec{B}]\times\vec{B}]+m_i\nu_{in}[\vec{u}_{i\perp}\times\vec{B}]=0\Leftrightarrow$$ $$\Leftrightarrow[e\vec{E}_\perp\times\vec{B}]-eB^2\vec{u}_{i\perp}+e(\vec{u}_{i\perp};\vec{B})\vec{B}+m_i\nu_{in}[\vec{u}_{i\perp}\times\vec{B}]=0.$$
+$$n_ie\vec{E}_\perp + n_ie[\vec{u}_{i\perp}\times \vec{B}]=0.\eqno(5)$$
+Домножим векторно на $\vec{B}$: $$[e\vec{E}_\perp\times\vec{B}]+e[[\vec{u}_{i\perp}\times\vec{B}]\times\vec{B}]=0\Leftrightarrow$$ $$\Leftrightarrow[e\vec{E}_\perp\times\vec{B}]-eB^2\vec{u}_{i\perp}+e(\vec{u}_{i\perp};\vec{B})\vec{B}=0.$$
 Отметим также, что $\vec{E}_\perp\times \vec{B} = (\vec{E}_\perp+\vec{E}_\parallel)\times \vec{B} = \vec{E}\times\vec{B}$.
 
-Учтём, что рассматривается компонента, ортогональная $\vec{B}$, поэтому скалярное произведение в третьем слагаемом равно нулю. Это позволяет выразить векторное произведение $[\vec{u}_{i\perp}\times\vec{B}]$: $$[\vec{u}_{i\perp}\times\vec{B}]=\dfrac{eB^2}{m_i\nu_{in}}\vec{u}_{i\perp}-\dfrac{e[\vec{E}\times\vec{B}]}{m_i\nu_{in}}.$$
-Подставляем это уравнение в исходное уравнение движения, тем самым избавляясь от векторного произведения и получая векторное уравнение, из которого можно явно выразить искомую скорость $\vec{u}_{i\perp}$: 
+Учтём, что рассматривается компонента, ортогональная $\vec{B}$, поэтому скалярное произведение в третьем слагаемом равно нулю. Это позволяет выразить искомый вектор $\vec{u}_{i\perp}$: $$\vec{u}_{i\perp}=\dfrac{[\vec{E}\times\vec{B}]}{B^2}.\eqno(6)$$
 
-$$e\vec{E}_\perp+\dfrac{e^2B^2}{m_i\nu_{in}}\vec{u}_{i\perp}-\dfrac{e^2}{m_i\nu_{in}}[\vec{E}\times\vec{B}]+m_i\nu_{in}\vec{u}_{i\perp}=0.$$
-Введем обозначение $\alpha = \dfrac{eB}{m_i\nu_{in}}$. Это отношение гирочастоты $\dfrac{eB}{m_i\nu_{in}}$ к частоте столкновений. Учтём далее, что $\alpha>>1$. В рассматриваемом уравнении $$(1+\alpha^2)\vec{u}_{i\perp}+\dfrac{\alpha\vec{E}_\perp}{B}-\dfrac{e^2}{m_i^2\nu_{in}^2}[\vec{E}\times\vec{B}]=0$$ можно положить $1+\alpha^2\approx\alpha^2$, а затем разделить на $\alpha^2$ и пренебречь слагаемым порядка $\alpha^{-1}$: $$\alpha^2\vec{u}_{i\perp}=\dfrac{e^2}{m_i^2\nu_{in}^2}[\vec{E}\times\vec{B}]-\dfrac{e}{m_i\nu_{in}}\vec{E}_\perp\mbox{ }\Rightarrow\mbox{ }\vec{u}_{i\perp}=\dfrac{[\vec{E}\times\vec{B}]}{B^2}-\dfrac{1}{\alpha}\dfrac{\vec{E}_\perp}{B}\approx \dfrac{[\vec{E}\times\vec{B}]}{B^2}.$$
-
-После нахождения компонент $\vec{u}$, параллельной и ортогональной полю, из уравнения неразрывности окончательно получаем следующее векторное уравнение, описывающее искомую эволюцию рассматриваемой электронной концентрации: $$\dfrac{\partial n_i}{\partial t} = -\div(n_i \vec{u}_{n\parallel})-\div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+\div\left(D\left[\vec{\nabla}_\parallel n_i +n_i\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]. \eqno(2.2.1)$$
+После нахождения компонент $\vec{u}$, параллельной и ортогональной полю, из уравнения неразрывности окончательно получаем следующее векторное уравнение, описывающее искомую эволюцию рассматриваемой электронной концентрации: $$\dfrac{\partial n_i}{\partial t} = -\div(n_i \vec{u}_{n\parallel})-\div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+\div\left(D\left[\vec{\nabla}_\parallel n_i +n_i\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]. \eqno(7)$$
 
 \subsection{Внешние параметры уравнения}
 \subsectionmark{Внешние параметры уравнения}
 
 Входящие в уравнение в качестве внешних параметров функции фотоионизации, рекомбинации, температуры нейтралов, электронов и ионов, а также концентрации молекул $N_2$, $O_2$ и $O$ задаются аналитическими формулами. 
 
-Для концентраций используем Больцмановское распределение по высоте: $$n_{O_2, N_2, O} (z)= n_{O_2, N_2, O} (z_0)\cdot \exp\left(-\dfrac{M_{O_2, N_2, O}g}{R_0T_n}(z-z_0)\right).$$ Концентрации на высоте $z_0\approx 100$~км полагаем равными $n_{O_2} = 5{,}6\cdot 10^9$~см$^{-3}$, $n_{O} = 2{,}8\cdot 10^{10}$~см$^{-3}$, $n_{N_2} = 5{,}2\cdot 10^{10}$~см$^{-3}$. 
+Для концентраций используем Больцмановское распределение по высоте: $$n_{O_2, N_2, O} (z)= n_{O_2, N_2, O} (z_0)\cdot \exp\left(-\dfrac{M_{O_2, N_2, O}g}{R_0T_n}(z-z_0)\right).\eqno(8)$$ Концентрации на высоте $z_0\approx 100$~км полагаем равными $n_{O_2} = 5{,}6\cdot 10^9$~см$^{-3}$, $n_{O} = 2{,}8\cdot 10^{10}$~см$^{-3}$, $n_{N_2} = 5{,}2\cdot 10^{10}$~см$^{-3}$. 
 
-Температуры вычисляем по аналитическим формулам $$T(z)=T_\infty - (T_\infty-T_0)\exp\left(-\dfrac{g}{RT_\infty}(z-z_0)\right),$$ где $R=\dfrac{R_0}{M_{air}}\approx 287$~Дж$\cdot$кг$^{-1}\cdot$K$^{-1}$, $R_0$~---~универсальная газовая постоянная. Константы $T_\infty$ для разных составляющих приближённо считаем равными $T_{n\infty}=800$~К, $T_{i\infty}=950$~К, $T_{e\infty}=2200$~К.
+Температуры вычисляем по аналитическим формулам $$T(z)=T_\infty - (T_\infty-T_0)\exp\left(-\dfrac{g}{RT_\infty}(z-z_0)\right),\eqno(9)$$ где $R=\dfrac{R_0}{M_{air}}\approx 287$~Дж$\cdot$кг$^{-1}\cdot$K$^{-1}$, $R_0$~---~универсальная газовая постоянная. Константы $T_\infty$ для разных составляющих приближённо считаем равными $T_{n\infty}=800$~К, $T_{i\infty}=950$~К, $T_{e\infty}=2200$~К.
 
-Функции рекомбинации и фотоионизации (в дневное время) можно приближенно вычислять по следующим формулам: $$P=4\cdot10^{-7}\cdot n_O(z)\textrm{ [с}^{-1}\textrm{]}$$ $$k=1{,}2\cdot10^{-12}\cdot n_{N_2}(z)+2{,}1\cdot 10^{-11}\cdot n_{O_2}(z) \textrm{ [с}^{-1}\textrm{]}$$
+Функции рекомбинации и фотоионизации (в дневное время) можно приближенно вычислять по следующим формулам: $$P=4\cdot10^{-7}\cdot n_O(z)\textrm{ [с}^{-1}\textrm{]}\eqno(10)$$ $$k=1{,}2\cdot10^{-12}\cdot n_{N_2}(z)+2{,}1\cdot 10^{-11}\cdot n_{O_2}(z) \textrm{ [с}^{-1}\textrm{]}\eqno(11)$$
 
 При неизменных по времени функциях фотоионизации и рекомбинации $P$ и $k$ рассматриваемые уравнения имеют стационарное решение, отвечающее по существу состоянию системы в один определённый момент времени, а вертикальный профиль соответствует фиксированным широте и долготе. 
 
 Для моделирования суточного изменения вертикального профиля добавим зависимость от времени в слагаемое $P$, отвечающее фотоионизации. Используем формулу $$P(z, t) =\begin{cases}
 P_0(z)e^{\tau_0(z)(1-\sec\chi)}, |\chi|\leq\dfrac{\pi}{2}\\
 0, |\chi|\geq\dfrac{\pi}{2}
-\end{cases}$$
+\end{cases}\eqno(12)$$
 
-Здесь введены следующие обозначения: $P_0(z)$~---~фотоионизация в дневное время, $\chi$~---~зенитный угол Солнца (угол между направлением на Солнце и нормалью к земной поверхности), $\tau_0(z)$~---~оптическая толщина, для вычисления которой используется формула $$\tau_0(z)=\sum_{i = N_2, O_2, O} \sigma_i^{abs}\left[\dfrac{R_0T_n}{M_i g}n_i(z)\right]=$$ $$=\dfrac{R_0T_n}{g}\left(\sigma_{N_2}^{abs}\dfrac{n_{N_2}(z)}{M_{N_2}}+\sigma_{O_2}^{abs}\dfrac{n_{O_2}(z)}{M_{O_2}}+\sigma_{O}^{abs}\dfrac{n_{O}(z)}{M_{O}}\right).$$
+Здесь введены следующие обозначения: $P_0(z)$~---~фотоионизация в дневное время, $\chi$~---~зенитный угол Солнца (угол между направлением на Солнце и нормалью к земной поверхности), $\tau_0(z)$~---~оптическая толщина, для вычисления которой используется формула $$\tau_0(z)=\sum_{i = N_2, O_2, O} \sigma_i^{abs}\left[\dfrac{R_0T_n}{M_i g}n_i(z)\right]=$$ $$=\dfrac{R_0T_n}{g}\left(\sigma_{N_2}^{abs}\dfrac{n_{N_2}(z)}{M_{N_2}}+\sigma_{O_2}^{abs}\dfrac{n_{O_2}(z)}{M_{O_2}}+\sigma_{O}^{abs}\dfrac{n_{O}(z)}{M_{O}}\right).\eqno(13)$$
 
 Константы $\sigma_i^{abs}$ для трёх типов нейтральных молекул известны и равны соответственно $\sigma_{N_2}^{abs}=1{,}5\cdot 10^{-17}$~см$^2$, $\sigma_{O_2}^{abs}=2\cdot 10^{-17}$~см$^2$, $\sigma_{O}^{abs}=1\cdot 10^{-17}$~см$^2$.
 
@@ -232,16 +228,18 @@ $\tau_0$&$4\cdot 10^2$&$3\cdot 10^{-1}$&$2\cdot 10^{-4}$\\
 
 В предложенной формуле для фотоионизации время в качестве параметра входит лишь в зенитный угол. Кусочное задание функции $P(z, t)$ связано с приближением отсутствия фотоионизации в ночное время (Солнце не заходит за горизонт лишь при зенитных углах, не превосходящих $90^\circ$).
 
-Зависимость зенитного угла от времени даётся следующими формулами: $$\cos\chi = \sin\varphi\cdot\sin\delta-\cos\varphi\cdot\cos\delta\cdot\cos\omega t.$$
+Зависимость зенитного угла от времени даётся следующими формулами: $$\cos\chi = \sin\varphi\cdot\sin\delta-\cos\varphi\cdot\cos\delta\cdot\cos\omega t.\eqno(14)$$
 
-Здесь $\omega$~---~угловая скорость вращения Земли, $\varphi$~---~широта, а $\delta$~---~склонение Солнца, тангенс которого определяется формулой $$\tg\delta = \tg 23{,}5^\circ \cdot \sin\left(2\pi\cdot\dfrac{d-80}{365}\right),$$ где $d$~---~номер дня от начала года.
+Здесь $\omega$~---~угловая скорость вращения Земли, $\varphi$~---~широта, а $\delta$~---~склонение Солнца, тангенс которого определяется формулой 
+
+$$\tg\delta = \tg 23{,}5^\circ \cdot \sin\left(2\pi\cdot\dfrac{d-80}{365}\right),\eqno(15)$$ где $d$~---~номер дня от начала года.
 
 В рассматриваемое уравнение также входит вектор напряженности магнитного поля. В рассматриваемой постановке принимается дипольное приближение, в котором компоненты вектора напряженности магнитного поля выражаются через широту с помощью углов магнитного наклонения $I\approx \arctg(2\tg\varphi)$ и угла склонения $D$ по формулам
 $$\vec{B} = \left(\begin{array}{crl}
 B\cos I \sin D\\
 B\cos I \cos D\\
 -B\sin I
-\end{array}\right).$$
+\end{array}\right).\eqno(16)$$
 Кроме того, в приближении совпадения магнитных и географических полюсов $D\approx 0$, поэтому далее считается, что 
 
 $$\vec{B}\approx
@@ -250,34 +248,27 @@ $$\vec{B}\approx
 B\cos I\\
 -B\sin I
 \end{array}\right).
-$$ 
+\eqno(17)$$ 
 
 \subsection{Основное уравнение в сферической системе координат (в приближении тонкого сферического слоя)}
 \subsectionmark{Основное уравнение в сферической системе координат}
 
-Перейдем от векторной записи уравнения неразрывности $(2.1)$, описывающего динамику электронной плотности, к сферическим координатам $(\lambda, \varphi, z)$, где $\lambda$~---~долгота, $\lambda \in [0, 2\pi]$, $\varphi$~---~широта, $\varphi \in \left[-\dfrac{\pi}{2};\dfrac{\pi}{2}\right]$, $z$~---~высота, отсчитываемая от радиуса Земли $a$. 
+Перейдем от векторной записи уравнения неразрывности $(7)$, описывающего динамику электронной плотности, к сферическим координатам $(\lambda, \varphi, z)$, где $\lambda$~---~долгота, $\lambda \in [0, 2\pi]$, $\varphi$~---~широта, $\varphi \in \left[-\dfrac{\pi}{2};\dfrac{\pi}{2}\right]$, $z$~---~высота, отсчитываемая от радиуса Земли $a$. 
 
-Используем приближение тонкого сферического слоя: для частных производных по $x$ и $y$ запишем формулы $$\dfrac{\partial}{\partial x}=\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\lambda},\mbox{ } \dfrac{\partial}{\partial y} = \dfrac{1}{a}\dfrac{\partial}{\partial\varphi},$$ в которых $a$ считаем постоянным. Для дивергенции в сферических координатах используем $$\div(n_i \vec{a}) = \dfrac{1}{a\cos\varphi}\left[\dfrac{\partial}{\partial\lambda}(n_i a_x)+\dfrac{\partial}{\partial\varphi}(n_i a_y\cos\varphi)\right]+\dfrac{\partial}{\partial z}(n_i a_z).$$
-Для векторного поля, стоящего под общим знаком дивергенции в правой части уравнения $(2.1)$ $$\dfrac{\partial n_i}{\partial t} = -\div(n_i \vec{u}_{n\parallel})-\div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+\div\left(D\left[\vec{\nabla}_\parallel n_i +n_i\dfrac{1}{T_p}\vec{\nabla}_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]$$ введём следующие обозначения: $$\vec{\alpha}=-\vec{u}_\parallel-\dfrac{1}{B^2}[\vec{E}\times\vec{B}]; \mbox{ }\vec{\beta} = \vec{\nabla}_\parallel n_i;$$ $$\vec{\gamma} = \left(\dfrac{1}{T_p}\vec{\nabla}_\parallel  T_p - \dfrac{m_i \vec{g}_\parallel}{2kT_p}\right)=\left(\dfrac{1}{T_p}\vec{\nabla}_\parallel  T_p - \dfrac{1}{H}\dfrac{\vec{g}_\parallel}{g}\right).$$
-К вектору $\vec{\alpha}$ отнесены компоненты, отвечающие переносу без диффузии, в вектор $\vec{\beta}$ вошли слагаемые с производными от $n_i$, а оставшийся вектор $\vec{\gamma}$ соответствует эффективной скорости при диффузии. Обозначим $DYZ(n_i) = \div(D\vec{\beta})$, $Tr(n_i) = \div(n_i\vec{\alpha})$, $DTr(n_i) = \div(Dn_i\vec{\gamma})$. С учетом этих обозначений уравнение можно переписать в виде $$\dfrac{\partial n_i}{\partial t} = \div(n_i\vec{\alpha} + D\vec{\beta}+Dn_i\vec{\gamma})+[P-kn_i]=$$ $$=DYZ(n_i)+DTr(n_i)+Tr(n_i)+[P-kn_i]. \eqno(2.3.1)$$
-Запишем теперь введённые векторы $\vec{\alpha}, \vec{\beta}, \vec{\gamma}$ в компонентах и применим формулу для дивергенции в сферических координатах. Учтём, что компоненты вектора напряженности магнитного поля в дипольном приближении, а также в приближении совпадения магнитных и географических полюсов выражаются через широту с помощью угла магнитного наклонения $I\approx \arctg(2\tg\varphi)$ по формулам
-$$\vec{B} = \left(\begin{array}{crl}
-0\\
-B\cos I\\
--B\sin I
-\end{array}\right).
-$$
-Это означает, что для некоторого вектора $\vec{a}$ его составляющая вдоль магнитного поля $$\vec{a}_\parallel = \left(\vec{a},\dfrac{\vec{B}}{B}\right)\dfrac{\vec{B}}{B} = (a_y\cos I - a_z\sin I)\cdot \left(\begin{array}{crl}
+Используем приближение тонкого сферического слоя: для частных производных по $x$ и $y$ запишем формулы $$\dfrac{\partial}{\partial x}=\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\lambda},\mbox{ } \dfrac{\partial}{\partial y} = \dfrac{1}{a}\dfrac{\partial}{\partial\varphi},$$ в которых $a$ считаем постоянным. Для дивергенции в сферических координатах в приближении тонкого сферического слоя используем $$\div(n_i \vec{a}) = \dfrac{1}{a\cos\varphi}\left[\dfrac{\partial}{\partial\lambda}(n_i a_x)+\dfrac{\partial}{\partial\varphi}(n_i a_y\cos\varphi)\right]+\dfrac{\partial}{\partial z}(n_i a_z).\eqno(18)$$
+Для векторного поля, стоящего под общим знаком дивергенции в правой части уравнения $(7)$ введём следующие обозначения: $$\vec{\alpha}=-\vec{u}_\parallel-\dfrac{1}{B^2}[\vec{E}\times\vec{B}]; \mbox{ }\vec{\beta} = \vec{\nabla}_\parallel n_i;$$ $$\vec{\gamma} = \left(\dfrac{1}{T_p}\vec{\nabla}_\parallel  T_p - \dfrac{m_i \vec{g}_\parallel}{2kT_p}\right)=\left(\dfrac{1}{T_p}\vec{\nabla}_\parallel  T_p - \dfrac{1}{H}\dfrac{\vec{g}_\parallel}{g}\right).$$
+К вектору $\vec{\alpha}$ отнесены компоненты, отвечающие переносу без диффузии, в вектор $\vec{\beta}$ вошли слагаемые с производными от $n_i$, а оставшийся вектор $\vec{\gamma}$ соответствует эффективной скорости при диффузии. Обозначим $DYZ(n_i) = \div(D\vec{\beta})$, $Tr(n_i) = \div(n_i\vec{\alpha})$, $DTr(n_i) = \div(Dn_i\vec{\gamma})$. С учетом этих обозначений уравнение $(7)$ можно переписать в виде $$\dfrac{\partial n_i}{\partial t} = \div(n_i\vec{\alpha} + D\vec{\beta}+Dn_i\vec{\gamma})+[P-kn_i]=$$ $$=DYZ(n_i)+DTr(n_i)+Tr(n_i)+[P-kn_i]. \eqno(19)$$
+Запишем теперь введённые векторы $\vec{\alpha}, \vec{\beta}, \vec{\gamma}$ в компонентах и применим для дивергенции формулу $(18)$. Учтём, что компоненты вектора напряженности магнитного поля в дипольном приближении, а также в приближении совпадения магнитных и географических полюсов выражаются через широту с помощью угла магнитного наклонения $I\approx \arctg(2\tg\varphi)$ по формулам $(17)$. Это означает, что для некоторого вектора $\vec{a}$ его составляющая вдоль магнитного поля $$\vec{a}_\parallel = \left(\vec{a},\dfrac{\vec{B}}{B}\right)\dfrac{\vec{B}}{B} = (a_y\cos I - a_z\sin I)\cdot \left(\begin{array}{crl}
 0\\
 \cos I\\
 -\sin I
-\end{array}\right).$$
+\end{array}\right).\eqno(20)$$
 Аналогично, для параллельной полю компоненты градиента некоторой скалярной функции $f$ можем записать $$\vec{\nabla}_\parallel f = \left(\vec{\nabla} f,\dfrac{\vec{B}}{B}\right)\dfrac{\vec{B}}{B} = \left(\dfrac{\partial f}{\partial y}\cos I - \dfrac{\partial f}{\partial z}\sin I\right)\cdot \left(\begin{array}{crl}
 0\\
 \cos I\\
 -\sin I
-\end{array}\right).$$
-С учетом этих замечаний заключаем, что вектор $\alpha$ имеет компоненты $$\vec{\alpha} = 
+\end{array}\right).\eqno(21)$$
+С учетом этих замечаний заключаем, что вектор $\vec{\alpha}$ имеет компоненты $$\vec{\alpha} = 
 \left(\begin{array}{crl}
 0\\
 -u_y\cos^2 I + u_z\sin I \cos I\\
@@ -287,7 +278,7 @@ u_y\cos I \sin I - u_z\sin^2 I
 -E_y\sin I - E_z\cos I\\
 E_x\sin I\\
 E_x\cos I
-\end{array}\right).$$
+\end{array}\right).\eqno(22)$$
 Вектор $\vec{\beta}$~---~параллельная полю составляющая градиента функции $n_i$, поэтому с учётом формул для $\dfrac{\partial}{\partial y}$ и $\dfrac{\partial}{\partial z}$ запишем $$\vec{\beta} = \left(\begin{array}{crl}
 0\\
 \dfrac{\partial n_i}{\partial y}\cos^2 I - \dfrac{\partial n_i}{\partial z}\cos I\sin I\\
@@ -296,7 +287,7 @@ E_x\cos I
 0\\
 \dfrac{1}{a}\dfrac{\partial n_i}{\partial \varphi}\cos^2 I - \dfrac{\partial n_i}{\partial z}\cos I\sin I\\
 -\dfrac{1}{a}\dfrac{\partial n_i}{\partial \varphi}\cos I\sin I + \dfrac{\partial n_i}{\partial z}\sin^2 I
-\end{array}\right)$$
+\end{array}\right)\eqno(23)$$
 Оставшийся вектор $\vec{\gamma}$~---~линейная комбинация градиента скалярной функции $T_p$ и параллельной полю компоненты вектора $\vec{g} = (0, 0, -g)^T$: $$\vec{\gamma} = \dfrac{1}{T_p}\left(\begin{array}{crl}
 0\\
 \dfrac{1}{a}\dfrac{\partial T_p}{\partial \varphi}\cos^2 I - \dfrac{\partial T_p}{\partial z}\cos I\sin I\\
@@ -305,21 +296,21 @@ E_x\cos I
 0\\
 \sin I\cos I\\
 -\sin^2 I
-\end{array}\right)$$
-Теперь с помощью записанной ранее формулы для дивергенции окончательно получаем уравнение $\dfrac{\partial n_i}{\partial t} = DYZ(n_i)+DTr(n_i)+Tr(n_i)+[P-kn_i]$, где: $$Tr(n_i) = \div (n_i\vec{\alpha}) = \dfrac{1}{a\cos\varphi}\left[\dfrac{\partial}{\partial\lambda}(n_i\alpha_x) + \dfrac{\partial}{\partial\varphi}(n_i \alpha_y\cos\varphi) \right]+\dfrac{\partial}{\partial z}(n_i \alpha_z)=$$ $$\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\lambda}\left[n_i\dfrac{1}{B}(E_y\sin I - E_z\cos I)\right]+\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\varphi}\bigg(\bigg[u_z\sin I \cos I - u_y\cos^2 I -$$ $$- \dfrac{E_x}{B}\sin I\bigg]n_i\cos\varphi\bigg)+\dfrac{\partial}{\partial z}\left(\left[u_y\cos I \sin I -u_z\sin^2 I - \dfrac{E_x}{B}\cos I\right]n_i\right);$$
+\end{array}\right)\eqno(24)$$
+Теперь с помощью записанной ранее формулы для дивергенции $(18)$ окончательно получаем для слагаемых в правой части уравнения $(19)$ выражения: $$Tr(n_i) = \div (n_i\vec{\alpha}) = \dfrac{1}{a\cos\varphi}\left[\dfrac{\partial}{\partial\lambda}(n_i\alpha_x) + \dfrac{\partial}{\partial\varphi}(n_i \alpha_y\cos\varphi) \right]+\dfrac{\partial}{\partial z}(n_i \alpha_z)=$$ $$\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\lambda}\left[n_i\dfrac{1}{B}(E_y\sin I + E_z\cos I)\right]+\dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\varphi}\bigg[\bigg(u_z\sin I \cos I - u_y\cos^2 I -$$ $$- \dfrac{E_x}{B}\sin I\bigg)n_i\cos\varphi\bigg]+\dfrac{\partial}{\partial z}\left[\left(u_y\cos I \sin I -u_z\sin^2 I - \dfrac{E_x}{B}\cos I\right)n_i\right];\eqno(25)$$
 
-$$DYZ(n_i) = \div (D\vec{\beta}) = \dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(Dn_i\cos\varphi\left[\dfrac{1}{a}\dfrac{\partial n}{\partial\varphi} \cos^2 I -\dfrac{\partial n_i}{\partial z}\cos I\sin I\right]\right)+$$ $$ + \dfrac{\partial}{\partial z}\left(n_i\left[\dfrac{\partial n_i}{\partial z}\sin^2 I - \dfrac{1}{a}\dfrac{\partial n_i}{\partial\varphi}\cos I \sin I\right]\right);$$ 
+$$DYZ(n_i) = \div (D\vec{\beta}) = \dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(D\cos\varphi\left[\dfrac{1}{a}\dfrac{\partial n_i}{\partial\varphi} \cos^2 I -\dfrac{\partial n_i}{\partial z}\cos I\sin I\right]\right)+$$ $$ + \dfrac{\partial}{\partial z}\left(D\left[\dfrac{\partial n_i}{\partial z}\sin^2 I - \dfrac{1}{a}\dfrac{\partial n_i}{\partial\varphi}\cos I \sin I\right]\right);\eqno(26)$$ 
 
-$$DTr(n_i) = \div(Dn_i\vec{\gamma}) = \dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial \varphi}\bigg(\bigg[\dfrac{1}{a}\dfrac{D}{T_p}\dfrac{\partial T_p}{\partial\varphi}\cos^2 I-\dfrac{D}{T_p}\dfrac{\partial T_p}{\partial z}\cos I \sin I - $$ $$-\dfrac{D}{H}\sin I \cos I\bigg]n_i\cos\varphi\bigg) + \dfrac{\partial}{\partial z}\bigg(\bigg[-\dfrac{1}{a}\dfrac{D}{T_p}\dfrac{\partial T_p}{\partial \varphi}\cos I \sin I + \dfrac{D}{T_p}\dfrac{\partial T_p}{\partial z}\sin^2 I\bigg]n_i\bigg).$$
+$$DTr(n_i) = \div(Dn_i\vec{\gamma}) = \dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial \varphi}\bigg[\bigg(\dfrac{1}{a}\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}\cos^2 I-\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}\cos I \sin I - $$ $$-\dfrac{1}{H}\sin I \cos I\bigg)Dn_i\cos\varphi\bigg] + \dfrac{\partial}{\partial z}\bigg[\bigg(-\dfrac{1}{a}\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}\cos I \sin I +$$ $$ \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}\sin^2 I+\dfrac{1}{H}\sin^2I\bigg)Dn_i\bigg].\eqno(27)$$
 
 \subsection{Свойства дифференциальной задачи}
 \subsectionmark{Свойства дифференциальной задачи}
 
-Полученное уравнение имеет ряд особенностей, которые необходимо учитывать при численном 
+Основное исследуемое уравнение $(7)$ имеет ряд особенностей, которые необходимо учитывать при численном 
 моделировании.
 
 \begin{itemize}
-\item[•] Для дифференциальной задачи имеет место закон сохранения массы: интегрирование по некоторому объему обеих частей рассматриваемого уравнения и применение формулы Остроградского-Гаусса приводит к уравнению баланса: $$\dfrac{\partial}{\partial t}\int_V n_i dV = \int_V (P-k n_i) dV + F(V, n_i),$$ где $F(V, n_i)$~---~поток векторного поля, стоящего под общим знаком дивергенции в уравнении $(2.2.1)$ через границу $\partial V$ выбранного объема $V$. При подходящем выборе объема $V$ в отсутствие источников и соответствующих граничных условиях полученное соотношение принимает вид $$\dfrac{\partial}{\partial t}\int_V n_i dV = 0.$$
+\item[•] Для дифференциальной задачи имеет место закон сохранения массы: интегрирование по некоторому объему обеих частей уравнения $(7)$ и применение формулы Остроградского-Гаусса приводит к уравнению баланса: $$\dfrac{\partial}{\partial t}\int_V n_i dV = \int_V (P-k n_i) dV + F(V, n_i),\eqno(28)$$ где $F(V, n_i)$~---~поток векторного поля, стоящего в уравнении $(7)$ под общим знаком дивергенции, через границу $\partial V$ выбранного объема $V$. При подходящем выборе объема $V$ в отсутствие источников и соответствующих граничных условиях полученное соотношение принимает вид $$\dfrac{\partial}{\partial t}\int_V n_i dV = 0.\eqno(29)$$
 
 \item[•] В силу своего физического смысла (как концентрации электронов) решение дифференциальной задачи неотрицательно. Это справедливо для дневного стационарного решения дифференциальной задачи: при вычислении выбираются положительные начальные условия. При моделировании суточного хода в качестве начальных условий также выбирается неотрицательное начальное условие~---~найденное дневное стационарное решение.
  
@@ -343,7 +334,7 @@ $u_\textrm{эфф}/D$, см$^{-1}$&$4{,}8\cdot 10^{-8}$&$4{,}5\cdot 10^{-8}$&$3{
 
 \medskip 
 
-Как показано в [3], характерные времена различных физических процессов существенно различны, поэтому рассматриваемая задача жесткая.
+Как следует из приведенных выше числовых оценок ключевых коэффициентов на разных высотах и как подробно показано в [3], характерные времена различных физических процессов существенно отличаются, поэтому рассматриваемая задача жесткая.
 \end{itemize}
 
 \section{Метод решения}
@@ -367,11 +358,11 @@ $u_\textrm{эфф}/D$, см$^{-1}$&$4{,}8\cdot 10^{-8}$&$4{,}5\cdot 10^{-8}$&$3{
 \subsection{Расщепление по физическим процессам и геометрическим переменным}
 \subsectionmark{Расщепление по физическим процессам и геометрическим переменным}
 
-Выберем последовательно в полученном трёхмерном уравнении ключевые процессы, формирующие поле скоростей. Затем реализуем модель поэтапно, учитывая каждый раз новые поправки и сравнивая новое решение с предыдущим.
+Выберем последовательно в полученном трёхмерном уравнении ключевые процессы, формирующие поле скоростей. Затем реализуем модель поэтапно, учитывая каждый раз новые поправки и сравнивая новое решение с предыдущим. В использованных разностных уравнениях учтена жесткость задачи: все использованные схемы неявные. 
 
-Рассматриваем полученное уравнение в виде $$\dfrac{\partial n_i}{\partial t} = DTr(n_i)+Tr(n_i)+DYZ(n_i)+[P-kn_i]$$ и используем метод расщепления: вводим шаг по времени $\tau$, а затем на каждом шаге по времени решаем сначала разностную задачу $$\dfrac{n^{j+1/3}-n^j}{\tau}=A_zn^{j+1/3}+[P-k n^{j+1/3}],$$ аппроксимирующую $$\dfrac{\partial n_i}{\partial t} = DTr(n_i)+[P-kn_i],$$ затем, взяв полученное решение в качестве начального условия, решаем $$\dfrac{n^{j+2/3}-n^{j+1/3}}{\tau}=A_\varphi n^{j+2/3},$$ аппроксимирующую $$\dfrac{\partial n_i}{\partial t} = Tr(n_i),$$ наконец, на третьем шаге решается разностная задача $$\dfrac{n^{j+1}-n^{j+2/3}}{\tau}=A_\varphi n^{j+2/3}$$ для $$\dfrac{\partial n_i}{\partial t} = DYZ(n_i)$$ с начальным условием~---~решением со второго шага. В записанных разностных уравнениях учтена жесткость задачи: все использованные схемы неявные.
+Рассматриваем полученное уравнение $(7)$ в виде $(19)$ $$\dfrac{\partial n_i}{\partial t} = DTr(n_i)+Tr(n_i)+DYZ(n_i)+[P-kn_i]$$ и используем метод расщепления. Обозначим шаг по времени $\tau$. На каждом шаге по времени решаем сначала разностную задачу $$\dfrac{n^{j+1/3}-n^j}{\tau}=A_zn^{j+1/3}+[P-k n^{j+1/3}],\eqno(30)$$ отвечающую уравнению, включающему плазмохимические процессы и диффузию в $z$-проекции $$\dfrac{\partial n_i}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n_i}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n_i\bigg)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n_i}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n_i\right)\bigg]+[P-kn_i],\eqno(31)$$ Затем, взяв полученное решение в качестве начального условия, решаем следующую разностную задачу$$\dfrac{n^{j+2/3}-n^{j+1/3}}{\tau}=A_\varphi n^{j+2/3},\eqno(32)$$ аппроксимирующую уравнение $$\dfrac{\partial n_i}{\partial t} = \dfrac{1}{a^2\cos\varphi}\dfrac{\partial}{\partial\varphi}\left[D\cos^2 I \dfrac{\partial n_i}{\partial\varphi} \cos\varphi\right] - \dfrac{1}{a\cos\varphi}\dfrac{\partial}{\partial\varphi}\left[D\sin I\cos I \dfrac{\partial n_i}{\partial z}\cos\varphi\right] + $$ $$+\dfrac{\partial}{\partial\varphi}\left[\left(\dfrac{1}{a}D\cos^2 I \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}-D\sin I\cos I \left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z} + \dfrac{1}{H}\right)\right)n_i\cos\varphi\right] ,\eqno(33)$$ В результате после проведения первых двух шагов оказывается решено уравнение в двумерной $y-z$ постановке без учёта нейтрального и поперечного переноса: $$\dfrac{\partial n_i}{\partial t} = DYZ(n_i)+DTr(n_i)+[P-kn_i].$$ Наконец, на третьем шаге решается разностная задача, отвечающая оператору трёхмерного переноса: схема $$\dfrac{n^{j+1}-n^{j+2/3}}{\tau}=A_{tr} n^{j+2/3}\eqno(34)$$ для уравнения $$\dfrac{\partial n_i}{\partial t} = Tr(n_i)\eqno(35)$$ с начальным условием~---~решением со второго шага. 
 
-В данной работе реализован численный алгоритм для первого шага метода расщепления: из трёх введённых слагаемых остаётся только первое: $DTr(n_i)$, а также $P$ и $kn_i$. Несмотря на это, уже такая приближённая постановка имеет смысл в средних широтах и вблизи полюсов, при отсутствии возмущений~---~диффузионные и плазмохимические процессы в этих областях преобладают.
+В данной работе реализован численный алгоритм для первого шага метода расщепления. Несмотря на это, уже такая приближённая постановка имеет смысл в средних широтах и вблизи полюсов, при отсутствии возмущений~---~диффузионные и плазмохимические процессы в этих областях преобладают.
 
 Решение рассматриваемой приближённой задачи, отвечающей первому шагу метода расщепления, проводится в несколько этапов. На первом этапе считается, что диффузия происходит только вдоль оси $z$. При этом получаем следующую одномерную задачу для электронной концентрации $n$:
 
@@ -379,21 +370,21 @@ $$\begin{cases}
 \dfrac{\partial n}{\partial t} = P-kn+\dfrac{\partial}{\partial z}\left(D\dfrac{\partial n}{\partial z} + u n\right)\\
 n|_{z=100\mbox{ }km} = \dfrac{P(z=100\mbox{ }km)}{k(z=100\mbox{ }km)}\\
 \left(D\dfrac{\partial n}{\partial z} + u n\right)\bigg|_{z=500\mbox{ }km} = F=\const
-\end{cases} \eqno(3.1.1)
+\end{cases} \eqno(36)
 $$
 Здесь введено обозначение $u = D\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{m_ig}{2kT_p}\right)$~---~эффективная скорость.
 
 \bigskip
 
 Следующим этапом учтём широтную зависимость в уравнении. Простейший способ~---~замена коэффициента диффузии $D$ на $D\sin^2I$, где $I$~---~угол наклонения магнитных силовых линий, $I \approx \arctg(2\tg \varphi)$, $\varphi$~---~широта ($\varphi \in [-90^\circ; +90^\circ]$). При этом уравнение заменится на следующее:
-$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\left[\sin^2I\left(D\dfrac{\partial n}{\partial z} + \left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right) n\right)\right] \eqno(3.1.2)$$
+$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\left[\sin^2I\left(D\dfrac{\partial n}{\partial z} + \left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right) n\right)\right] \eqno(37)$$
 
 В рассматриваемой постановке широта $\varphi$~---~внешний задаваемый параметр. При фиксированном $\varphi$ уравнение, как и предыдущее, имеет стационарное решение.
 
-Особенность данной постановки состоит в том, что на экваторе при $\varphi=0$ уравнение вырождается: ненулевыми остаются только производная по времени в левой части и $P-kn$ в правой. Этот эффект не соответствует никакому физическому явлению, уравнение не описывает физические процессы на экваторе.
+Особенность данной постановки состоит в том, что на экваторе при $\varphi=0$ уравнение вырождается: ненулевыми остаются только производная по времени в левой части и $P-kn$ в правой. Этот эффект соответствует чистой фотохимической постановке, что по отношению к Земной ионосфере неверно~---~в области экватора для моделирования необходимо использовать полное трёхмерное уравнение.
 
-Более точный учёт широтной зависимости решения приводит к двумерной задаче, включающей диффузию вдоль оси $z$ в проекции (со смешанной производной):
-$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr]. \eqno(3.1.3)$$
+Более точный учёт широтной зависимости решения приводит к двумерной задаче, включающей диффузию вдоль оси $z$ в проекции (со смешанной производной), совпадающей с первым шагом расщепления:
+$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr]. \eqno(38)$$
 
 
 \subsection{Разностные схемы для одномерного уравнения}
@@ -401,14 +392,14 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 
 Перейдем к получению используемых разностных схем. Введём следующие обозначения для шагов по пространству: $$h_i = z_{i+1}-z_i;\mbox{ }h_{i+1/2}=z_{i+1/2}-z_{i-1/2}.$$
 В точке $z=z_i$ для слагаемого $\dfrac{\partial}{\partial z}D\dfrac{\partial n}{\partial z}$ в разностных схемах используется следующая аппроксимация, полученная двойным применением формулы центральной разности на отрезках $[z_{i-1};z_i]$ и $[z_i; z_{i+1}]$: 
-$$\dfrac{\partial}{\partial z}D\dfrac{\partial n}{\partial z} \approx \dfrac{1}{h_{i+1/2}}\left(\dfrac{D_{i+1/2}(n_{i+1}-n_i)}{h_i}-\dfrac{D_{i-1/2}(n_{i}-n_{i-1})}{h_{i-1}}\right).$$
-Для слагаемого $\dfrac{\partial}{\partial z}(nu)$, связанного с переносом, исследуем схему направленных разностей $$\dfrac{u_{i+1}n_{i+1}-u_{i}n_{i}}{h_i}, \eqno(3.3.1)$$ а также схему центральных разностей $$\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{h_{i-1}+h_{i+1}}. \eqno(3.3.2)$$
+$$\dfrac{\partial}{\partial z}D\dfrac{\partial n}{\partial z} \approx \dfrac{1}{h_{i+1/2}}\left(\dfrac{D_{i+1/2}(n_{i+1}-n_i)}{h_i}-\dfrac{D_{i-1/2}(n_{i}-n_{i-1})}{h_{i-1}}\right).\eqno(39)$$
+Для слагаемого $\dfrac{\partial}{\partial z}(nu)$, связанного с переносом, исследуем схему направленных разностей $$\dfrac{u_{i+1}n_{i+1}-u_{i}n_{i}}{h_i}, \eqno(40)$$ а также схему центральных разностей $$\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{h_{i-1}+h_{i+1}}. \eqno(41)$$
 
 Нижнее граничное условие (условие Дирихле) аппроксимируется точно, а на верхней границе условие постоянства потока может быть записано несколькими способами. Для данной одномерной задачи используем две различных аппроксимации этого условия:
 
 \begin{itemize}
-\item[•] В первом случае поток $\dfrac{\partial n}{\partial z}+\dfrac{u_N}{D_N}\cdot n_N=F$ аппроксимируется с помощью центральных разностей по пространству, что соответствует схеме $$n_N-n_{N-1}+u_N/D_N\cdot h_N\cdot n_N = F\cdot h_N\eqno(3.3.3)$$
-\item[•] Во втором случае для схемы центральных разностей запишем согласованную схему для верхнего граничного случая, получаемую с помощью интегрирования уравнения на $N$-ом шаге по пространству между двумя соседними полуцелыми узлами, а также учёта равенства потока на верхнем полуцелом узле заданной величине $F$: $$h_{N+1/2}\dfrac{n^{j+1}-n^j}{\tau}= F - D_{N-1/2}\dfrac{n_N-n_{N-1}}{h_{N-1}}-\dfrac{1}{2}(u_{N-1}n_{N-1}^{j+1}+u_{N}n_{N}^{j+1})\eqno(3.3.4)$$
+\item[•] В первом случае поток $\dfrac{\partial n}{\partial z}+\dfrac{u_N}{D_N}\cdot n_N=F$ аппроксимируется с помощью центральных разностей по пространству, что соответствует схеме $$n_N-n_{N-1}+u_N/D_N\cdot h_N\cdot n_N = F\cdot h_N\eqno(42)$$
+\item[•] Во втором случае для схемы центральных разностей запишем согласованную схему для верхнего граничного случая, получаемую с помощью интегрирования уравнения на $N$-ом шаге по пространству между двумя соседними полуцелыми узлами, а также учёта равенства потока на верхнем полуцелом узле заданной величине $F$: $$h_{N+1/2}\dfrac{n^{j+1}-n^j}{\tau}= F - D_{N-1/2}\dfrac{n_N-n_{N-1}}{h_{N-1}}-\dfrac{1}{2}(u_{N-1}n_{N-1}^{j+1}+u_{N}n_{N}^{j+1})\eqno(43)$$
 \end{itemize}
 
 Соответственно, в численных экспериментах протестированы три различные разностные схемы: 
@@ -418,25 +409,25 @@ $$\dfrac{\partial}{\partial z}D\dfrac{\partial n}{\partial z} \approx \dfrac{1}{
 \item[•] Наконец, схема $3$ имеет согласованные граничное условие и схему, записанные с помощью центральных разностей.
 \end{itemize}
 
-Для одномерного уравнения $(3.1.2)$ с учётом проекции на магнитную силовую линию (с помощью добавления множителя $\sin^2 I$) использованы те же разностные схемы, но с добавлением широты $\varphi$ в качестве внешнего параметра.
+Для одномерного уравнения $(37)$ с учётом проекции на магнитную силовую линию (с помощью добавления множителя $\sin^2 I$) использованы те же разностные схемы, но с добавлением широты $\varphi$ в качестве внешнего параметра.
 
 \subsection{Исследование разностных схем}
 \subsectionmark{Исследование разностных схем}
 
-Покажем, что в дискретном случае для рассматриваемых двух схем для одномерной постановки справедлив закон сохранения массы. Для схемы 1 (с аппроксимацией $\dfrac{\partial}{\partial z}(u\cdot n)$ с помощью направленной разности $(3.3.1)$, описанной в предыдущем разделе) запишем: $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{i+1/2}(n_{i+1}-n_i)-D_{i-1/2}(n_i-n_{i-1}))\dfrac{1}{h^2}+(u_{i+1}n_{i+1}-u_i n_i)\dfrac{1}{h}.$$
-Суммируя по всем узлам $i$, получим: $$\displaystyle\sum_{i=1}^{N} \dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{N+1/2}(n_{N+1}-n_{N})-D_{1/2}(n_1-n_0))\dfrac{1}{h^2}+(u_{N+1}n_{N+1}-u_1 n_1)\dfrac{1}{h}.$$
+Покажем, что в дискретном случае для рассматриваемых двух схем для одномерной постановки справедлив закон сохранения массы. Для схемы 1 (с аппроксимацией $\dfrac{\partial}{\partial z}(u\cdot n)$ с помощью направленной разности $(40)$, описанной в предыдущем разделе) запишем: $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{i+1/2}(n_{i+1}-n_i)-D_{i-1/2}(n_i-n_{i-1}))\dfrac{1}{h^2}+(u_{i+1}n_{i+1}-u_i n_i)\dfrac{1}{h}.$$
+Суммируя по всем узлам $i$, получим: $$\displaystyle\sum_{i=1}^{N} \dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{N+1/2}(n_{N+1}-n_{N})-D_{1/2}(n_1-n_0))\dfrac{1}{h^2}+(u_{N+1}n_{N+1}-u_1 n_1)\dfrac{1}{h}.\eqno(44)$$
 Для подходящих граничных условий, обнуляющих правую часть, после домножения на $\tau$, получим $\displaystyle\sum_{i=1}^{N} n_i^{j+1}=\displaystyle\sum_{i=1}^{N} n_i^j$, что и требовалось.
 
-Аналогично для схемы 2 (с аппроксимацией $\dfrac{\partial}{\partial z}(u\cdot n)$ с помощью центральной разности $(3.3.2)$) получаем $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{i+1/2}(n_{i+1}-n_i)-D_{i-1/2}(n_i-n_{i-1}))\dfrac{1}{h^2}+(u_{i+1}n_{i+1}-u_{i-1} n_{i-1})\dfrac{1}{h}\Rightarrow$$ $$\Rightarrow \displaystyle\sum_{i=1}^{N} \dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{N+1/2}(n_{N+1}-n_{N})-D_{1/2}(n_1-n_0))\dfrac{1}{h^2}+(u_{N+1}n_{N}-u_1 n_1)\dfrac{1}{h},$$ откуда при подходящих краевых условиях следует такой же результат.
+Аналогично для схемы 2 (с аппроксимацией $\dfrac{\partial}{\partial z}(u\cdot n)$ с помощью центральной разности $(41)$) получаем $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{i+1/2}(n_{i+1}-n_i)-D_{i-1/2}(n_i-n_{i-1}))\dfrac{1}{h^2}+(u_{i+1}n_{i+1}-u_{i-1} n_{i-1})\dfrac{1}{h}\Rightarrow$$ $$\Rightarrow \displaystyle\sum_{i=1}^{N} \dfrac{n_i^{j+1}-n_i^j}{\tau} = (D_{N+1/2}(n_{N+1}-n_{N})-D_{1/2}(n_1-n_0))\dfrac{1}{h^2}+(u_{N+1}n_{N}-u_1 n_1)\dfrac{1}{h},\eqno(45)$$ откуда при подходящих краевых условиях следует такой же результат.
 
 \bigskip
 
-Отметим также согласованность аппроксимаций уравнения и граничного условия в схемах 1 и 3. Обе схемы можно записать в консервативной форме $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = \dfrac{F_{i+1/2}-F_{i-1/2}}{h},$$ где для схемы 1 с направленной разностью поток $F$ равен $$F_{i+1/2} = \dfrac{D_{i+1/2}(n_{i+1}^{j+1}-n_i^{j+1})}{h}+u_{i+1}n_{i+1}^{j+1},$$ что согласовано с аппроксимацией верхнего граничного условия $(3.3.3)$: $$F = D_N\dfrac{n_N^{j+1}-n_{N-1}^{j+1}}{h}+u_Nn_N^{j+1}.$$
-Аналогично и для схемы 3 c центральной разностью: поток равен $$F_{i+1/2} = \dfrac{D_{i+1/2}(n_{i+1}^{j+1}-n_i^{j+1})}{h}+\dfrac{1}{2}(u_{i+1}n_{i+1}^{j+1}+u_in_i^{j+1}),$$ причем постановка верхнего граничного условия $(3.3.4)$ соответствует этой аппроксимации: $$\dfrac{n_N^{j+1}-n_N^{j}}{\tau}\cdot h = F - D_{N-1/2}\cdot\dfrac{n_N^{j+1}-n_{N-1}^{j+1}}{h}-\dfrac{1}{2}(u_{N-1}n_{N-1}^{j+1}+u_nn_n^{j+1}).$$
+Отметим также согласованность аппроксимаций уравнения и граничного условия в схемах 1 и 3. Обе схемы можно записать в консервативной форме $$\dfrac{n_i^{j+1}-n_i^j}{\tau} = \dfrac{F_{i+1/2}-F_{i-1/2}}{h},\eqno(46)$$ где для схемы 1 с направленной разностью поток $F$ равен $$F_{i+1/2} = \dfrac{D_{i+1/2}(n_{i+1}^{j+1}-n_i^{j+1})}{h}+u_{i+1}n_{i+1}^{j+1},\eqno(47)$$ что согласовано с аппроксимацией верхнего граничного условия $(42)$: $$F = D_N\dfrac{n_N^{j+1}-n_{N-1}^{j+1}}{h}+u_Nn_N^{j+1}.$$
+Аналогично и для схемы 3 c центральной разностью: поток равен $$F_{i+1/2} = \dfrac{D_{i+1/2}(n_{i+1}^{j+1}-n_i^{j+1})}{h}+\dfrac{1}{2}(u_{i+1}n_{i+1}^{j+1}+u_in_i^{j+1}),\eqno(48)$$ причем постановка верхнего граничного условия $(43)$ соответствует этой аппроксимации: $$\dfrac{n_N^{j+1}-n_N^{j}}{\tau}\cdot h = F - D_{N-1/2}\cdot\dfrac{n_N^{j+1}-n_{N-1}^{j+1}}{h}-\dfrac{1}{2}(u_{N-1}n_{N-1}^{j+1}+u_nn_n^{j+1}).$$
 
 \bigskip
 
-Докажем теперь монотонность по Годунову для первой схемы. Для монотонности необходимо и достаточно неотрицательности элементов матрицы $S$ системы $\vec{n}^{j+1}=S\vec{n}^j + \tau S\vec{P}$, эквивалентной нашей разностной схеме. Перепишем схему в виде $$\dfrac{\vec{n}^{j+1}-\vec{n}^j}{\tau}= \vec{P} - K\vec{n}^{j+1}+\dfrac{1}{h^2}A\vec{n}^{j+1}+\dfrac{1}{h}B\vec{n}^{j+1}.$$
+Докажем теперь монотонность по Годунову для первой схемы. Для монотонности необходимо и достаточно неотрицательности элементов матрицы $S$ системы $\vec{n}^{j+1}=S\vec{n}^j + \tau S\vec{P}$, эквивалентной нашей разностной схеме. Перепишем схему в виде $$\dfrac{\vec{n}^{j+1}-\vec{n}^j}{\tau}= \vec{P} - K\vec{n}^{j+1}+\dfrac{1}{h^2}A\vec{n}^{j+1}+\dfrac{1}{h}B\vec{n}^{j+1}.\eqno(49)$$
 
 Здесь $K = \diag(k_1,\dotsc, k_N)$.
 
@@ -448,7 +439,7 @@ D_{2-1/2}              & (-D_{2+1/2}-D_{2-1/2}) & D_{2+1/2} & 0  & \cdots & 0 \\
 \ddots & \ddots & \ddots & \ddots \\
 \cdots & D_{i-1/2} & (-D_{i+1/2}-D_{i-1/2}) & D_{i+1/2} &  \cdots &  \\
 \ddots & \ddots & \ddots & \ddots
-\end{smallmatrix}\right).$$
+\end{smallmatrix}\right).\eqno(50)$$
 
 $$B=\left(\begin{matrix}
 -u_1 &  u_2 & 0   & 0  & \cdots & 0 \\
@@ -458,35 +449,26 @@ $$B=\left(\begin{matrix}
 & & \ddots & \ddots & \ddots\\
 & & & & \ddots& u_N\\
 & & & & & -u_N
-\end{matrix}\right).$$
+\end{matrix}\right).\eqno(51)$$
 
 \smallskip
 
 Первая и последняя строки зависят от краевых условий.
 
-Заметим, что в матричной записи рассматриваемой неявной схемы $$Q\vec{n}^{j+1}=\vec{n}^j + \tau \vec{P}$$ матрица $Q$ трёхдиагональна, причем элементы на трёх её центральных диагоналях (по порядку их записи в строке) равны соответственно $$q_{i, i-1} = -\dfrac{\tau}{h^2}D_{i-1/2};$$ $$q_{i, i} = 1+\tau k_i + \dfrac{\tau}{h^2}D_{i+1/2}+\dfrac{\tau}{h^2}D_{i+1/2}+\dfrac{\tau}{h}u_i;$$ $$q_{i, i+1} = -\dfrac{\tau}{h^2}D_{i-1/2}-\dfrac{\tau}{h}u_{i+1}.$$
-Разность $q_{i,i}$ и модулей внедиагональных элементов равна $$q_{i, i} + q_{i, i-1} + q_{i, i+1} = 1+\tau\left(k_i+\dfrac{u_i-u_{i+1}}{h}\right),$$ при достаточно малых значениях $\tau$ эта величина строго положительна. 
+Заметим, что в матричной записи рассматриваемой неявной схемы $$Q\vec{n}^{j+1}=\vec{n}^j + \tau \vec{P}\eqno(52)$$ матрица $Q$ трёхдиагональна, причем элементы на трёх её центральных диагоналях (по порядку их записи в строке) равны соответственно $$q_{i, i-1} = -\dfrac{\tau}{h^2}D_{i-1/2};\eqno(53)$$ $$q_{i, i} = 1+\tau k_i + \dfrac{\tau}{h^2}D_{i+1/2}+\dfrac{\tau}{h^2}D_{i+1/2}+\dfrac{\tau}{h}u_i;\eqno(54)$$ $$q_{i, i+1} = -\dfrac{\tau}{h^2}D_{i-1/2}-\dfrac{\tau}{h}u_{i+1}.\eqno(55)$$
+Разность $q_{i,i}$ и модулей внедиагональных элементов равна $$q_{i, i} + q_{i, i-1} + q_{i, i+1} = 1+\tau\left(k_i+\dfrac{u_i-u_{i+1}}{h}\right),\eqno(56)$$ при достаточно малых значениях $\tau$ эта величина строго положительна. 
 
-Все диагональные элементы положительны, внедиагональные отрицательны и есть строгое диагональное преобладание, т.~е. по определению перед нами M-матрица. С учётом этого замечания монотонность схемы следует из леммы:
-
-\begin{Lemma} Пусть $A$~---~М-матрица. Тогда ее обратная матрица состоит из неотрицательных элементов.\end{Lemma}
-
-\begin{proof} Пусть $D$~---~диагональная матрица с диагональными элементами $A$. Тогда $A=D-B$, где в матрице $B$ на диагонали стоят нули, а вне~---~неотрицательные элементы.
-
-Возьмем обратную матрицу к $A$: $$A^{-1}=(D-B)^{-1}=(E-D^{-1}B)^{-1}D^{-1}.$$
-
-В матрице $D^{-1}B$ каждая строка $B$ домножилась на обратный элемент к диагональному в соответствующей строке $D$. Но сумма модулей элементов в строке $B$ строго меньше этого диагонального элемента, а значит, в матрице $D^{-1}B$ сумма модулей элементов в любой строке меньше единицы. Поэтому $||D^{-1}B||_\infty<1$, а значит, можно разложить $(E-D^{-1}B)^{-1}$ в сходящийся ряд Неймана: $$(E-D^{-1}B)^{-1} = E+D^{-1}B + (D^{-1}B)^2+(D^{-1}B)^3+\dots =\displaystyle\sum_{k=0}^\infty (D^{-1}B)^k.$$
-В записанном ряду каждая матрица имеет неотрицательные элементы, что и заканчивает доказательство. \end{proof}
+Все диагональные элементы положительны, внедиагональные отрицательны и есть строгое диагональное преобладание, т.~е. по определению перед нами M-матрица, а поэтому её обратная матрица состоит из неотрицательных элементов, что и требовалось.
 
 
 \subsection{Квазидвумерная постановка}
 \subsectionmark{Квазидвумерная постановка}
 
-Рассмотрим теперь разностные схемы для уравнения, описывающего диффузию вдоль оси $Oz$ в проекции с добавлением смешанной производной $(3.1.3)$:$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr].$$
+Рассмотрим теперь разностные схемы для уравнения, описывающего диффузию вдоль оси $Oz$ в проекции с добавлением смешанной производной $(38)$:$$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr].$$
 
-Заменим $u = \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}$. Для использования уже имеющегося программного кода в применении уже к данной двумерной задаче используем следующую разностную схему: для смешанной производной $\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}$ запишем $$\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}=\dfrac{\partial}{\partial z}\left(n\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}\right) = \dfrac{\partial}{\partial z}\left(n\dfrac{\partial \ln n}{\partial \varphi}\right).$$
+Заменим $u = \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}$. Для использования уже имеющегося программного кода в применении уже к данной двумерной задаче используем следующую разностную схему: для смешанной производной $\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}$ запишем $$\dfrac{\partial}{\partial z}\dfrac{\partial n}{\partial \varphi}=\dfrac{\partial}{\partial z}\left(n\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}\right) = \dfrac{\partial}{\partial z}\left(n\dfrac{\partial \ln n}{\partial \varphi}\right).\eqno(57)$$
 
-Введём обозначение $$u_\varphi=-\dfrac{1}{a}D\sin I \cos I\dfrac{\partial \ln n}{\partial \varphi}=-\dfrac{1}{a}D\sin I \cos I\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}.$$ Для рассматриваемого уравнения $u_\varphi$~---~это добавка к эффективной скорости, связанная со смешанной производной по $\varphi$.
+Введём обозначение $$u_\varphi=-\dfrac{1}{a}D\sin I \cos I\dfrac{\partial \ln n}{\partial \varphi}=-\dfrac{1}{a}D\sin I \cos I\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}.\eqno(58)$$ Для рассматриваемого уравнения $u_\varphi$~---~это добавка к эффективной скорости, связанная со смешанной производной по $\varphi$.
 
 Используем для численного решения нелинейную схему: будем вычислять решение, последовательно перемещаясь по временным слоям, причем $u_\varphi$ будем брать на основании данных с предыдущего временного слоя.
 
@@ -501,8 +483,8 @@ $$B=\left(\begin{matrix}
 
 При этом сама эффективная скорость может быть вычислена двумя способами: 
 \begin{itemize}
-\item[•] Первый способ~---~применение формулы центральной разности к производной по $\varphi$ для логарифма в формуле $u_\varphi$ $$u_\varphi\approx \dfrac{\ln n^j_i(\varphi+\Delta\varphi)-\ln n^j_i(\varphi-\Delta\varphi)}{2\Delta\varphi};$$ 
-\item[•] Второй способ~---~без привлечения логарифма использовать формулу $$u_\varphi \approx \dfrac{2}{n_i^j(\varphi+\Delta\varphi)+n_i^j(\varphi-\Delta\varphi)}\cdot\dfrac{n_i^j(\varphi+\Delta\varphi)-n_i^j(\varphi-\Delta\varphi)}{2\Delta\varphi}.$$
+\item[•] Первый способ~---~применение формулы центральной разности к производной по $\varphi$ для логарифма в формуле $u_\varphi$ $$u_\varphi\approx \dfrac{\ln n^j_i(\varphi+\Delta\varphi)-\ln n^j_i(\varphi-\Delta\varphi)}{2\Delta\varphi};\eqno(59)$$ 
+\item[•] Второй способ~---~без привлечения логарифма использовать формулу $$u_\varphi \approx \dfrac{2}{n_i^j(\varphi+\Delta\varphi)+n_i^j(\varphi-\Delta\varphi)}\cdot\dfrac{n_i^j(\varphi+\Delta\varphi)-n_i^j(\varphi-\Delta\varphi)}{2\Delta\varphi}.\eqno(60)$$
 \end{itemize}
 
 Численные эксперименты показали, что обе формулы для $u_\varphi$ дают один и тот же результат. Более того, на практике решение никогда не достигает чистого нуля, поэтому отдельные кусочные задания формул для $u_\varphi$ при нулевых значениях $n$ на предыдущем временном слое никак не отражаются на получаемом решении. Тем не менее, вторая формула более удобна для анализа асимптотического поведения $u_\varphi$ при приближении $n$ к нулю.
@@ -527,19 +509,20 @@ $$B=\left(\begin{matrix}
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.45]{1d_stationary_logscale_80}}
-\caption{Стационарные решения на $80$ расчётных узлах.}
+(а)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.45]{1d_stationary_logscale_400}}
-\caption{Стационарные решения на $400$ расчётных узлах.}
+(б)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.45]{1d_stationary_logscale_2000}}
-\caption{Стационарные решения на $2000$ расчётных узлах.}
+(в)
+\caption{Вертикальные профили дневных стационарных распределений электронной концентрации при (а) $80$, (б) $400$ и (в) $2000$ расчётных узлах (по вертикальной оси показана высота в км, по горизонтальной~---~электронная концентрация в см$^{-3}$ в логарифмическом масштабе).}
 \end{figure}
 
 \subsection{Чувствительности ко внешним параметрам уравнения}
@@ -547,7 +530,7 @@ $$B=\left(\begin{matrix}
 
 
 
-Полученное решение позволяет исследовать чувствительность к изменению различных входящих в уравнение внешних параметров: температурам, концентрациям нейтральных молекул, фотоионизации и рекомбинации. На следующих ниже графиках представлены результаты варьирования каждого из параметров в отдельности на $10\%$ и $20\%$ (в обе стороны). В каждом случае вычислено стационарное решение при изменённом параметре, на всех графиках средняя кривая отвечает невозмущенному уравнению.
+Полученное решение позволяет исследовать чувствительность к изменению внешних параметров: температурам, концентрациям нейтральных молекул, фотоионизации и рекомбинации. На следующих графиках представлены результаты варьирования каждого из параметров в отдельности на $10\%$ и $20\%$ (в обе стороны). В каждом случае вычислено стационарное решение при изменённом параметре.
 
 \medskip
 
@@ -555,40 +538,47 @@ $$B=\left(\begin{matrix}
 
 \medskip
 
-\begin{figure}
+\begin{figure}[H]
 \center{
 \includegraphics[scale=0.5]{Ti-sensitivity_log}}
-\caption{Чувствительность к изменению температуры ионов.}
+
+(а)
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \center{
 \includegraphics[scale=0.5]{Te-sensitivity_log}}
-\caption{Чувствительность к изменению температуры электронов.}
+
+(б)
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \center{
 \includegraphics[scale=0.5]{Tn-sensitivity_log}}
-\caption{Чувствительность к изменению температуры нейтральных молекул.}
+
+(в)
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \center{
 \includegraphics[scale=0.5]{nO-sensitivity_log}}
-\caption{Чувствительность к изменению концентрации атомарного кислорода.}
+
+(г)
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \center{
-\includegraphics[scale=0.5]{nO2-sensitivity_log}}
-\caption{Чувствительность к изменению концентрации молекулярного кислорода.}
+\includegraphics[scale=0.49]{nO2-sensitivity_log}}
+
+(д)
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 \center{
-\includegraphics[scale=0.5]{nN2-sensitivity_log}}
-\caption{Чувствительность к изменению концентрации азота.}
+\includegraphics[scale=0.49]{nN2-sensitivity_log}}
+
+(е)
+\caption{Чувствительности к изменению (а) температуры ионов, (б) температуры электронов, (в) температуры нейтралов, (г) концентрации $O$, (д) концентрации $O_2$, (е) концентрации $N_2$ (по горизонтальной оси~---~электронная концентрация в см$^{-3}$ в логарифмическом масштабе).}
 \end{figure}
 
 
@@ -618,78 +608,82 @@ $$B=\left(\begin{matrix}
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-88}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -88^\circ$.}
+
+(а)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-66}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -66^\circ$.}
+
+(б)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-50}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -50^\circ$.}
+
+(в)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-40}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -40^\circ$.}
+
+(г)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-30}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -30^\circ$.}
+
+(д)
 \end{figure}
 
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-16}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -16^\circ$.}
+
+(е)
 \end{figure}
 
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-2}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = -2^\circ$.}
+
+(ж)
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.55]{stationary_-0}}
-\caption{Стационарные решения для трёх различных постановок, $\varphi = 0^\circ$.}
+
+(з)
+\caption{Стационарные вертикальные профили электронной концентрации для трёх различных постановок при широте (a) $\varphi = -88^\circ$, (б) $\varphi = -66^\circ$, (в) $\varphi = -50^\circ$, (г) $\varphi = -40^\circ$, (д) $\varphi = -30^\circ$, (е) $\varphi = -16^\circ$, (ж) $\varphi = -2^\circ$, (з) $\varphi = 0^\circ$ (по вертикальной оси показана высота в км, по горизонтальной~---~электронная концентрация в см$^{-3}$ в логарифмическом масштабе). Синим цветом обозначены результаты расчета в одномерной постановке, зеленым~---~результаты, полученные из одномерной постановки с учётом широтной зависимости, фиолетовый цвет относится к квазидвумерной постановке.}
 \end{figure}
-
-Из представленных графиков видно, что решения тем больше отличаются, чем ближе рассматриваемая широта к экватору. Вблизи полюса все три стационарных решения практически совпадают со стационарным решением одномерной задачи без учёта широтной зависимости. Напротив, вблизи экватора различия весьма существенны: учёт широтной зависимости значительно увеличивает решение по сравнению со стационарным распределением электронной плотности на полюсе. Отметим также, что фактическое получаемое решение на экваторе (при $\varphi = 0^\circ$) в одномерной задаче с проекцией на ось $z$ не соответствует никакому физическому явлению и не описывает действительное распределение электронной плотности. Как уже было упомянуто, при нулевой широте в уравнении обнуляется вся диффузионная часть, а остаются лишь функции фотоионизации и рекомбинации $P$ и $k$, откуда в стационарном случае находим $n_e = \dfrac{P}{k}$, что соответствует экспоненциальному росту концентрации, как если бы единственными процессами в системе были фотохимические процессы.
-
+Из представленных графиков видно, что решения тем больше отличаются, чем ближе рассматриваемая широта к экватору. Вблизи полюса все три стационарных решения практически совпадают со стационарным решением одномерной задачи без учёта широтной зависимости. Напротив, вблизи экватора различия весьма существенны: учёт широтной зависимости значительно увеличивает решение по сравнению со стационарным распределением электронной плотности на полюсе. Как уже было упомянуто, при нулевой широте в одномерном уравнении с $z$-проекцией обнуляется вся диффузионная часть, а остаются лишь функции фотоионизации и рекомбинации $P$ и $k$, откуда в стационарном случае $n_e = \dfrac{P}{k}$.
 
 
 
-\subsection{Моделирование суточного хода в одномерной модели}
-\subsectionmark{Моделирование суточного хода в одномерной модели}
 
+\subsection{Моделирование суточного хода}
+\subsectionmark{Моделирование суточного хода}
 
-В ходе численного эксперимента по моделированию суточного хода в одномерной модели вычисляется стационарное решение одномерной задачи при дневном значении $P(z)$, а затем итерации по времени продолжаются с уже меняющимся $P(z, t)$ в соответствии со введённой формулой.
+Рассмотрим для начала численный эксперимент по моделированию суточного хода в одномерной модели. В ходе этого эксперимента вычисляется стационарное решение одномерной задачи при дневном значении $P(z)$, а затем итерации по времени продолжаются с уже меняющимся $P(z, t)$ в соответствии со введённой формулой $(13)$.
 
 Результаты представлены следующим графиком~---~трёхмерной поверхностью, построенной над плоскостью $(z, t)$.
 
 Видно, что за сутки решение восстанавливается до исходного дневного стационарного решения. Кроме того, после обнуления $P$ при зенитных углах больше $90^\circ$ начинается спад электронной концентрации, сопровождающийся изломом по времени (в соответствующий момент $P$, входящее в уравнение, также терпит излом).
 
-Отметим также, что при обнулении $P$ распределение электронной плотности падает почти до нуля (начиная со стационарного) приблизительно за $6$ часов.
+%Отметим также, что при обнулении $P$ распределение электронной плотности падает почти до нуля (начиная со стационарного) приблизительно за $6$ часов.
 
 \begin{figure}[H]
 \center{
-\includegraphics[scale=0.3]{diurnal_1d}}
-\caption{Суточный ход в одномерной модели с добавлением зависимости фотоионизации от зенитного угла.}
+\includegraphics[scale=0.27]{diurnal_1d}}
+\caption{Суточный ход в одномерной модели с добавлением зависимости фотоионизации от зенитного угла. По вертикальной оси показана электронная концентрация в см$^{-3}$, а по двум горизонтальным~---~высота в км и время в мин.}
 \end{figure}
-
-\subsection{Суточный ход с учётом широтной зависимости}
-\subsectionmark{Суточный ход с учётом широтной зависимости}
 
 
 Учтём теперь широтную зависимость в уравнении. В качестве первого шага продолжим использование одномерного уравнения, но уже в $z$-проекции, с заменой коэффициента диффузии $D$ на $D\sin^2I$.
@@ -698,28 +692,39 @@ $$B=\left(\begin{matrix}
 
 Результаты расчётов суточного хода в одномерной модели с учётом широтной зависимости при широтах $\varphi = -88^\circ, -66^\circ, -30^\circ, -1^\circ$ приведены на следующих графиках:
 
+\vspace{2cm} 
+
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_projection_-88}}
-\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -88^\circ$.}
+\vspace{2cm}
+
+(а) 
+%\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -88^\circ$.}
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_projection_-66}}
-\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -66^\circ$.}
+
+(б)
+%\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -66^\circ$.}
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_projection_-30}}
-\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -30^\circ$.}
+
+(в)
+%\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -30^\circ$.}
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_projection_-2}}
-\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -2^\circ$.}
+
+(г)
+\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию при широтах: (а) $\varphi = -88^\circ$, (б) $\varphi = -66^\circ$, (в) $\varphi = -30^\circ$, (г) $\varphi = -2^\circ$. Вертикальная ось отвечает значениям электронной концентрации в см$^{-3}$, по горизонтальным осям отложены высота в км и время в мин.}
 \end{figure}
 
 
@@ -732,13 +737,17 @@ $$B=\left(\begin{matrix}
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_2d_-30}}
-\caption{Суточный ход в квазидвумерной модели, $\varphi = -30^\circ$.}
+
+(а)
+%\caption{Суточный ход в квазидвумерной модели, $\varphi = -30^\circ$.}
 \end{figure}
 
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.3]{diurnal_2d_-2}}
-\caption{Суточный ход в одномерной модели с учётом проекции на магнитную силовую линию, $\varphi = -2^\circ$.}
+
+(б)
+\caption{Суточный ход в квазидвумерной модели при широтах (а) $\varphi = -30^\circ$, (б) $\varphi = -2^\circ$ (по вертикальной оси, как и на предыдущих графиках, соответствующих суточному ходу, отмечается электронная концентрация в см$^{-1}$, а по двум осям в горизонтальной плоскости, соответственно, высота в км и время в мин.)}
 \end{figure}
 
 \newpage
@@ -746,13 +755,47 @@ $$B=\left(\begin{matrix}
 \section{Заключение}
 \sectionmark{Заключение}
 
-Построена трёхмерная динамическая модель ионосферы, в которой с помощью трёхмерного уравнения неразрывности описывается эволюция электронной плотности в $F$-слое.
+В заключении подведем итоги проделанной работы
 
-К векторному уравнению после записи в сферических координатах (в приближении тонкого сферического слоя) применён метод расщепления по физическим процессам и геометрическим переменным. После этого исследовано и численно промоделировано приближенное уравнение, представляющее собой первый шаг метода расщепления. В качестве этапов построения решения поставленной приближённой задачи рассмотрены одномерные и двумерные постановки, учитывающие основные процессы~---~амбиполярную диффузию и процессы фотохимии. Полученные решения применимы при описании ионосферы в средних широтах и вблизи полюсов при отсутствии возмущений.
+\begin{itemize}
 
-Для рассмотренных одномерных и двумерной постановок исследованы свойства рассматриваемых дифференциальных уравнений: баланс массы, сильная жесткость решаемых задач, неотрицательность концентрации. Построены разностные схемы, учитывающие эти особенности, получены стационарные профили, промоделирован суточный ход. Для двумерного уравнения применена аппроксимация, позволяющая свести его к одномерному и использовать уже имеющийся программный код: смешанная производная при этом считается эффективной добавкой к скорости переноса.
+\item
+Построена трёхмерная динамическая модель ионосферы, в которой с помощью трёхмерного уравнения неразрывности с учетом явления амбиполярной диффузии описывается эволюция электронной плотности в $F$-слое. Для внешних параметров, входящих в полученное уравнение~---~концентраций и температур~---~использованы аналитические формулы.
 
-В результате численных экспериментов проведён сравнительный анализ высотных профилей электронной концентрации, полученных в различных постановках, при различных широтах. Исследована также и чувствительность дневного высотного профиля к изменению величин, входящих в уравнение в качестве внешних параметров.
+\item
+Получены выражения для дивергентных членов уравнения в сферической системе координат в приближении тонкого сферического слоя для дальнейшего численного моделирования.
+
+\item 
+Исследованы свойства дифференциальной задачи: неотрицательность решения, уравнение баланса и сильная жесткость, обусловленная резким изменением входящих в уравнение параметров.
+
+\item 
+В соответствии со свойствами дифференциальной задачи сформулированы основные требования к используемым в задаче разностным схемам: монотонность по Годунову, консервативность, а также использование неявных схем.
+
+\item 
+Применён метод расщепления по физическим процессам и геометрическим переменным. Расщепление произведено на три слагаемых: первое отвечает $z$-диффузии в проекции, ко второму отнесены оставшиеся части исходного оператора без учета нейтрального и поперечного переноса, наконец, на третьем шаге расщепления добавляется и перенос.
+
+\item 
+После этого исследовано и численно промоделировано приближенное уравнение, представляющее собой первый шаг метода расщепления. В качестве этапов построения решения поставленной приближённой задачи рассмотрены одномерные и двумерные постановки, учитывающие основные процессы~---~амбиполярную диффузию и процессы фотохимии. Полученные решения применимы при описании ионосферы в средних широтах и вблизи полюсов при отсутствии возмущений.
+
+\item 
+Проведено исследование записанных разностных схем на соответствие предъявленным требованиям.
+
+\item 
+Для двумерного уравнения применена аппроксимация, позволяющая свести его к одномерному и использовать уже имеющийся программный код: смешанная производная при этом считается эффективной добавкой к скорости переноса.
+
+\item
+В результате численных экспериментов проведён сравнительный анализ разностных схем для одномерного уравнения, исследована сходимость к стационарному дневному решению при измельчении шага сетки.
+
+\item 
+После получения стационарного дневного распределения электронной концентрации исследованы чувствительности этого распределения к изменению внешних параметров, входящих в уравнение: концентраций молекулярного и атомарного кислорода, молекулярного азота, а также температур электронов, ионов и нейтральных молекул.
+
+\item
+Промоделированы стационарные решения в различных постановках: одномерной без проекции, одномерной с $z$-проекцией без смешанной производной, а также двумерной с $z$-проекцией с добавлением смешанной производной, что отвечает полному первому шагу расщепления.
+
+\item
+С помощью изменения функции фотоионизации $P$ в соответствии с изменением зенитного угла получен суточный ход во всех трёх рассматриваемых постановках.
+
+\end{itemize} 
 
 Анализ полученных численных решений показывает необходимость решения полного трёхмерного уравнения, в частности~---~вблизи экватора, где магнитное поле близко к вертикальному.
 
@@ -763,15 +806,17 @@ $$B=\left(\begin{matrix}
 
 \begin{thebibliography}{00}
 \bibitem{KulyaminDyminkov1}
-\textit{Kulyamin, D. V. and V. P. Dymnikov.} A three-dimensional model of general thermospheric circulation. // Russian Journal of Numerical Analysis and Mathematical Modelling. 2013. 28(4): 353-380.
+\textit{Kulyamin D. V. and Dymnikov V. P.} A three-dimensional model of general thermospheric circulation. // Russian Journal of Numerical Analysis and Mathematical Modelling. --- 2013. --- 28(4). --- С. 353-380.
 \bibitem{KulyaminDymnikov2}
-\textit{Кулямин Д.~В., Дымников В.~П.}, Моделирование климата нижней ионосферы. // Известия Российской академии наук. Физика атмосферы и океана, 2015. Т. 51(3): С. 317–337.
+\textit{Кулямин Д.~В., Дымников В.~П.} Моделирование климата нижней ионосферы. // Известия Российской академии наук. Физика атмосферы и океана. --- 2015. --- Т. 51(3). --- С. 317–337.
 \bibitem{Schunk}
-\textit{Schunk, R.W. and A.F. Nagy}, IONOSPHERES Physics, Plasma Physics, and Chemistry. 2009, New York, United States: Cambridge University Press.
+\textit{Schunk R.W., Nagy A.F.} IONOSPHERES Physics, Plasma Physics, and Chemistry. --- New York, United States: Cambridge University Press, 2009. --- 628 p.
+\bibitem{Kholodov}
+\textit{Холодов А.~С., Холодов Я.~А.} О критериях монотонности разностных схем для уравнений гиперболического типа. // Журнал вычислительной математики и математической физики. --- 2006. --- Т. 46, № 9. --- C. 1560-1588.
+\bibitem{Fedorenko}
+\textit{Федоренко Р.~П.} Введение в вычислительную физику: Учебное пособие для вузов / Под ред. А.~И. Лобанова. --- 2-е изд., испр. и доп. --- Долгопрудный: Издательский Дом <<Интеллект>>, 2008. --- 504 c.
+\bibitem{Kalitkin}
+\textit{Калиткин Н.~Н.} Численные методы: учеб. пособие. --- 2-е изд., исправленное. --- СПб.: БХВ-Петербург, 2014. --- 592 с.
 \end{thebibliography}
 
-
 \end{document}
-
-
-
