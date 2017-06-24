@@ -31,10 +31,26 @@
 
 \def\L{\mathcal{L}}
 
+\section{Введение}
+\begin{frame}\frametitle{Введение}
+Основные задачи:
+\begin{itemize}
+\item[•] Построение динамической трёхмерной модели Земной ионосферы;
+\item[•] Согласование с уже разработанной моделью нейтральной термосферы ИВМ РАН.
+\end{itemize}
+
+Актуальность задачи обусловлена особой ролью состояния ионосферы в следующих отраслях:
+\begin{itemize}
+\item[•] Системы глобальной радиосвязи;
+\item[•] Спутниковые системы;
+\item[•] Космическая отрасль.
+\end{itemize}
+
+\end{frame}
+
 \section{Постановка задачи}
 \subsection{Уравнение неразрывности}
 \begin{frame}\frametitle{Постановка задачи}
-
 
 Используемые приближения:
 \begin{itemize}
@@ -45,13 +61,13 @@
 \end{itemize}
 
 Уравнение, описывающее эволюцию ионной концентрации: $$\dfrac{\partial n_i}{\partial t} = -div(n_i \vec{u}_\parallel)-div\left(n_i\dfrac{1}{B^2}[\vec{E}\times \vec{B}] \right)+$$ $$+div\left(D\left[\nabla_\parallel n_i +n_i\dfrac{1}{T_p}\nabla_\parallel T_p - \dfrac{n_i m_i}{2kT_p}\vec{g}_\parallel\right]\right)+[P-k_in_i]$$
-
 \end{frame}
 
 
 \subsection{Входящие в уравнение параметры}
 \begin{frame}\frametitle{Входящие в уравнение параметры}
 Для функций $P$, $k$, температур и концентраций $N_2$, $O_2$ и $O$ используются аналитические формулы: 
+
 \begin{itemize}
 \item[•] $T(z)=T_\infty - (T_\infty-T_0)\exp\left(-\dfrac{g}{RT_\infty}(z-z_0)\right),$ 
 
@@ -70,6 +86,7 @@ $T_{n\infty}=800$~К, $T_{i\infty}=950$~К, $T_{e\infty}=2200$~К.
 
 $k=1{,}2\cdot10^{-12}n_{N_2}(z)+2{,}1\cdot10^{-11}n_{O_2}(z)$
 \end{itemize}
+
 \end{frame}
 
 
@@ -109,7 +126,6 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\left[D\sin^2
 
 Более точный учёт широтной зависимости: $z$-диффузия в проекции (со смешанной производной):
 $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^2 I\left(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\right)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial\varphi}n\right)\biggr]$$ 
-
 \end{frame}
 
 
@@ -126,7 +142,6 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 \end{itemize}
 
 Для уравнения со смешанной производной вводится $$u_\varphi=-\dfrac{1}{a}D\sin I \cos I\dfrac{1}{n}\dfrac{\partial n}{\partial \varphi}$$~---~нелинейная добавка добавка к эффективной скорости.
-
 \end{frame}
 
 
@@ -139,12 +154,9 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 \includegraphics[scale=0.33]{1d_stationary_logscale_80}}
 \caption{Стационарные решения на $80$ расчётных узлах.}
 \end{figure}
-
-
 \end{frame}
 
 \begin{frame}\frametitle{Воспроизведение дневного вертикального профиля электронной концентрации}
-
 \begin{figure}[H]
 \center{
 \includegraphics[scale=0.33]{1d_stationary_logscale_2000}}
@@ -163,9 +175,15 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 \includegraphics[scale=0.3]{Tn-sensitivity_log}}
 \caption{Чувствительность к изменению температуры нейтральных молекул.}
 \end{figure}
-
 \end{frame}
 
+\begin{frame}\frametitle{Чувствительность к изменению внешних параметров}
+\begin{figure}
+\center{
+\includegraphics[scale=0.3]{nO-sensitivity_log}}
+\caption{Чувствительность к изменению концентрации атомарного кислорода.}
+\end{figure}
+\end{frame}
 
 \subsection{Учёт широтной зависимости}
 \begin{frame}\frametitle{Учёт широтной зависимости}
@@ -193,6 +211,16 @@ $$\dfrac{\partial n}{\partial t} =P-kn+\dfrac{\partial}{\partial z}\biggl[D\sin^
 \begin{frame}\frametitle{Моделирование суточного хода}
 
 Вычисляется стационарное решение одномерной задачи при дневном значении $P(z)$, затем итерации по времени продолжаются с меняющимся $P(z, t)$.
+
+\begin{figure}[H]
+\center{
+\includegraphics[scale=0.2]{diurnal_projection_-66}}
+\caption{Суточный ход в одномерной модели с учётом проекции, $\varphi = -66^\circ$.}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}\frametitle{Моделирование суточного хода}
 
 \begin{figure}[H]
 \center{
