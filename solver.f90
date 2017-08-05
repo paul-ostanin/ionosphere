@@ -24,7 +24,7 @@ pi = 3.141592653589793238462643
 nonlinear_scheme_type = 4
 
 !number of nodes in phi
-Nphi = 180
+Nphi = 720
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -375,7 +375,7 @@ end if
 !	end if
 
 !block to output the stationary solution
-	if (j*tau .eq. 86400 ) then
+	if (j*tau .eq. 86400*2 ) then
 		do i = 1, z.n
 			write(11,*) q*(1E+0)*180/Nphi, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
 		end do
