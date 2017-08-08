@@ -83,7 +83,7 @@ $$\dfrac{\partial n}{\partial t} = \dfrac{1}{a\cos\varphi} \dfrac{\partial }{\pa
 
 С помощью этих функций задачу можно переписать в следующем виде: 
 $$\dfrac{\partial n}{\partial t} = \dfrac{1}{\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a^2}A(\varphi)\dfrac{\partial n}{\partial \varphi}-\dfrac{D}{2a}B(\varphi) \dfrac{\partial n}{\partial z} - \dfrac{u}{2a}B(\varphi) n \right]$$
-Исследуем асимптотическое поведение слагаемых вблизи экватора ($\varphi = \dfrac{\pi}{2}$).
+Исследуем асимптотическое поведение слагаемых вблизи полюсов (при $\varphi = \pm\dfrac{\pi}{2}$).
 
 Графики функций $A$ и $B$ приведены ниже: 
 
@@ -94,6 +94,10 @@ $$\dfrac{\partial n}{\partial t} = \dfrac{1}{\cos\varphi} \dfrac{\partial }{\par
 Обе функции в точке $\varphi = \dfrac{\pi}{2}$ касаются оси абсцисс~---~имеют нули по крайней мере второго порядка, поэтому особенность в уравнении устранимая.
 
 Имеют место следующие разложения при $\varphi\rightarrow\dfrac{\pi}{2}$: $$A(\varphi)=-\dfrac{1}{4}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^3-\dfrac{1}{16}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = 1\cdot\left(\varphi-\dfrac{\pi}{2}\right)^2-\dfrac{1}{12}\cdot \left(\varphi-\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^5\right)$$
+
+Соответственно, при $x\rightarrow-\dfrac{\pi}{2}$: $$A(\varphi)=\dfrac{1}{4}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^3+\dfrac{1}{16}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = -1\cdot\left(\varphi+\dfrac{\pi}{2}\right)^2+\dfrac{1}{12}\cdot \left(\varphi+\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^5\right)$$
+
+
 
 Обозначим $\varphi-\dfrac{\pi}{2} = x$. При $x\rightarrow 0$ заметим, что: $$\dfrac{1}{\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(A(\varphi)\dfrac{\partial n}{\partial\varphi}\right) = \dfrac{1}{\cos\varphi}\dfrac{\partial A}{\partial\varphi}\dfrac{\partial n}{\partial\varphi} + \dfrac{A}{\cos\varphi}\dfrac{\partial^2 n}{\partial\varphi^2} \approx \dfrac{1}{x-\frac{x^3}{6}}\left(-\dfrac14\cdot 2x^2\right)\dfrac{\partial n}{\partial\varphi} - \dfrac14\dfrac{x^2}{1-\frac{x^2}{6}}\dfrac{\partial^2 n}{\partial\varphi^2}\approx$$ $$\approx -\dfrac12x\dfrac{\partial n}{\partial\varphi}-\dfrac14x^2\dfrac{\partial^2 n}{\partial\varphi^2}=-\dfrac12\left(\varphi-\dfrac{\pi}{2}\right)\dfrac{\partial n}{\partial\varphi}-\dfrac14\left(\varphi-\dfrac{\pi}{2}\right)^2\dfrac{\partial^2 n}{\partial\varphi^2}$$
 
@@ -108,9 +112,9 @@ $$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{
 
 Здесь введено обозначение $u_z = \dfrac{1}{n}\dfrac{\partial n}{\partial z} = \dfrac{\partial \ln n}{\partial z}$. При этом значения $n$ для вычисления $u_z$ берутся с предыдущего временного шага.
 
-При $j = 1 (\varphi = 0^\circ)$ и $j = N_\varphi (\varphi = 180^\circ)$ используем граничные условия Дирихле~---~равенство распределения на полюсах дневному распределению одномерной задаче в $z$-проекции без учета широтной зависимости.
+При $j = 1$ $(\varphi = -90^\circ)$ и $j = N_\varphi$ $(\varphi = +90^\circ)$ используем граничные условия Дирихле~---~равенство распределения на полюсах дневному распределению одномерной задаче в $z$-проекции без учета широтной зависимости.
 
-При $i = 1 (z = 100\mbox{ } \mbox{км})$ также ставим граничное условие Дирихле~---~на нижней границе по $z$ решение совпадает с $P/k$, полученным на первом шаге.
+При $i = 1$ $(z = 100\mbox{ } \mbox{км})$ также ставим граничное условие Дирихле~---~на нижней границе по $z$ решение совпадает с $P/k$, полученным на первом шаге.
 
 На верхней границе требуется граничное условие для определения $u_z$.
 
