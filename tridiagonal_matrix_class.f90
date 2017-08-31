@@ -43,7 +43,7 @@ subroutine matrix_print(this)
 	integer(4) j
 	write(*, '("Printing matrix:")')
 	do j = 1, this.n
-		write(*, '(150(f15.2))') this.d(j, :)
+		write(*, '(150(e15.2))') this.d(j, :)
 	end do
 end subroutine matrix_print
 

@@ -1,0 +1,16 @@
+set terminal latex
+set output 'B.tex'
+
+set style line 2 lt 2 lw 3 lc rgb '#aa0000' pt -1  
+
+set xzeroaxis lt -1
+set yzeroaxis lt -1
+
+set xrange [-pi : pi]
+
+set xtics axis
+set ytics axis
+
+
+plot cos(x)*sin(2*atan(2*tan(x)))
+

@@ -7,7 +7,7 @@ module vector
 		procedure::init => vec_init
 		procedure::destroy => vec_destroy
 		procedure::print => vec_print
-		procedure::print_old => vec_print_old
+		procedure::print_stdout => vec_print_old
 		procedure::print_column => vec_print_column
 		procedure::print_column_with_z => vec_print_column_with_z
 		procedure::gen => generate_vector
@@ -37,7 +37,7 @@ subroutine vec_init (this, n)
 	integer(4) n
 	this.n = n
 	allocate (this.d(n))
-	this.d = 0
+	this.d = 0.0_8
 end subroutine vec_init
 
 subroutine vec_print_old(this)
@@ -124,7 +124,7 @@ end function vec_mul_num
 
 !Vector contains a set of values f(z1), f(z2),...,f(zn).
 !Altitudes z1, z2,...,zn are taken from vector z
-!This function returns a value at z = z0 by calculating a linear interpolation f(z0) = f(z_{i-1}) + (z_i-z0)/(z_i-z_{i-1})(f(z_i)-f(z_{i-1}) 
+!This function returns a value at z=z0 by calculating a linear interpolation f(z0) = f(z_{i-1}) + (z_i-z0)/(z_i-z_{i-1})(f(z_i)-f(z_{i-1}) 
 function interpolation(this, z, z0) result (res)
    class(vect), intent(in) :: this
    type (vect), intent(in) :: z

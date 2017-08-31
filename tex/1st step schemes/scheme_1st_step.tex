@@ -73,41 +73,52 @@ linkbordercolor=new,
 
 \begin{document}
 
-На первом шаге расщепления решается уравнение $$\dfrac{\partial n_i}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n_i}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n_i\bigg)-$$ $$-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n_i}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n_i\right)\bigg]+[P-kn_i]$$
+На первом шаге расщепления решается уравнение $$\dfrac{\partial n_i}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n_i}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n_i\bigg)-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n_i}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n_i\right)\bigg]+[P-kn_i]$$
 
-Рассмотрим следующие варианты разностных схем для этого уравнения. Во всех случаях используем для диффузионного слагаемого схему, получаемую применением формулы центральной разности дважды, а для потокового слагаемого $\dfrac{\partial}{\partial z} (un)$ центральную разность. Различия рассматриваемых схем~---~в аппроксимации слагаемого со смешанной производной. В схемах $1, 3, 4$ вычисление $u_\varphi$ ведётся по формуле с логарифмом $$u_\varphi = \dfrac{\partial \ln n}{\partial\varphi}\approx \dfrac{\ln\frac{n_{i, j+1}}{n_{i, j-1}}}{2\Delta\varphi}.$$ В схеме $2$ для сравнения эта аппроксимация заменена на $$u_\varphi \approx \dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}+n_{i, j-1}}{2\Delta\varphi}.$$ Отметим также следующее: эксперимент показал что в процессе вычисления величина $n$ никогда не достигает в точности нулевого значения, поэтому вопрос об асимптотической формуле для $u_\varphi$ в нулях $n$ не ставится.
+Рассмотрим следующие варианты разностных схем для этого уравнения. Во всех случаях используем для диффузионного слагаемого схему, получаемую применением формулы центральной разности дважды, а для потокового слагаемого $\dfrac{\partial}{\partial z} (un)$ центральную разность. Различия рассматриваемых схем~---~в аппроксимации слагаемого со смешанной производной. В схемах вычисление $u_\varphi$ ведётся либо по формуле с логарифмом $$u_\varphi = \dfrac{\partial \ln n}{\partial\varphi}\approx \dfrac{\ln\frac{n_{i, j+1}}{n_{i, j-1}}}{2\Delta\varphi},$$ либо с помощью дроби: $$u_\varphi \approx \dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}+n_{i, j-1}}{2\Delta\varphi}.$$ Отметим также следующее: эксперимент показал что в процессе вычисления величина $n$ никогда не достигает в точности нулевого значения, поэтому вопрос об асимптотической формуле для $u_\varphi$ в нулях $n$ не ставится. Тем не менее, в случаях возникновения осцилляций в процессе вычисления численные значения $n$ иногда меняют знак. Ввиду этого обстоятельства формула для аппроксимации $u_\varphi$ с помощью дроби представляется более удобной~---~она позволяет исследовать и такие схемы.
 
 \medskip
 
 {\bf 1.} Схема с центральными разностями:используем для смешанной производной центральную разность в уравнении и в граничном условии. В результате получим стационарное решение, в котором, тем не менее, имеются сильные осцилляции вдоль изменения широты. Период осцилляции соответствует мелкости шага сетки (при дроблении сетки частота осцилляции увеличивается).
 
-Схема: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h}+\dfrac{(u_{i+1}+u_{\varphi(i+1)})n_{i+1}-(u_{i-1}+u_{\varphi(i-1)})n_{i-1}}{2h}$$
+Схема: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2}+\dfrac{(u_{i+1}+u_{\varphi(i+1)})n_{i+1}-(u_{i-1}+u_{\varphi(i-1)})n_{i-1}}{2h}$$
 
-Верхнее граничное условие: $$D_{N+1/2}\dfrac{n_{N+1}-n_{N}}{h}+\dfrac{u_{N+1}n_{N+1}+u_{N}n_{N}}{2h}+\dfrac{u_{\varphi(N+1)}n_{N+1}+u_{\varphi(N)}n_{N}}{2h} = F_{ub} = 0$$
+Верхнее граничное условие: $$D_{N+1/2}\dfrac{n_{N+1}-n_{N}}{h^2}+\dfrac{u_{N+1}n_{N+1}+u_{N}n_{N}}{2h}+\dfrac{u_{\varphi(N+1)}n_{N+1}+u_{\varphi(N)}n_{N}}{2h} = \dfrac{F_{ub}}{h} = 0$$
 
 \medskip
 
-{\bf 2.} Единственное отличие этой схемы от схемы $1$~---~в способе аппроксимации и вычисления самой величины $u_\varphi$: используется формула без логарифмов $u_\varphi \approx \dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}+n_{i, j-1}}{2\Delta\varphi}$. Эксперименты показали, что результаты вычислений слабо зависят от способа этой аппроксимации. Далее везде применяется формула с логарифмом. Расчеты также показали наличие сильных биений в данной схеме.
+{\bf 2.} Единственное отличие этой схемы от схемы $1$~---~в способе аппроксимации и вычисления самой величины $u_\varphi$: используется формула без логарифмов $u_\varphi \approx \dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}+n_{i, j-1}}{2\Delta\varphi}$. Эксперименты показали, что результаты вычислений слабо зависят от способа этой аппроксимации. Далее применяется формула с дробью, поскольку при возникновении нефизических численных отрицательных значений $n$ логарифм вычислить невозможно, а дробь при этом определена. Расчеты показали наличие сильных биений и в данной схеме.
 
 \medskip
 
 {\bf 3.} Запишем несогласованную схему: в уравнении используем для смешанной производной направленную разность, а в граничном условии~---~соответствующее условие для центральной разности. Это внесёт дополнительную численную диффузию, в результате чего осцилляции прекратятся.
 
-Схема: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h}+$$ $$+\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{2h} + $$ $$+\dfrac{|u_\varphi|+u_\varphi}{2}\cdot\dfrac{n_{i+1}-n_i}{h}+\dfrac{|u_\varphi|-u_\varphi}{2}\cdot\dfrac{n_i-n_{i-1}}{h}$$
+В этой схеме в направленной разности $u_\varphi$ везде берется в среднем узле $i$.
 
-Верхнее граничное условие: $$D_{N+1/2}\dfrac{n_{N+1}-n_{N}}{h}+\dfrac{u_{N+1}n_{N+1}+u_{N}n_{N}}{2h}+\dfrac{u_{\varphi(N+1)}n_{N+1}+u_{\varphi(N)}n_{N}}{2h} = F_{ub} = 0$$
+Схема: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2}+$$ $$+\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{2h} + $$ $$+\dfrac{|u_{\varphi(i)}|+u_{\varphi(i)}}{2}\cdot\dfrac{n_{i+1}-n_i}{h}+\dfrac{|u_{\varphi(i)}|-u_{\varphi(i)}}{2}\cdot\dfrac{n_i-n_{i-1}}{h}$$
+
+Верхнее граничное условие: $$D_{N+1/2}\dfrac{n_{N+1}-n_{N}}{h^2}+\dfrac{u_{N+1}n_{N+1}+u_{N}n_{N}}{2h}+\dfrac{u_{\varphi(N+1)}n_{N+1}+u_{\varphi(N)}n_{N}}{2h} = \dfrac{F_{ub}}{h} = 0$$
 
 \medskip
 
-{\bf 4.} Наконец, используем формулу центральной разности и в уравнении, и в граничном условии. Для выяснения корректной согласованной (консервативной) аппроксимации граничного условия исследуем функцию потока в схеме: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h}+$$ $$+\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{2h} + $$ $$+\dfrac{|u_\varphi|+u_\varphi}{2}\cdot\dfrac{n_{i+1}-n_i}{h}+\dfrac{|u_\varphi|-u_\varphi}{2}\cdot\dfrac{n_i-n_{i-1}}{h}$$
+{\bf 4.} Наконец, используем формулу центральной разности и в уравнении, и в граничном условии. Выясним также аппроксимацию верхнего граничного условия в такой схеме: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2}+$$ $$+\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{2h} + $$ $$+\dfrac{|u_{\varphi(i)}|+u_{\varphi(i)}}{2}\cdot\dfrac{n_{i+1}-n_i}{h}+\dfrac{|u_{\varphi(i)}|-u_{\varphi(i)}}{2}\cdot\dfrac{n_i-n_{i-1}}{h}$$
 
-Перепишем в консервативной форме, явно выделив функцию потока:
+Рассматриваемая схема неконсервативна. Для аппроксимации верхнего граничного условия выделим подобие функции потока в схеме:
 
-$$\left(\dfrac{\partial n}{\partial t}\right)_i = q_{i+1/2}-q_{i-1/2} \Leftrightarrow $$ $$\Leftrightarrow \left(\dfrac{\partial n}{\partial t}\right)_i = \left(D_{i+1/2}\dfrac{n_{i+1}-n_i}{h} + \dfrac{u_{i+1}n_{i+1}+u_in_i}{2h}+\dfrac{|u_\varphi|}{2}\dfrac{n_{i+1}+n_{i}}{h}+\dfrac{u_\varphi}{2}\dfrac{n_{i+1}-n_i}{h}\right) - $$ $$ - \left(D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h} + \dfrac{u_{i}n_{i}+u_{i-1}n_{i-1}}{2h}+\dfrac{|u_\varphi|}{2}\dfrac{n_{i}+n_{i-1}}{h}+\dfrac{u_\varphi}{2}\dfrac{n_{i}-n_{i-1}}{h}\right)$$
+$$\left(\dfrac{\partial n}{\partial t}\right)_i = \left(D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} + \dfrac{u_{i+1}n_{i+1}+u_in_i}{2h}+\dfrac{|u_{\varphi(i)}|}{2}\dfrac{n_{i+1}+n_{i}}{h}+\dfrac{u_{\varphi(i)}}{2}\dfrac{n_{i+1}-n_i}{h}\right) - $$ $$ - \left(D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2} + \dfrac{u_{i}n_{i}+u_{i-1}n_{i-1}}{2h}+\dfrac{|u_{\varphi(i)}|}{2}\dfrac{n_{i}+n_{i-1}}{h}+\dfrac{u_{\varphi(i)}}{2}\dfrac{n_{i}-n_{i-1}}{h}\right)$$
 
-Теперь аппроксимируем граничное условие следующим образом: $$D_{N+1/2}\dfrac{n_{N+1}-n_N}{h}+\dfrac{u_{N+1}n_{N+1}+u_Nn_N}{2h}+\dfrac{|u_\varphi|}{2}\dfrac{n_{N+1}+n_{N}}{h}+\dfrac{u_\varphi}{2}\dfrac{n_{N+1}-n_N}{h} = F_{ub} = 0$$
+Теперь аппроксимируем граничное условие следующим образом: $$D_{N+1/2}\dfrac{n_{N+1}-n_N}{h^2}+\dfrac{u_{N+1}n_{N+1}+u_Nn_N}{2h}+\dfrac{|u_{\varphi(N)}|}{2}\dfrac{n_{N+1}+n_{N}}{h}+\dfrac{u_{\varphi(N)}}{2}\dfrac{n_{N+1}-n_N}{h} = \dfrac{F_{ub}}{h} = 0$$
+
+{\bf 5.} Подкорректируем схему из предыдущего пункта: будем брать перед направленной разностью $\dfrac{n_{i+1}-n_i}{h}$ скорость $u_\varphi$ в полуцелом узле $i+1/2$: $$\left(\dfrac{\partial n}{\partial t}\right)_i = D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} - D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2}+$$ $$+\dfrac{u_{i+1}n_{i+1}-u_{i-1}n_{i-1}}{2h} + $$ $$+\dfrac{|u_{\varphi(i+1/2)}|+u_{\varphi(i+1/2)}}{2}\cdot\dfrac{n_{i+1}-n_i}{h}+\dfrac{|u_{\varphi(i-1/2)}|-u_{\varphi(i-1/2)}}{2}\cdot\dfrac{n_i-n_{i-1}}{h}$$
+
+Такая схема также неконсервативна. Граничное условие оставим из схемы $4$.
 
 
+{\bf 6.} Используем схему КИР для консервативной аппроксимации. Схему запишем исходя из аппроксимации потока для слагаемого $\dfrac{\partial}{\partial z}\left(u_\varphi n\right)$ вида $$\dfrac{1}{2}(u_{\varphi(i)}n_i+u_{\varphi(i+1)}n_{i+1})-\dfrac{1}{2}|u_{\varphi(i+1/2)}|(n_i-n_{i+1}).$$
+
+Схема имеет вид: $$\left(\dfrac{\partial n}{\partial t}\right)_i = \left(D_{i+1/2}\dfrac{n_{i+1}-n_i}{h^2} + \dfrac{u_{i+1}n_{i+1}+u_in_i}{2h}+\dfrac{1}{2h}(u_{\varphi(i+1)}n_{i+1}+u_{\varphi(i)}n_i)-\dfrac{1}{2}|u_{\varphi(i+1/2)}|\dfrac{n_i-n_{i+1}}{h}\right) - $$ $$ - \left(D_{i-1/2}\dfrac{n_{i}-n_{i-1}}{h^2} + \dfrac{u_{i}n_{i}+u_{i-1}n_{i-1}}{2h}+\dfrac{1}{2h}(u_{\varphi(i)}n_{i}+u_{\varphi(i-1)}n_{i-1})-\dfrac{1}{2}|u_{\varphi(i-1/2)}|\dfrac{n_{i-1}-n_{i}}{h}\right)$$
+
+Верхнее граничное условие: $$D_{N+1/2}\dfrac{n_{N+1}-n_{N}}{h^2}+\dfrac{u_{N+1}n_{N+1}+u_{N}n_{N}}{2h}+\dfrac{1}{2h}(u_{\varphi(N+1)}n_{N+1}+u_{\varphi(N)}n_{N})-\dfrac{1}{2h}|u_{\varphi(N+1/2)}|(n_{N}-n_{N+1}) = \dfrac{F_{ub}}{h} = 0$$
 
 \end{document}
 
