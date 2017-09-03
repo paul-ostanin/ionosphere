@@ -6,13 +6,17 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) A, S
-type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, n_new_z(1441), n_old_z(1441)
-integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi
-real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4
+type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, njold, njnew, delta, D, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, nnew(721), nold(721)
+integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi
+real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_N, u_phi_Nm1, u_phi_mh, u_phi_ph, u_phi_p1, u_phi_m1, u_phi_Np1
 
 !opening files for writing the output
 open(unit=10, name='res.txt')
-open(unit=11, name='res_gnp.txt')
+open(unit=105, name='new_flux_scheme_Nphi=180_tau=1_day05.txt')
+open(unit=11, name='new_flux_scheme_Nphi=180_tau=1_day1.txt')
+open(unit=12, name='new_flux_scheme_Nphi=180_tau=1_day2.txt')
+open(unit=15, name='new_flux_scheme_Nphi=180_tau=1_day5.txt')
+
 
 pi = 3.141592653589793238462643
 
@@ -21,14 +25,12 @@ pi = 3.141592653589793238462643
 !If n_s_t = 2, u_phi = (n(phi+dphi)-n(phi-dphi))/(n(phi+dphi)+n(phi-dphi)) * 1/dphi
 !If n_s_t = 3, u_phi 1/n d(ln n)/dphi and the directed difference scheme is used in the equation approximation
 !If n_s_t = 4, u_phi = 1/n d(ln n)/dphi, bnd_cond and equation are approximated with directed difference
-!If n_s_t = 5, then u_{i+-1/2} is used in approximating the directed difference
-!If n_s_t = 6, KIR scheme is used
-nonlinear_scheme_type = 5
+nonlinear_scheme_type = 7
 
 !number of nodes in phi
 Nphi = 181
 !latitude
-dphi = pi / (Nphi - 1)
+dphi = pi / (Nphi-1)
 !angle velocity of the Earth 
 omega = 2*pi/24/60/60
 !magnetic inclination sin I
@@ -39,7 +41,7 @@ R = 637100000
 
 
 !Time step (in seconds) 5 min
-tau = 100
+tau = 1
 
 !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
 call z.init(81)
@@ -69,7 +71,6 @@ do i = 1, z.n - 2
 end do
 	hmid.d(z.n - 1) = hmid.d(z.n - 2)
 
-
 call Ti.init(z.n)
 call Tn.init(z.n)
 call Te.init(z.n)
@@ -88,30 +89,11 @@ do i = 1, z.n
         Tp.d(i) = 0.5 * (Te.d(i) + Ti.d(i))
 end do
 
-!print *, "Temperatures (in K):"
-!print *
-
-!print *, "Printing T_i:"
-!call Ti.print()
-!print *, "Printing T_n:"
-!call Tn.print()
-!print *, "Printing T_e:"
-!call Te.print()
-!print *, "Printing T_r:"
-!call Tr.print()
-!print *, "Printing T_p:"
-!call Tp.print()
-
-
 !dT/dz = s(T_\infty - T_0)exp(-s(z-z0)) = (T_\infty - T)*s - for Te, Tn, Ti. This derivative is in [K/cm].
 call gradTp.init(z.n)
 do i = 1, z.n
 	gradTp.d(i) = 0.5 * ((Te0 - Te.d(i)) * 9.8 / (287 * Te0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
 end do
-
-!print *
-!print *, "Printing dTp/dz (in K/cm) :"
-!call gradTp.print_long_frac()
 
 call nO.init(z.n)
 call nO2.init(z.n)
@@ -122,17 +104,6 @@ do i = 1, z.n
 	nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
 	nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
 end do
-
-!print *
-!print *, "Concentrations (in cm^-3):"
-!print *
-
-!print *, "Printing n_O:"
-!call nO.print()
-!print *, "Printing n_O2:"
-!call nO2.print() 
-!print *, "Printing n_N2:"
-!call nN2.print()
 
 !P = P_0 exp(tau_0(z)*(1-sec chi))
 !tau_0 = sum_{N2, O2, O} sigma_i R_0*T_n/(M_i g) n_i(z)
@@ -148,23 +119,12 @@ do i = 1, z.n
 		     sigma_O  * (8.31 * 100 * Tn.d(i))/(16E-3 * 9.8) * nO.d(i)
 end do
 
-!print *, "Printing tau0:"
-!call tau0.print_column(10)
-
 call p.init(z.n)
 call k.init(z.n)
 do i = 1, z.n
 	p.d(i) = 4E-7 * nO.d(i)
 	k.d(i) = 1.2E-12 * nN2.d(i) + 2.1E-11 * nO2.d(i)
 end do
-
-!print *
-!print *, "Printing P (in cm^{-3}*s^{-1}):"
-!call p.print()
-
-!print *
-!print *, "Printing k (in s^{-1}):"
-!call k.print_long_frac()
 
 
 !Diffusion coefficients vector. D.d(i) = D_{i+1/2}
@@ -175,22 +135,12 @@ end do
 	D.d(z.n) = D.d(z.n - 1) + (D.d(z.n - 1) - D.d(z.n - 2)) !extrapolation
 
 
-
-!print *
-!print *, "Printing D_{i+1/2} (in cm^2*s^{-1}):"
-!call D.print()
-
-
 !Effective velocity vector
 !u.d(i) = u_i = D_i * (dTp/dz + mg/2k)/Tp, mg/2k ~ 5.6*10^{-5} [K/cm]
 call u.init(z.n)
 do i = 1, z.n
 	u.d(i) = 3E+17 / (nO.d(i) * sqrt(Tr.d(i))) * (56E-6 + gradTp.d(i)) 
 end do
-
-!print *
-!print *, "Printing effective velocity vector (in cm/s):"
-!call u.print()
 
 !System matrix for the poles boundary (phi = +- 90). n(first) and n(last) will be known from boundary conditions.
 call S.init(z.n)
@@ -216,15 +166,15 @@ end do
 !	print *
 
 
-call n_old.init(z.n)
-call n_new.init(z.n)
+call njold.init(z.n)
+call njnew.init(z.n)
 call delta.init(z.n)
-call n_old.gen() !n_old = (1, 1, ..., 1)
+call njold.gen() !njold = (1, 1, ..., 1)
 call nday.init(z.n)
-call b.init(z.n) !generating RHS for S * n_new = b
+call b.init(z.n) !generating RHS for S * njnew = b
 call pcurr.init(z.n)
 
-F_z = 0
+Fub = 0
 delta_norm = 1
 
 
@@ -233,62 +183,57 @@ delta_norm = 1
 	
 		!Setting RHS in the middle
 	        do i = 2, z.n - 1
-	                b.d(i) = n_old.d(i) + tau * p.d(i)
+	                b.d(i) = njold.d(i) + tau * p.d(i)
 	        end do
 
 		!Setting boundary conditions for the RHS
-		b.d(z.n) = tau/h.d(z.n-1) * F_z + n_old.d(z.n)
+		b.d(z.n) = tau/h.d(z.n-1) * Fub + njold.d(z.n)
 		b.d(1) = P.d(1)/ k.d(1)
 
 		!Solving the system
-	        n_new = tridiagonal_matrix_algorithm(S, b)
+	        njnew = tridiagonal_matrix_algorithm(S, b)
 
-		delta = n_new - n_old
+		delta = njnew - njold
 		delta_norm = delta.norm()
-		n_old = n_new
+		njold = njnew
 
 	end do
 
-	nday = n_old
+	nday = njold
 
 do j = 1, Nphi
-	call n_new_z(j).init(z.n)
-	call n_old_z(j).init(z.n)
-	call n_old_z(j).gen()
+	call nnew(j).init(z.n)
+	call nold(j).init(z.n)
+	call nold(j).gen()
 end do
 
-	n_old_z( 1) = nday
-	n_old_z(Nphi) = nday
+	nold( 1) = nday
+	nold(Nphi) = nday
 
-!do i = 1, z.n
-!	write(11,*) -90, 100+400/(z.n-1)*(i-1), nday.d(i)
-!end do
-!	write (11, *)
-
-do t = 0, 86400/tau*2
-!print *, t
-do j = 2, Nphi-1
+do j = 0, 86400/tau*5
+!print *, j
+do q = 2, Nphi-1
 ! angles phi from -90 to 90; conditions in -90 and 90 are set
 
 diurnal_on = 0 !switcher for the diurnal evolution mode. 0 corresponds to stationary solutions.
 
 if(diurnal_on .eq. 1) then
 
-	day = (t*tau)/86400 + 1/2 !starting from the middle of the 1-st day
+	day = (j*tau)/86400 + 1/2 !starting from the middle of the 1-st day
 	tgdelta = tan(pi/180*23.5) * sin(2*pi/365 * (day - 80))
 	sindelta = tgdelta/sqrt(1+tgdelta**2)
 	cosdelta = sqrt(1-sindelta**2) !cos of the zenith angle is > 0
 
         do i = 2, z.n - 1
-		coschi = sin(-pi/2+(j-1)*dphi)*sindelta - cos(-pi/2+(j-1)*dphi)*cosdelta*cos(omega * (tau * t + 86400/2)) !start: middle of the 1 day
+		coschi = sin(-pi/2+q*dphi)*sindelta - cos(-pi/2+q*dphi)*cosdelta*cos(omega * (tau * j + 86400/2)) !start: middle of the 1 day
 		if(coschi > 1E-6) then 
-		        b.d(i) = n_old_z(j).d(i) + tau * p.d(i) * exp(tau0.d(i) * (1-1/coschi))
+		        b.d(i) = nold(q).d(i) + tau * p.d(i) * exp(tau0.d(i) * (1-1/coschi))
         	else 
-			b.d(i) = n_old_z(j).d(i)
+			b.d(i) = nold(q).d(i)
         	end if
 	end do
 
-	b.d(z.n) = tau/h.d(z.n-1) * F_z + n_old_z(j).d(z.n)
+	b.d(z.n) = tau/h.d(z.n-1) * Fub + nold(q).d(z.n)
 
 	if(coschi > 1E-6) then 
 	        b.d(1) = p.d(1)/k.d(1) * exp(tau0.d(1) * (1-1/coschi))
@@ -299,10 +244,10 @@ if(diurnal_on .eq. 1) then
 else if(diurnal_on .eq. 0) then
 
         do i = 2, z.n - 1
-		b.d(i) = n_old_z(j).d(i) + tau * p.d(i)
+		b.d(i) = nold(q).d(i) + tau * p.d(i)
 	end do
 
-	b.d(z.n) = +tau/h.d(z.n-1) * F_z + n_old_z(j).d(z.n)
+	b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n)
 
 	b.d(1) = p.d(1)/k.d(1)
 
@@ -310,90 +255,87 @@ end if
 
 
 	!sinus and cosinus of magnetic inclination angle I
-	sI = sin(atan(2*tan(-pi/2+j*dphi)))
-	cI = cos(atan(2*tan(-pi/2+j*dphi)))
+	sI = sin(atan(2*tan(-pi/2+(q-1)*dphi)))
+	cI = cos(atan(2*tan(-pi/2+(q-1)*dphi)))
 
 	!lower boundary condition: n_1 = P_1/k_1
 	S.d(1, 2) = 1
 	!upper boundary condition:
-	if (n_old_z(j+1).d(z.n) .eq. 0 .or. n_old_z(j-1).d(z.n) .eq. 0 .or. n_old_z(j+1).d(z.n-1) .eq. 0 .or. n_old_z(j+1).d(z.n-1) .eq. 0) then
+	if (nold(q+1).d(z.n) .eq. 0 .or. nold(q-1).d(z.n) .eq. 0 .or. nold(q+1).d(z.n-1) .eq. 0 .or. nold(q+1).d(z.n-1) .eq. 0) then
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2
 	else if (nonlinear_scheme_type .eq. 1 .or. nonlinear_scheme_type .eq. 3) then
-		u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n-1)/n_old_z(j-1).d(z.n-1))/(2*dphi)
+		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(z.n-1)/nold(q-1).d(z.n-1))/(2*dphi)
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
-		u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n)/n_old_z(j-1).d(z.n))/(2*dphi)
+		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(z.n)/nold(q-1).d(z.n))/(2*dphi)
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
 	else if (nonlinear_scheme_type .eq. 2) then
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n-1)-n_old_z(j-1).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n-1)-nold(q-1).d(z.n-1))/(nold(q+1).d(z.n-1)+nold(q-1).d(z.n-1))/dphi
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n)-n_old_z(j-1).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n)-nold(q-1).d(z.n))/(nold(q+1).d(i)+nold(q-1).d(i))/dphi
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
 	else if (nonlinear_scheme_type .eq. 4 .or. nonlinear_scheme_type .eq. 5) then
-		!u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n-1)/n_old_z(j-1).d(z.n-1))/(2*dphi)
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n-1)-n_old_z(j-1).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n-1)-nold(q-1).d(z.n-1))/(nold(q+1).d(z.n-1)+nold(q-1).d(z.n-1))/dphi
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(abs(u_phi)+u_phi)*tau/h.d(z.n-1)
-		!u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n)/n_old_z(j-1).d(z.n))/(2*dphi)
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n)-n_old_z(j-1).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n)-nold(q-1).d(z.n))/(nold(q+1).d(i)+nold(q-1).d(i))/dphi
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(abs(u_phi)-u_phi)*tau/h.d(z.n-1)
+
 	else if (nonlinear_scheme_type .eq. 6) then
 		!u_{phi(N+1/2)}
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(z.n-1))-n_old_z(j-1).interp(z, m.d(z.n-1)))/(n_old_z(j+1).interp(z, m.d(z.n-1))+n_old_z(j-1).interp(z, m.d(z.n-1)))/dphi
-!print *, 10
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(z.n-1))-nold(q-1).interp(z, m.d(z.n-1)))/(nold(q+1).interp(z, m.d(z.n-1))+nold(q-1).interp(z, m.d(z.n-1)))/dphi
 		!u_phi(N)
-		u_phi_1 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n-1)-n_old_z(j-1).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
-!print *, 20
+		u_phi_N = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n-1)-nold(q-1).d(z.n-1))/(nold(q+1).d(z.n-1)+nold(q-1).d(z.n-1))/dphi
 		!u_phi(N+1)
-		u_phi_2 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n)-n_old_z(j-1).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
-!print *, 30
-		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_1-abs(u_phi))*tau/h.d(z.n-1)
-!print *, 40
-		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_2+abs(u_phi))*tau/h.d(z.n-1)
-!print *, 50
+		u_phi_Np1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(z.n)-nold(q-1).d(z.n))/(nold(q+1).d(z.n)+nold(q-1).d(z.n))/dphi
+		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_N-abs(u_phi))*tau/h.d(z.n-1)
+		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_Np1+abs(u_phi))*tau/h.d(z.n-1)
 
+	else if (nonlinear_scheme_type .eq. 7) then
+		!u_{phi(N+1/2)}
+		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(z.n-1))-nold(q-1).interp(z, m.d(z.n-1)))/(nold(q+1).interp(z, m.d(z.n-1))+nold(q-1).interp(z, m.d(z.n-1)))/dphi
+		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph+abs(u_phi_ph))*tau/h.d(z.n-1)
+		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph-abs(u_phi_ph))*tau/h.d(z.n-1)
 
 	end if
 
 	do i = 2, z.n - 1
-	if (n_old_z(j+1).d(i) .eq. 0 .or. n_old_z(j-1).d(i) .eq. 0) then
+	if (nold(q+1).d(i) .eq. 0 .or. nold(q-1).d(i) .eq. 0) then
 
-	! symmetric scheme without u_{phi} = 1/a D sinIcosI ln(n_{j+1}/n_{j-1}) / 2dphi
+	! symmetric scheme without u_{phi} = 1/a D sinIcosI ln(n_{q+1}/n_{q-1}) / 2dphi
 
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2
-
 		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2
-
 		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2
 
 	else if (nonlinear_scheme_type .eq. 1) then
 
 	! symmetric scheme with u_{phi} ~ 1/n d(ln n)/dphi
 
-		u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(i-1)/n_old_z(j-1).d(i-1))/(2*dphi)
+		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(i-1)/nold(q-1).d(i-1))/(2*dphi)
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi*tau/(h.d(i)+h.d(i-1))
 
 		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2
  
-		u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(i+1)/n_old_z(j-1).d(i+1))/(2*dphi)
+		u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(i+1)/nold(q-1).d(i+1))/(2*dphi)
 		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi*tau/(h.d(i)+h.d(i-1)) 
 
 	else if (nonlinear_scheme_type .eq. 2) then
 
 	! symmetric scheme with u_{phi} ~ 1/n d(ln n)/dphi
 
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i-1)-n_old_z(j-1).d(i-1))/(n_old_z(j+1).d(i-1)+n_old_z(j-1).d(i-1))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi*tau/(h.d(i)+h.d(i-1))
 
 		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 
 
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i+1)-n_old_z(j-1).d(i+1))/(n_old_z(j+1).d(i+1)+n_old_z(j-1).d(i+1))/dphi
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
 		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi*tau/(h.d(i)+h.d(i-1))
 
 	else if (nonlinear_scheme_type .eq. 3 .or. nonlinear_scheme_type .eq. 4) then
 	!directed difference scheme
 
-		!u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(i)/n_old_z(j-1).d(i))/(2*dphi)
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i)-n_old_z(j-1).d(i))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+		!u_phi = -1/R * D.d(i) * sI * cI * log(nold(q+1).d(i)/nold(q-1).d(i))/(2*dphi)
+		u_phi = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i)-nold(q-1).d(i))/(nold(q+1).d(i)+nold(q-1).d(i))/dphi
 		S.d(i, 1) = ((-D.d(i-1)/(hmid.d(i) * h.d(i-1)) + u.d(i-1)/(h.d(i) + h.d(i-1))) * sI**2 + (abs(u_phi)-u_phi)/(2*h.d(i-1)))*tau
 		
 		S.d(i, 2) = 1 + (k.d(i) + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) / hmid.d(i) * sI**2 + &
@@ -406,40 +348,47 @@ end if
 	!directed difference scheme with u_phi_{i+-1/2}
 
 		!u_phi_{i-1/2}		
-		u_phi_1 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i-1))-n_old_z(j-1).interp(z, m.d(i-1)))/(n_old_z(j+1).interp(z, m.d(i-1))+n_old_z(j-1).interp(z, m.d(i-1)))/dphi
+		u_phi_mh = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
 		!u_phi_{i+1/2}
-		u_phi_2 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i))-n_old_z(j-1).interp(z, m.d(i)))/(n_old_z(j+1).interp(z, m.d(i))+n_old_z(j-1).interp(z, m.d(i)))/dphi
+		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
 
-		S.d(i, 1) = ((-D.d(i-1)/(hmid.d(i) * h.d(i-1)) + u.d(i-1)/(h.d(i) + h.d(i-1))) * sI**2 + (abs(u_phi_1)-u_phi_1)/(2*h.d(i-1)))*tau
+		S.d(i, 1) = ((-D.d(i-1)/(hmid.d(i) * h.d(i-1)) + u.d(i-1)/(h.d(i) + h.d(i-1))) * sI**2 + (abs(u_phi_mh)-u_phi_mh)/(2*h.d(i-1)))*tau
 		S.d(i, 2) = 1 + (k.d(i) + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) / hmid.d(i) * sI**2 + &
-				(abs(u_phi_2)+u_phi_2)/(2*h.d(i)) - (abs(u_phi_1)-u_phi_1)/(2*h.d(i-1)))*tau	
+				(abs(u_phi_ph)+u_phi_ph)/(2*h.d(i)) - (abs(u_phi_mh)-u_phi_mh)/(2*h.d(i-1)))*tau	
 		S.d(i, 3) = ((-D.d( i )/(hmid.d(i) * h.d( i )) - u.d(i+1)/(h.d(i) + h.d(i-1))) * sI**2 - &
-				(abs(u_phi_2)+u_phi_2)/(2*h.d(i)))*tau
+				(abs(u_phi_ph)+u_phi_ph)/(2*h.d(i)))*tau
 
 	else if (nonlinear_scheme_type .eq. 6) then
 	!KIR scheme
 		!u_phi_{i-1/2}		
-		u_phi_1 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i-1))-n_old_z(j-1).interp(z, m.d(i-1)))/(n_old_z(j+1).interp(z, m.d(i-1))+n_old_z(j-1).interp(z, m.d(i-1)))/dphi
-!print *, 1
+		u_phi_mh = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
 		!u_phi_{i+1/2}
-		u_phi_2 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i))-n_old_z(j-1).interp(z, m.d(i)))/(n_old_z(j+1).interp(z, m.d(i))+n_old_z(j-1).interp(z, m.d(i)))/dphi
-!print *, 2
+		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
 		!u_phi(i-1)
-		u_phi_3 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i-1)-n_old_z(j-1).d(i-1))/(n_old_z(j+1).d(i-1)+n_old_z(j-1).d(i-1))/dphi
-!print *, 3
+		u_phi_m1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
 		!u_phi(i+1)
-		u_phi_4 = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i+1)-n_old_z(j-1).d(i+1))/(n_old_z(j+1).d(i+1)+n_old_z(j-1).d(i+1))/dphi
-!print *, 4
-!		u_phi_1 = u_phi_3
-!		u_phi_2 = u_phi_4
+		u_phi_p1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
 
-		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi_3*tau/(h.d(i) + h.d(i-1)) - abs(u_phi_1)*tau/(h.d(i) + h.d(i-1))
-!print *, 5
-		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 + 0.5*(abs(u_phi_1) + abs(u_phi_2)) * tau / h0
-!print *, 6
-		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi_4*tau/(h.d(i) + h.d(i-1)) - abs(u_phi_2)*tau/(h.d(i) + h.d(i-1))
+		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi_m1*tau/(h.d(i) + h.d(i-1)) - abs(u_phi_mh)*tau/(h.d(i) + h.d(i-1))
+		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 + 0.5*(abs(u_phi_mh) + abs(u_phi_ph)) * tau / h0
+		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi_p1*tau/(h.d(i) + h.d(i-1)) - abs(u_phi_ph)*tau/(h.d(i) + h.d(i-1))
 
-!print *, 7
+	else if (nonlinear_scheme_type .eq. 7) then
+	!KIR scheme
+		!u_phi_{i-1/2}		
+		u_phi_mh = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
+		!u_phi_{i+1/2}
+		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
+		!u_phi(i-1)
+		u_phi_m1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
+		!u_phi(i+1)
+		u_phi_p1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+
+		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + (u_phi_mh+abs(u_phi_mh))*tau/(2*h0)
+		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 +(u_phi_mh-abs(u_phi_mh))*tau/(2*h0)-(u_phi_ph+abs(u_phi_ph))*tau/(2*h0)
+		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - (u_phi_ph-abs(u_phi_ph))*tau/(2*h0)
+
+
 
 	end if	
 	end do
@@ -448,50 +397,78 @@ end if
 !	call S.print()
 !	print *
 
-	n_new_z(j) = tridiagonal_matrix_algorithm(S, b)
+	nnew(q) = tridiagonal_matrix_algorithm(S, b)
+!	call nnew(q).print_stdout()
 
 !block to output the diurnal evolution
-!	if (j .eq. 44 .and. t*tau .ge. 86400) then
-!		call n_new_z(j).print(10)
+!	if (q .eq. 44 .and. j .ge. 288) then
+!		call nnew(q).print(10)
 !		do i = 1, z.n
-!			write(11,*) t*tau/60, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i)
+!			write(11,*) (j-288)*5, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
 !		end do
 !		write(11, *)
 !	end if
 
 !block to output the stationary solution
-	if (t*tau .eq. 86400) then
-		do i = 1, z.n
-			write(11,*) j*(1E+0)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i) !1/R*D.d(i)*sI*cI*(n_old_z(j+1).d(i)-n_old_z(j-1).d(i))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi !
+!	if (j .eq. 288/2) then
+!		do i = 1, z.n
+!			write(11,*) (q-1)*(1E+0)*180/(Nphi-1), 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!		end do
+!		write (11, *)
+!	end if
+!
+!	if (j .eq. 288*1) then
+!		do i = 1, z.n
+!			write(12,*) (q-1)*(1E+0)*180/(Nphi-1), 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!		end do
+!		write (12, *)
+!	end if
 
-		end do
-		write (11, *)
+!	if (j .eq. 288*2) then
+!		do i = 1, z.n
+!			write(13,*) (q-1)*(1E+0)*180/(Nphi-1), 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!		end do
+!		write (13, *)
+!	end if
+!
+!	if (j .eq. 288*5) then
+!		do i = 1, z.n
+!			write(20,*) (q-1)*(1E+0)*180/(Nphi-1), 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!		end do
+!		write (20, *)
+!	end if
+!
+
+	if (j*tau .eq. 86400/2) then
+		call nnew(q).print(105)
 	end if
 
-	if (t*tau .eq. 86400*2) then
-		write(10,*) j*(1E+0)*180/(Nphi-1)-90, n_new_z(j).d(z.n-1)
+	if (j*tau .eq. 86400) then
+		call nnew(q).print(11)
 	end if
 
+	if (j*tau .eq. 86400*2) then
+		call nnew(q).print(12)
+	end if
+
+	if (j*tau .eq. 86400*5) then
+		call nnew(q).print(15)
+	end if
 
 end do	
 
-	do i = 1, Nphi-1
-		n_old_z(i) = n_new_z(i)
+	do i = 2, Nphi-1
+		nold(i) = nnew(i)
 	end do
 
 end do
-
-!do i = 1, z.n
-!	write(11,*) 90, 100+400/(z.n-1)*(i-1), nday.d(i)
-!end do
-!	write (11, *)
 
 
  close(unit=10)
  close(unit=11)
 do j = 1, Nphi
- call n_new_z(j).destroy()
- call n_old_z(j).destroy()
+ call nnew(j).destroy()
+ call nold(j).destroy()
 end do
 call b.destroy()
 call z.destroy()
@@ -511,8 +488,8 @@ call p.destroy()
 call k.destroy()
 call D.destroy()
 call u.destroy()
-call n_old.destroy()
+call njold.destroy()
 call delta.destroy()
-call n_new.destroy()
+call njnew.destroy()
 call S.destroy()
 end

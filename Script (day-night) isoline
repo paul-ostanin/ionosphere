@@ -3,7 +3,7 @@ set xlabel "z-nodes: z(i) = 100 + (i-1) * 5 km"
 set ylabel "tau*j"
 set zlabel ""
 set format z "%1.0e"
-set title "n, equation with d/d(phi) derivative, phi = +70 degrees" 
+set title "n, 1-st step, scheme 1, 400x720 nodes" 
 set view map
 set palette
-splot "res.txt"  matrix wi pm3d 
+splot "res_gnp.txt"  matrix wi pm3d 
