@@ -16,6 +16,9 @@ open(unit=105, name='new_flux_scheme_Nphi=180_tau=1_day05.txt')
 open(unit=11, name='new_flux_scheme_Nphi=180_tau=1_day1.txt')
 open(unit=12, name='new_flux_scheme_Nphi=180_tau=1_day2.txt')
 open(unit=15, name='new_flux_scheme_Nphi=180_tau=1_day5.txt')
+open(unit=110, name='new_flux_scheme_Nphi=180_tau=1_day10.txt')
+open(unit=115, name='new_flux_scheme_Nphi=180_tau=1_day15.txt')
+open(unit=120, name='new_flux_scheme_Nphi=180_tau=1_day20.txt')
 
 
 pi = 3.141592653589793238462643
@@ -210,7 +213,7 @@ end do
 	nold( 1) = nday
 	nold(Nphi) = nday
 
-do j = 0, 86400/tau*5
+do j = 0, 86400/tau*20
 !print *, j
 do q = 2, Nphi-1
 ! angles phi from -90 to 90; conditions in -90 and 90 are set
@@ -292,7 +295,11 @@ end if
 
 	else if (nonlinear_scheme_type .eq. 7) then
 		!u_{phi(N+1/2)}
-		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(z.n-1))-nold(q-1).interp(z, m.d(z.n-1)))/(nold(q+1).interp(z, m.d(z.n-1))+nold(q-1).interp(z, m.d(z.n-1)))/dphi
+		if(sI .ge. 0) then
+			u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(z.n-1))-nold(q).interp(z, m.d(z.n-1)))/(nold(q+1).interp(z, m.d(z.n-1))+nold(q-1).interp(z, m.d(z.n-1)))/dphi
+		else
+			u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q).interp(z, m.d(z.n-1))-nold(q-1).interp(z, m.d(z.n-1)))/(nold(q+1).interp(z, m.d(z.n-1))+nold(q-1).interp(z, m.d(z.n-1)))/dphi
+		end if
 		S.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph+abs(u_phi_ph))*tau/h.d(z.n-1)
 		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph-abs(u_phi_ph))*tau/h.d(z.n-1)
 
@@ -374,15 +381,26 @@ end if
 		S.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi_p1*tau/(h.d(i) + h.d(i-1)) - abs(u_phi_ph)*tau/(h.d(i) + h.d(i-1))
 
 	else if (nonlinear_scheme_type .eq. 7) then
-	!KIR scheme
+	!New flux scheme
+	if(sI .ge. 0) then
 		!u_phi_{i-1/2}		
-		u_phi_mh = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
+		u_phi_mh = -2/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i-1))-nold(q).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
 		!u_phi_{i+1/2}
-		u_phi_ph = -1/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
+		u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
 		!u_phi(i-1)
-		u_phi_m1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
+		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
 		!u_phi(i+1)
-		u_phi_p1 = -1/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+	else
+		!u_phi_{i-1/2}		
+		u_phi_mh = -2/R * D.d(i) * sI * cI * (nold(q).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
+		!u_phi_{i+1/2}
+		u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
+		!u_phi(i-1)
+		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
+		!u_phi(i+1)
+		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+	end if
 
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + (u_phi_mh+abs(u_phi_mh))*tau/(2*h0)
 		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 +(u_phi_mh-abs(u_phi_mh))*tau/(2*h0)-(u_phi_ph+abs(u_phi_ph))*tau/(2*h0)
@@ -453,6 +471,18 @@ end if
 
 	if (j*tau .eq. 86400*5) then
 		call nnew(q).print(15)
+	end if
+
+	if (j*tau .eq. 86400*10) then
+		call nnew(q).print(110)
+	end if
+
+	if (j*tau .eq. 86400*15) then
+		call nnew(q).print(115)
+	end if
+
+	if (j*tau .eq. 86400*20) then
+		call nnew(q).print(20)
 	end if
 
 end do	
