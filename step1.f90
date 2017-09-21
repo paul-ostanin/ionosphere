@@ -44,7 +44,7 @@ R = 637100000
 
 
 !Time step (in seconds) 5 min
-tau = 1
+tau = 80
 
 !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
 call z.init(81)
@@ -388,18 +388,18 @@ end if
 		!u_phi_{i+1/2}
 		u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q+1).interp(z, m.d(i))-nold(q).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
 		!u_phi(i-1)
-		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
+!		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i-1)-nold(q).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
 		!u_phi(i+1)
-		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+!		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q+1).d(i+1)-nold(q).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
 	else
 		!u_phi_{i-1/2}		
 		u_phi_mh = -2/R * D.d(i) * sI * cI * (nold(q).interp(z, m.d(i-1))-nold(q-1).interp(z, m.d(i-1)))/(nold(q+1).interp(z, m.d(i-1))+nold(q-1).interp(z, m.d(i-1)))/dphi
 		!u_phi_{i+1/2}
 		u_phi_ph = -2/R * D.d(i) * sI * cI * (nold(q).interp(z, m.d(i))-nold(q-1).interp(z, m.d(i)))/(nold(q+1).interp(z, m.d(i))+nold(q-1).interp(z, m.d(i)))/dphi
 		!u_phi(i-1)
-		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
+!		u_phi_m1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i-1)-nold(q-1).d(i-1))/(nold(q+1).d(i-1)+nold(q-1).d(i-1))/dphi
 		!u_phi(i+1)
-		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
+!		u_phi_p1 = -2/R * D.d(i) * sI * cI * (nold(q).d(i+1)-nold(q-1).d(i+1))/(nold(q+1).d(i+1)+nold(q-1).d(i+1))/dphi
 	end if
 
 		S.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + (u_phi_mh+abs(u_phi_mh))*tau/(2*h0)

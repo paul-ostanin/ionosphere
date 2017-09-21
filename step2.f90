@@ -8,7 +8,7 @@ implicit none
 type (tridiagonal_matrix) S_y, S_z
 type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401)
 integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi
-real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_1, u_z_2, x, A, B
+real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, x, A, B, u_phi_ph, u_phi_mh, Ndays
 
 !opening files for writing the output
 open(unit=10, name='res.txt')
@@ -23,10 +23,10 @@ pi = 3.141592653589793238462643
 !If n_s_t = 4, u_phi = 1/n d(ln n)/dphi, bnd_cond and equation are approximated with directed difference
 !If n_s_t = 5, then u_{i+-1/2} is used in approximating the directed difference
 !If n_s_t = 6, then conservative scheme with u_{i+-1/2} is used 
-nonlinear_scheme_type = 5
+nonlinear_scheme_type = 7
 
 !number of nodes in phi
-Nphi = 721
+Nphi = 181
 !latitude
 dphi = pi / (Nphi - 1)
 !angle velocity of the Earth 
@@ -35,6 +35,8 @@ omega = 2*pi/24/60/60
 sI = 1
 !Earth radius
 R = 637100000
+!number of calculation days
+Ndays = 5
 
 !Time step (in seconds) 5 min
 tau = 50
@@ -278,7 +280,7 @@ end do
 !end do
 !	write (11, *)
 
-do t = 0, 2*86400/tau
+do t = 0, Ndays*86400/tau
 !print *, t
 do j = 2, Nphi-1
 ! angles phi from -90 to 90; conditions in -90 and 90 are set
@@ -313,9 +315,20 @@ end if
 		u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n)/n_old_z(j-1).d(z.n))/(2*dphi)
 		S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
 	else if (nonlinear_scheme_type .eq. 2) then
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n-1)-n_old_z(j-1).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
+		if (sI .ge. 0) then
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n-1)-n_old_z(j).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
+		else
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j).d(z.n-1)-n_old_z(j-1).d(z.n-1))/(n_old_z(j+1).d(z.n-1)+n_old_z(j-1).d(z.n-1))/dphi
+		end if
+
 		S_z.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n)-n_old_z(j-1).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+
+		if (sI .ge. 0) then
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).d(z.n)-n_old_z(j).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+		else
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j).d(z.n)-n_old_z(j-1).d(z.n))/(n_old_z(j+1).d(i)+n_old_z(j-1).d(i))/dphi
+		end if
+
 		S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*u_phi*tau/h.d(z.n-1)
 	else if (nonlinear_scheme_type .eq. 4 .or. nonlinear_scheme_type .eq. 5) then
 		!u_phi = -1/R * D.d(i) * sI * cI * log(n_old_z(j+1).d(z.n-1)/n_old_z(j-1).d(z.n-1))/(2*dphi)
@@ -329,6 +342,16 @@ end if
 		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(z.n-1))-n_old_z(j-1).interp(z, m.d(z.n-1)))/(n_old_z(j+1).interp(z, m.d(z.n-1))+n_old_z(j-1).interp(z, m.d(z.n-1)))/dphi
 		S_z.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(abs(u_phi)+u_phi)*tau/h.d(z.n-1)
 		S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi-abs(u_phi))*tau/h.d(z.n-1)
+
+	else if (nonlinear_scheme_type .eq. 7) then
+		!u_{phi(N+1/2)}
+		if(sI .ge. 0) then
+			u_phi_ph = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(z.n-1))-n_old_z(j).interp(z, m.d(z.n-1)))/(n_old_z(j+1).interp(z, m.d(z.n-1))+n_old_z(j-1).interp(z, m.d(z.n-1)))/dphi
+		else
+			u_phi_ph = -2/R * D.d(i) * sI * cI * (n_old_z(j).interp(z, m.d(z.n-1))-n_old_z(j-1).interp(z, m.d(z.n-1)))/(n_old_z(j+1).interp(z, m.d(z.n-1))+n_old_z(j-1).interp(z, m.d(z.n-1)))/dphi
+		end if
+		S_z.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph+abs(u_phi_ph))*tau/h.d(z.n-1)
+		S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + 0.5*(u_phi_ph-abs(u_phi_ph))*tau/h.d(z.n-1)
 
 
 
@@ -359,12 +382,21 @@ end if
 	else if (nonlinear_scheme_type .eq. 2) then
 	! symmetric scheme with u_{phi} ~ 1/n d(ln n)/dphi
 
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i-1)-n_old_z(j-1).d(i-1))/(n_old_z(j+1).d(i-1)+n_old_z(j-1).d(i-1))/dphi
+		if (sI .ge. 0) then
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i-1)-n_old_z(j).d(i-1))/(n_old_z(j+1).d(i-1)+n_old_z(j-1).d(i-1))/dphi
+		else
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j).d(i-1)-n_old_z(j-1).d(i-1))/(n_old_z(j+1).d(i-1)+n_old_z(j-1).d(i-1))/dphi
+		end if
 		S_z.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + u_phi*tau/(h.d(i)+h.d(i-1))
 
 		S_z.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 
 
-		u_phi = -1/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i+1)-n_old_z(j-1).d(i+1))/(n_old_z(j+1).d(i+1)+n_old_z(j-1).d(i+1))/dphi
+		if (sI .ge. 0) then
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).d(i+1)-n_old_z(j).d(i+1))/(n_old_z(j+1).d(i+1)+n_old_z(j-1).d(i+1))/dphi
+		else
+			u_phi = -2/R * D.d(i) * sI * cI * (n_old_z(j).d(i+1)-n_old_z(j-1).d(i+1))/(n_old_z(j+1).d(i+1)+n_old_z(j-1).d(i+1))/dphi
+		end if
+
 		S_z.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - u_phi*tau/(h.d(i)+h.d(i-1))
 
 	else if (nonlinear_scheme_type .eq. 3 .or. nonlinear_scheme_type .eq. 4) then
@@ -409,6 +441,24 @@ end if
 				(-(u_phi_1-abs(u_phi_1))/2*h.d(i-1) + (u_phi_2+abs(u_phi_2))/(2*h.d(i))))*tau	
 		S_z.d(i, 3) = ((-D.d( i )/(hmid.d(i) * h.d( i )) - u.d(i+1)/(h.d(i) + h.d(i-1))) * sI**2 - &
 				(u_phi_2-abs(u_phi_2))/(2*h.d(i)))*tau
+
+	else if (nonlinear_scheme_type .eq. 7) then
+	!New flux scheme
+	if(sI .ge. 0) then
+		!u_phi_{i-1/2}		
+		u_phi_mh = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i-1))-n_old_z(j).interp(z, m.d(i-1)))/(n_old_z(j+1).interp(z, m.d(i-1))+n_old_z(j-1).interp(z, m.d(i-1)))/dphi
+		!u_phi_{i+1/2}
+		u_phi_ph = -2/R * D.d(i) * sI * cI * (n_old_z(j+1).interp(z, m.d(i))-n_old_z(j).interp(z, m.d(i)))/(n_old_z(j+1).interp(z, m.d(i))+n_old_z(j-1).interp(z, m.d(i)))/dphi
+	else
+		!u_phi_{i-1/2}		
+		u_phi_mh = -2/R * D.d(i) * sI * cI * (n_old_z(j).interp(z, m.d(i-1))-n_old_z(j-1).interp(z, m.d(i-1)))/(n_old_z(j+1).interp(z, m.d(i-1))+n_old_z(j-1).interp(z, m.d(i-1)))/dphi
+		!u_phi_{i+1/2}
+		u_phi_ph = -2/R * D.d(i) * sI * cI * (n_old_z(j).interp(z, m.d(i))-n_old_z(j-1).interp(z, m.d(i)))/(n_old_z(j+1).interp(z, m.d(i))+n_old_z(j-1).interp(z, m.d(i)))/dphi
+	end if
+
+		S_z.d(i, 1) = (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + (u_phi_mh+abs(u_phi_mh))*tau/(2*h0)
+		S_z.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 +(u_phi_mh-abs(u_phi_mh))*tau/(2*h0)-(u_phi_ph+abs(u_phi_ph))*tau/(2*h0)
+		S_z.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - (u_phi_ph-abs(u_phi_ph))*tau/(2*h0)
 
 
 	end if	
@@ -486,21 +536,33 @@ do i = 2, z.n-1
 
 	do j = 2, Nphi-1	
 		phi = (j-1)*dphi-pi/2
-		u_z_1 = B(phi)/(h0)* (  (n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) - &
+
+	if(B(phi) .ge. 0) then
+		u_z_mh = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) - &
+					(n_old_y( i ).d(j)+n_old_y( i ).d(j-1)) / &
+					(n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) + &
+					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)))
+		u_z_ph = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) - &
+					(n_old_y( i ).d(j)+n_old_y( i ).d(j+1)) / &
+					(n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) + &
+					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)))
+	else
+		u_z_mh = 2*B(phi)/(h0)*((n_old_y( i ).d(j)+n_old_y( i ).d(j-1)) - &
 					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)) / &
 					(n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) + &
 					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)))
-		u_z_2 = B(phi)/(h0)* (  (n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) - &
+		u_z_ph = 2*B(phi)/(h0)*((n_old_y( i ).d(j)+n_old_y( i ).d(j+1)) - &
 					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)) / &
 					(n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) + &
 					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)))
-		S_y.d(j, 1) = (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) + &
-				D_node.d(i)*(abs(u_z_1)-u_z_1)/(2*dphi))*tau/(R)/cos(phi)
-		S_y.d(j, 2) = 1 + (D_node.d(i)/R * (A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + &
-				D_node.d(i)*(abs(u_z_2)+u_z_2)/(2*dphi) - D_node.d(i)*(abs(u_z_1)-u_z_1)/(2*dphi)) * tau/(R)/cos(phi)
+	end if
 
-		S_y.d(j, 3) = (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) - &
-				D_node.d(i)*(abs(u_z_2)+u_z_2)/(2*dphi))*tau/(R)/cos(phi)
+	S_y.d(j, 1) = (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) + &
+			D_node.d(i)*(u_z_mh+abs(u_z_mh))/(2*dphi))*tau/(R)/cos(phi)
+	S_y.d(j, 2) = 1 + (D_node.d(i)/R * (A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + &
+			D_node.d(i)*(u_z_mh-abs(u_z_mh))/(2*dphi) - D_node.d(i)*(u_z_ph+abs(u_z_ph))/(2*dphi)) * tau/(R)/cos(phi)
+	S_y.d(j, 3) = (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) - &
+			D_node.d(i)*(u_z_ph-abs(u_z_ph))/(2*dphi))*tau/(R)/cos(phi)
 
 	end do
 
@@ -517,13 +579,19 @@ do i = 1, z.n
 end do
 
 !block to output the stationary solution
-	if (t*tau .eq. 86400) then
+	if (t*tau .eq. Ndays*86400) then
 		do j = 1, Nphi
 		do i = 1, z.n
 			write(11,*) j*(1E+0)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i)
 
 		end do
 		write (11, *)
+		end do
+	end if
+
+	if (t*tau .eq. Ndays*86400) then
+		do j = 1, Nphi
+			call n_new_z(j).print(10)
 		end do
 	end if
 end do

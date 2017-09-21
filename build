@@ -1,18 +1,18 @@
 #! /bin/bash
 
-	compiler=ifort
+	compiler=ifort 
 
 #	if [ "x$exe" == "x" ]; then
 #		exe=step2
 #	fi
 
-	$compiler -c vector_class.f90 -fpe0 -O3 #-traceback -g -check all
-	$compiler -c tridiagonal_matrix_class.f90 -fpe0 -O3 #-traceback -g -check all
-	$compiler -c step1.f90 -fpe0 -O3 #-traceback -g -check all
-	$compiler -c step2.f90 -fpe0 -O3 #-traceback -g -check all	
-	$compiler -o step1 step1.o tridiagonal_matrix_class.o vector_class.o -fpe0 -O3 #-traceback -g -check all
+	$compiler -c vector_class.f90 -fpe0 #-O3 -traceback -g -check all
+	$compiler -c tridiagonal_matrix_class.f90 -fpe0 #-O3 -traceback -g -check all
+	$compiler -c step1.f90 -fpe0 #-O3 -traceback -g -check all
+	$compiler -c step2.f90 -fpe0 #-O3 -traceback -g -check all	
+	$compiler -o step1 step1.o tridiagonal_matrix_class.o vector_class.o -fpe0 #-O3 -traceback -g -check all
 
-	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o -fpe0 -O3 #-traceback -g -check all
+	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o -fpe0 #-O3 -traceback -g -check all
 
 
 
