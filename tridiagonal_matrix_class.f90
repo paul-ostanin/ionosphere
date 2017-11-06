@@ -20,6 +20,10 @@ use vector
 		module procedure matrix_add
 	end interface
 	
+	interface operator (-)
+		module procedure matrix_diff
+	end interface
+
 	interface operator  (*)
 		module procedure matrix_mul_vec
 	end interface
@@ -55,6 +59,17 @@ function matrix_add(this, m2) result (res)
    call res.init(m2.n)
    res.d = this.d + m2.d
 end function matrix_add
+
+
+function matrix_diff(this, m2) result (res)
+!Redefined operator "+" for two matrixes
+   class(tridiagonal_matrix), intent(in) :: this
+   type (tridiagonal_matrix), intent(in) :: m2
+   type (tridiagonal_matrix) :: res
+   call res.init(m2.n)
+   res.d = this.d - m2.d
+end function matrix_diff
+
 
 subroutine generate_matrix(this)
 !Generates a discrete laplasian matrix with Neumann bounary conditions

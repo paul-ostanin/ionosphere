@@ -1,0 +1,90 @@
+\documentclass[2pt, a4paper, fleqn]{extarticle}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+%\usepackage{pscyr}
+
+%\renewcommand{\rmdefault}{ftm}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+\usepackage{geometry}
+\geometry{top=1cm,bottom=2cm,left=1cm,right=1cm}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+\begin{document}
+
+Рассмотрим для вычисления $\dfrac{1}{n} \dfrac{\partial n}{\partial z}$ следующие две схемы:
+
+\begin{itemize}
+\item $\dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}-n_{i, j}}{\Delta\varphi}$
+\item $\dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}-n_{i, j-1}}{2\Delta\varphi}$
+\end{itemize}
+
+Первая схема~---~схема направленных разностей, обладает численной диффузией, а вторая~---~схема центральных разностей~---~не обладает ей. После замены второй формулы на первую в схему была внесена численная диффузия, которую можно оценить из разности этих аппроксимаций: $$\dfrac{2}{n_{i, j+1}+n_{i, j-1}}\dfrac{n_{i, j+1}-2n_{i, j}+n_{i, j-1}}{\Delta\varphi^2} \cdot\dfrac{h}{2} \approx\dfrac{1}{n} \cdot \dfrac{h}{2}\cdot \dfrac{\partial^2 n}{\partial \varphi^2}$$
+
+В уравнении для первого шага рассматривается $\dfrac{\partial}{\partial z}\left[n \dfrac{1}{n} \dfrac{\partial n}{\partial z}\right]$. Тогда в результате в схему вносится слагаемое, оценивающееся как $$\dfrac{\partial}{\partial z}\left[\dfrac{h}{2}\dfrac{\partial^2 n}{\partial \varphi^2}\right]$$
+Это слагаемое вносит третью смешанную производную в первое дифференциальное приближение схемы (дважды по $\varphi$ и один раз по $z$).
+\end{document}
+
+
+
