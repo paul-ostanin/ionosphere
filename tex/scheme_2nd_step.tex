@@ -73,17 +73,63 @@ linkbordercolor=new,
 
 \begin{document}
 
-Уравнение, решаемое на втором шаге расщепления:
+{\bf I.} Уравнение, решаемое на первом шаге: $$\dfrac{\partial n_i}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n_i}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n_i\bigg)-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n_i}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n_i\right)\bigg]+[P-kn_i]$$
+
+
+Во всех случаях используем для диффузионного слагаемого схему, получаемую применением формулы центральной разности дважды, а для потокового слагаемого $\dfrac{\partial}{\partial z} (un)$ центральную разность. Вычисление $u_\varphi$ ведётся по формуле $$u_\varphi \approx -\dfrac{1}{a}\cos I \sin I\dfrac{2}{n_{i, j+1}^t+n_{i, j-1}^t}\begin{cases}\dfrac{n_{i, j+1}^t+n_{i, j}^t}{\Delta\varphi}, \sin I \geq 0\\\dfrac{n_{i, j}^t+n_{i, j-1}^t}{\Delta\varphi}, \sin I \leq 0 .\end{cases}$$
+
+Полная схема для уравнения на первом шаге: 
+
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = P - k n_{i, j}^{t+1} + \bigg[\left(D_{i+1/2}\dfrac{n_{i+1, j}^{t+1}-n_{i,j}^{t+1}}{h^2}-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}\right)+\left(\dfrac{u_{i+1}n_{i+1,j}^{t+1}-u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) +$$ $$+ \left(\dfrac{u_{\varphi(i+1/2)}+|u_{\varphi(i+1/2)}|}{2h}n_{i,j}^{t+1}+\dfrac{u_{\varphi(i+1/2)}-|u_{\varphi(i+1/2)}|}{2h} n_{i+1,j}^{t+1}-\dfrac{u_{\varphi(i-1/2)}+|u_{\varphi(i-1/2)}|}{2h}n_{i-1,j}^{t+1}-\dfrac{u_{\varphi(i-1/2)}-|u_{\varphi(i-1/2)}|}{2h} n_{i,j}^{t+1}\right) \bigg]$$
+
+На верхней границе учитывается равенство нулю полного потока: в результате имеем уравнение: 
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = + \bigg[-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}-\left(\dfrac{u_{i}n_{i,j}^{t+1}+u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) +$$ $$+ \left(-\dfrac{u_{\varphi(i-1/2)}+|u_{\varphi(i-1/2)}|}{2h}n_{i-1,j}^{t+1}-\dfrac{u_{\varphi(i-1/2)}-|u_{\varphi(i-1/2)}|}{2h} n_{i,j}^{t+1}\right) \bigg]$$
+
+На нижней границе $n_{i, j}^{t+1} = P/k$.
+
+На граничных точках $\varphi = \pm 89{,}5^\circ$ коэффициент $\sin I$ перед смешанной производной мал. Для того, чтобы избавиться от необходимости использовать при подсчете $u_\varphi$ значения с предыдущего временного шага, находящиеся вне рассматриваемой расчетной области, в этих граничных точках сетки из уравнения системы исключены слагаемые со смешанной производной:
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = P - k n_{i, j}^{t+1} + \bigg[\left(D_{i+1/2}\dfrac{n_{i+1, j}^{t+1}-n_{i,j}^{t+1}}{h^2}-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}\right)+\left(\dfrac{u_{i+1}n_{i+1,j}^{t+1}-u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) \bigg]$$
+
+
+\bigskip
+
+{\bf II.} Уравнение, решаемое на втором шаге расщепления:
 
 $$\dfrac{\partial n}{\partial t} = \dfrac{1}{a\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a}\cdot(\cos^2  I \cos\varphi)\cdot\dfrac{\partial n}{\partial \varphi}-D\cdot(\sin I\cos I\cos\varphi)\cdot \dfrac{\partial n}{\partial z} - u\cdot(\sin I \cos I \cos\varphi)\cdot n \right]$$
 
 Здесь $u = D\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)$~---~эффективная скорость из первого шага, $I = \arctg(2\tg \varphi)$.
 
-На первом этапе решаем задачу без смешанной производной. В качестве начальных условий выступает решение уравнения с первого шага расщепления. Введём две функции: $$A(\varphi) = \cos \varphi \cdot \cos^2(\arctg(2\tg \varphi)) = \dfrac{\cos\varphi}{1+4\tg^2\varphi}\mbox{ и }B(\varphi) = \cos\varphi \cdot \sin(2\arctg(2\tg \varphi))=\dfrac{4\sin\varphi}{1+4\tg^2\varphi}.$$
+В качестве начальных условий выступает решение уравнения с первого шага расщепления. Введём две функции: $$A(\varphi) = \cos \varphi \cdot \cos^2(\arctg(2\tg \varphi)) = \dfrac{\cos\varphi}{1+4\tg^2\varphi}\mbox{ и }B(\varphi) = \cos\varphi \cdot \sin(2\arctg(2\tg \varphi))=\dfrac{4\sin\varphi}{1+4\tg^2\varphi}.$$
 
 С помощью этих функций задачу можно переписать в следующем виде: 
 $$\dfrac{\partial n}{\partial t} = \dfrac{1}{\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a^2}A(\varphi)\dfrac{\partial n}{\partial \varphi}-\dfrac{D}{2a}B(\varphi) \dfrac{\partial n}{\partial z} - \dfrac{u}{2a}B(\varphi) n \right]$$
-Исследуем асимптотическое поведение слагаемых вблизи полюсов (при $\varphi = \pm\dfrac{\pi}{2}$).
+
+Для полного уравнения используем следующую схему:
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}\left(A(\varphi_{j+1/2})\dfrac{n_{i, j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi^2}-A(\varphi_{j-1/2})\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi^2}\right)-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j+1})n_{i,j+1}^{t+1}-B(\varphi_{j-1})n_{i,j-1}^{t+1}}{2\Delta\varphi}\right) -$$ $$- \dfrac{D}{2a}\left(\dfrac{u_{z(j+1/2)}+|u_{z(j+1/2)}|}{2\Delta\varphi}n_{i,j}^{t+1}+\dfrac{u_{z(j+1/2)}-|u_{z(j+1/2)}|}{2\Delta\varphi} n_{i,j+1}^{t+1}-\dfrac{u_{z(j-1/2)}+|u_{z(j-1/2)}|}{2\Delta\varphi}n_{i,j-1}^{t+1}-\dfrac{u_{z(j-1/2)}-|u_{z(j-1/2)}|}{2\Delta\varphi} n_{i,j}^{t+1}\right) \bigg]$$
+
+Здесь введено обозначение $u_z = B(\varphi)\dfrac{1}{n}\dfrac{\partial n}{\partial z} = B(\varphi)\dfrac{\partial \ln n}{\partial z}$. При этом значения $n$ для вычисления $u_z$ берутся с предыдущего временного шага. Аналогично первому шагу, $$u_z \approx B(\varphi)\dfrac{2}{n_{i+1, j}^t+n_{i-1, j}^t}\begin{cases}\dfrac{n_{i+1, j}^t+n_{i, j}^t}{h}, B(\varphi) \geq 0\\\dfrac{n_{i, j}^t+n_{i-1, j}^t}{h}, B(\varphi) \leq 0 .\end{cases}$$
+
+При $i = 1$ $(z = 100\mbox{ } \mbox{км})$ также ставим граничное условие Дирихле~---~на нижней границе по $z$ решение совпадает с полученным на первом шаге.
+
+На верхней границе требуется граничное условие для определения $u_z$.
+
+Поток на границе $z=z_{ub}$: $$\dfrac{D}{a^2}A(\varphi_{j+1/2})\dfrac{n_{N, j+1}-n_{N, j}}{h}-\dfrac{u}{2a}\dfrac{B(\varphi_{j+1})n_{N, j+1}+B(\varphi_j)n_{N, j}}{2\Delta\varphi}-$$ $$-\dfrac{D}{2a}\left(\dfrac{u_{z(j+1/2)}+|u_{z(j+1/2)}|}{2\Delta\varphi}n_{i,j}^{t+1}+\dfrac{u_{z(j+1/2)}-|u_{z(j+1/2)}|}{2\Delta\varphi} n_{i,j+1}^{t+1}\right) = F_{y}\approx 0$$
+С помощью условия равенства нулю потока на границе $z = 500$~км получаем, что при решении линейной системы во втором шаге расщепления сохраняются значения при $z = 500$~км с первого шага расщепления, т.~е. в рамках решения уравнения второго шага расщепления имеет место граничное условие Дирихле на этой границе: равенство результату с первого шага.
+
+При $j = 1$ $(\varphi = -89{,}5^\circ)$ и $j = N_\varphi$ $(\varphi = +89{,}5^\circ)$ используем следующее граничное условие: полный поток $\Phi_{j+1/2}$ на северном полюсе и $\Phi_{j-1/2}$ на южном обращается в ноль.
+
+Это означает, что при $j = 1$ используется аппроксимация $$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}\left(A(\varphi_{j+1/2})\dfrac{n_{i, j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi^2}\right)-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j+1})n_{i,j+1}^{t+1}+B(\varphi_{j})n_{i,j}^{t+1}}{2\Delta\varphi}\right) -$$ $$- \dfrac{D}{2a}\left(\dfrac{u_{z(j+1/2)}+|u_{z(j+1/2)}|}{2\Delta\varphi}n_{i,j}^{t+1}+\dfrac{u_{z(j+1/2)}-|u_{z(j+1/2)}|}{2\Delta\varphi} n_{i,j+1}^{t+1}\right) \bigg]$$
+Аналогично, на северном полюсе при $j=N_\varphi$: $$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}\left(-A(\varphi_{j-1/2})\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi^2}\right)+\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j})n_{i,j}^{t+1}+B(\varphi_{j-1})n_{i,j-1}^{t+1}}{2\Delta\varphi}\right) +$$ $$+ \dfrac{D}{2a}\left(\dfrac{u_{z(j-1/2)}+|u_{z(j-1/2)}|}{2\Delta\varphi}n_{i,j-1}^{t+1}+\dfrac{u_{z(j-1/2)}-|u_{z(j-1/2)}|}{2\Delta\varphi} n_{i,j}^{t+1}\right) \bigg]$$
+
+\bigskip
+
+{\bf Дополнение.} Исследуем асимптотическое поведение функций $A(\varphi)$ и $B(\varphi)$ вблизи полюсов (при $\varphi = \pm\dfrac{\pi}{2}$).
+
+
+Имеют место следующие разложения при $\varphi\rightarrow\dfrac{\pi}{2}$: $$A(\varphi)=-\dfrac{1}{4}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^3-\dfrac{1}{16}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = 1\cdot\left(\varphi-\dfrac{\pi}{2}\right)^2-\dfrac{1}{12}\cdot \left(\varphi-\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^5\right)$$
+
+Соответственно, при $x\rightarrow-\dfrac{\pi}{2}$: $$A(\varphi)=\dfrac{1}{4}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^3+\dfrac{1}{16}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = -1\cdot\left(\varphi+\dfrac{\pi}{2}\right)^2+\dfrac{1}{12}\cdot \left(\varphi+\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^5\right)$$
+
 
 Графики функций $A$ и $B$ приведены ниже: 
 
@@ -93,29 +139,8 @@ $$\dfrac{\partial n}{\partial t} = \dfrac{1}{\cos\varphi} \dfrac{\partial }{\par
 
 Обе функции в точке $\varphi = \dfrac{\pi}{2}$ касаются оси абсцисс~---~имеют нули по крайней мере второго порядка, поэтому особенность в уравнении устранимая.
 
-Имеют место следующие разложения при $\varphi\rightarrow\dfrac{\pi}{2}$: $$A(\varphi)=-\dfrac{1}{4}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^3-\dfrac{1}{16}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = 1\cdot\left(\varphi-\dfrac{\pi}{2}\right)^2-\dfrac{1}{12}\cdot \left(\varphi-\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^5\right)$$
-
-Соответственно, при $x\rightarrow-\dfrac{\pi}{2}$: $$A(\varphi)=\dfrac{1}{4}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^3+\dfrac{1}{16}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = -1\cdot\left(\varphi+\dfrac{\pi}{2}\right)^2+\dfrac{1}{12}\cdot \left(\varphi+\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^5\right)$$
-
-%Обозначим $\varphi-\dfrac{\pi}{2} = x$. При $x\rightarrow 0$ заметим, что: $$\dfrac{1}{\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(A(\varphi)\dfrac{\partial n}{\partial\varphi}\right) = \dfrac{1}{\cos\varphi}\dfrac{\partial A}{\partial\varphi}\dfrac{\partial n}{\partial\varphi} + \dfrac{A}{\cos\varphi}\dfrac{\partial^2 n}{\partial\varphi^2} \approx \dfrac{1}{x-\frac{x^3}{6}}\left(-\dfrac14\cdot 2x^2\right)\dfrac{\partial n}{\partial\varphi} - \dfrac14\dfrac{x^2}{1-\frac{x^2}{6}}\dfrac{\partial^2 n}{\partial\varphi^2}\approx$$ $$\approx -\dfrac12x\dfrac{\partial n}{\partial\varphi}-\dfrac14x^2\dfrac{\partial^2 n}{\partial\varphi^2}=-\dfrac12\left(\varphi-\dfrac{\pi}{2}\right)\dfrac{\partial n}{\partial\varphi}-\dfrac14\left(\varphi-\dfrac{\pi}{2}\right)^2\dfrac{\partial^2 n}{\partial\varphi^2}$$
-%$$\dfrac{1}{\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(B(\varphi)\dfrac{\partial n}{\partial z}\right) = \dfrac{1}{\cos\varphi}\dfrac{\partial B}{\partial\varphi}\dfrac{\partial n}{\partial z} + \dfrac{1}{\cos\varphi}B\dfrac{\partial^2 n}{\partial \varphi\partial z} \approx 2\dfrac{\partial n}{\partial z}+\left(\varphi-\dfrac{\pi}{2}\right)\dfrac{\partial^2 n}{\partial \varphi\partial z}$$
-%$$\dfrac{1}{\cos\varphi}\dfrac{\partial}{\partial\varphi}\left(B(\varphi)n\right) = \dfrac{1}{\cos\varphi}\dfrac{\partial B}{\partial\varphi}n + \dfrac{1}{\cos\varphi}B\dfrac{\partial n}{\partial \varphi} \approx 2n+\left(\varphi-\dfrac{\pi}{2}\right)\dfrac{\partial n}{\partial \varphi}$$
-
-Для полного уравнения используем следующую схему:
-$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}\left(A(\varphi_{j+1/2})\dfrac{n_{i, j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi^2}-A(\varphi_{j-1/2})\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi^2}\right)-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j+1})n_{i,j+1}^{t+1}-B(\varphi_{j-1})n_{i,j-1}^{t+1}}{2\Delta\varphi}\right) -$$ $$- \dfrac{D}{2a}\left(\dfrac{|u_z|+u_z}{2}\dfrac{n_{i,j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi}+\dfrac{|u_z|-u_z}{2}\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi}\right) \bigg]$$
-
-Здесь введено обозначение $u_z = B(\varphi)\dfrac{1}{n}\dfrac{\partial n}{\partial z} = B(\varphi)\dfrac{\partial \ln n}{\partial z}$. При этом значения $n$ для вычисления $u_z$ берутся с предыдущего временного шага.
-
-При $j = 1$ $(\varphi = -90^\circ)$ и $j = N_\varphi$ $(\varphi = +90^\circ)$ используем граничные условия Дирихле~---~равенство распределения на полюсах дневному распределению одномерной задаче в $z$-проекции без учета широтной зависимости.
-
-При $i = 1$ $(z = 100\mbox{ } \mbox{км})$ также ставим граничное условие Дирихле~---~на нижней границе по $z$ решение совпадает с $P/k$, полученным на первом шаге.
-
-На верхней границе требуется граничное условие для определения $u_z$.
-
-Поток на границе $z=z_{ub}$: $$\dfrac{D}{a^2}A(\varphi_{j+1/2})\dfrac{n_{N, j+1}-n_{N, j}}{h}-\dfrac{u}{2a}\dfrac{B(\varphi_{j+1})n_{N, j+1}+B(\varphi_j)n_{N, j}}{2\Delta\varphi}-\dfrac{D}{2a}\left(\dfrac{|u_z|}{2}\dfrac{n_{N, j+1}+n_{N, j}}{\Delta\varphi}+\dfrac{u_z}{2}\dfrac{n_{N, j+1}-n_{N, j}}{\Delta\varphi}\right) = F_{y}\approx 0$$
-С помощью условия равенства нулю потока на границе $z = 500$~км получаем, что при решении линейной системы во втором шаге расщепления сохраняются значения при $z = 500$~км с первого шага расщепления, т.~е. в рамках решения уравнения второго шага расщепления имеет место граничное условие Дирихле на этой границе.
-
-Таким образом, все четыре граничных условия для этого шага имеют вид граничных условий Дирихле~---~значения на границах, найденные на первом шаге, сохраняются после второго шага.
-
 
 \end{document}
+
+
+
