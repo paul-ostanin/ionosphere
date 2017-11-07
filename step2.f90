@@ -8,7 +8,7 @@ implicit none
 type (tridiagonal_matrix) S_y, S_z
 type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401)
 integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch
-real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter
+real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter
 
 !opening files for writing the output
 open(unit=10, name='res.txt')
@@ -30,11 +30,11 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 1
+Ndays = 3
 Niter = 800
 
 !Time step (in seconds) 5 min
-tau = 300
+tau = 160
 
 !switches for physical processes and terms of the equation
 !photochemistry switcher
@@ -42,7 +42,7 @@ pk_switch = 1
 !mixed derivative u_phi switcher
 mixed_z_switch = 1
 !mixed derivative u_z switcher
-mixed_y_switch = 0
+mixed_y_switch = 1
 !transfer d/dz(u n) and d/dphi(B(phi) n) switcher (multiplyer of u)
 transf_yz_switch = 1
 !transfer d/dphi(B(phi) n) switcher
@@ -341,56 +341,77 @@ do i = 2, z.n-1
 	j = 1
 	phi = (j-0.5)*dphi-pi/2
 	if(mixed_y_switch .eq. 0) then
-	u_z_ph = 0
+		u_z_p1 = 0
+		u_z_m1 = 0
+		u_z = 0
 	else
-		! B(phi)<0
-		u_z_ph = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) - &
-					(n_old_y( i ).d(j)+n_old_y( i ).d(j+1)) / &
-					(n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) + &
-					(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)))
+		if(B(phi) .ge. 0) then
+			u_z_m1 = 0
+			u_z_p1 = 2*B(phi+dphi)/(h0)*(n_old_y(i+1).d(j+1) - n_old_y( i ).d(j+1)) / &
+						    (n_old_y(i+1).d(j+1) + n_old_y(i-1).d(j+1))
+			u_z    = 2*B(phi)     /(h0)*(n_old_y(i+1).d( j ) - n_old_y( i ).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
+		else
+			u_z_m1 = 0
+			u_z_p1 = 2*B(phi+dphi)/(h0)*(n_old_y( i ).d(j+1) - n_old_y(i-1).d(j+1)) / &
+						    (n_old_y(i+1).d(j+1) + n_old_y(i-1).d(j+1))
+			u_z    = 2*B(phi)     /(h0)*(n_old_y( i ).d( j ) - n_old_y(i-1).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
+		end if
 	end if
 
-	S_y.d(j, 1) = 0
-	S_y.d(j, 2) = 1 + 0*tau*k.d(i)/2 + (D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) + transf_y_switch*(u.d(i)/2)*B(phi)/(2*dphi) + &
-			(D_node.d(i)/2)*(u_z_ph+abs(u_z_ph))/(2*dphi)) * tau/(R)/cos(phi)
-	S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) + transf_y_switch*(u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
-			(D_node.d(i)/2)*(u_z_ph-abs(u_z_ph))/(2*dphi))*tau/(R)/cos(phi)
+
+	if((- cos(phi)) * u_z .ge. 0) then
+		S_y.d(j, 1) =  0
+		S_y.d(j, 2) = 1 + (A(phi+dphi/2)/(dphi**2)-transf_y_switch*(-u.d(i)/2)*B(phi)/(2*dphi)-D_node.d(i)/2*u_z/dphi)*tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - transf_y_switch*(-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
+				 D_node.d(i)/2*u_z_p1/dphi)*tau/(R)/cos(phi)
+
+	else
+		S_y.d(j, 1) =  0
+		S_y.d(j, 2) = 1 + (A(phi+dphi/2)/(dphi**2) -transf_y_switch*(-u.d(i)/2)*B(phi)/(2*dphi) + D_node.d(i)/2*u_z/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - transf_y_switch*(-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)
+	end if
 
 
 	do j = 2, Nphi-1	
 		phi = (j-0.5)*dphi-pi/2
 
 	if(mixed_y_switch .eq. 0) then
-		u_z_ph = 0
-		u_z_mh = 0
+		u_z_p1 = 0
+		u_z_m1 = 0
+		u_z = 0
 	else
 		if(B(phi) .ge. 0) then
-			u_z_mh = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) - &
-						(n_old_y( i ).d(j)+n_old_y( i ).d(j-1)) / &
-						(n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) + &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)))
-			u_z_ph = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) - &
-						(n_old_y( i ).d(j)+n_old_y( i ).d(j+1)) / &
-						(n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) + &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)))
+			u_z_m1 = 2*B(phi-dphi)/(h0)*(n_old_y(i+1).d(j-1) - n_old_y( i ).d(j-1)) / &
+						    (n_old_y(i+1).d(j-1) + n_old_y(i-1).d(j-1))
+			u_z_p1 = 2*B(phi+dphi)/(h0)*(n_old_y(i+1).d(j+1) - n_old_y( i ).d(j+1)) / &
+						    (n_old_y(i+1).d(j+1) + n_old_y(i-1).d(j+1))
+			u_z    = 2*B(phi)     /(h0)*(n_old_y(i+1).d( j ) - n_old_y( i ).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
 		else
-			u_z_mh = 2*B(phi)/(h0)*((n_old_y( i ).d(j)+n_old_y( i ).d(j-1)) - &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)) / &
-						(n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) + &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)))
-			u_z_ph = 2*B(phi)/(h0)*((n_old_y( i ).d(j)+n_old_y( i ).d(j+1)) - &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)) / &
-						(n_old_y(i+1).d(j)+n_old_y(i+1).d(j+1)) + &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j+1)))
+			u_z_m1 = 2*B(phi-dphi)/(h0)*(n_old_y( i ).d(j-1) - n_old_y(i-1).d(j-1)) / &
+						    (n_old_y(i+1).d(j-1) + n_old_y(i-1).d(j-1))
+			u_z_p1 = 2*B(phi+dphi)/(h0)*(n_old_y( i ).d(j+1) - n_old_y(i-1).d(j+1)) / &
+						    (n_old_y(i+1).d(j+1) + n_old_y(i-1).d(j+1))
+			u_z    = 2*B(phi)     /(h0)*(n_old_y( i ).d( j ) - n_old_y(i-1).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
 		end if
 	end if
 
-	S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
-			(D_node.d(i)/2)*(u_z_mh+abs(u_z_mh))/(2*dphi))*tau/(R)/cos(phi)
-	S_y.d(j, 2) = 1 + tau*k.d(i)/2 + (D_node.d(i)/R * (A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - &
-			(D_node.d(i)/2)*(u_z_mh-abs(u_z_mh))/(2*dphi) + (D_node.d(i)/2)*(u_z_ph+abs(u_z_ph))/(2*dphi)) * tau/(R)/cos(phi)
-	S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - transf_y_switch*(-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
-			(D_node.d(i)/2)*(u_z_ph-abs(u_z_ph))/(2*dphi))*tau/(R)/cos(phi)
+
+	if((- cos(phi)) * u_z .ge. 0) then
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1 + (D_node.d(i)/R * (A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - D_node.d(i)/2*u_z/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - transf_y_switch*(-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
+				 D_node.d(i)/2*u_z_p1/dphi)*tau/(R)/cos(phi)
+
+	else
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
+				D_node.d(i)/2*u_z_m1/dphi)*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1 + (D_node.d(i)/R * (A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + D_node.d(i)/2*u_z/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - transf_y_switch*(-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)
+	end if
 
 	end do
 
@@ -398,20 +419,39 @@ do i = 2, z.n-1
 	phi = (j-0.5)*dphi-pi/2
 
 	if(mixed_y_switch .eq. 0) then
-		u_z_mh = 0
+		u_z_p1 = 0
+		u_z_m1 = 0
+		u_z = 0
 	else
-		! B(phi)>0
-			u_z_mh = 2*B(phi)/(h0)*((n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) - &
-						(n_old_y( i ).d(j)+n_old_y( i ).d(j-1)) / &
-						(n_old_y(i+1).d(j)+n_old_y(i+1).d(j-1)) + &
-						(n_old_y(i-1).d(j)+n_old_y(i-1).d(j-1)))
+		if(B(phi) .ge. 0) then
+			u_z_m1 = 2*B(phi-dphi)/(h0)*(n_old_y(i+1).d(j-1) - n_old_y( i ).d(j-1)) / &
+						    (n_old_y(i+1).d(j-1) + n_old_y(i-1).d(j-1))
+			u_z_p1 = 0
+			u_z    = 2*B(phi)     /(h0)*(n_old_y(i+1).d( j ) - n_old_y( i ).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
+		else
+			u_z_m1 = 2*B(phi-dphi)/(h0)*(n_old_y( i ).d(j-1) - n_old_y(i-1).d(j-1)) / &
+						    (n_old_y(i+1).d(j-1) + n_old_y(i-1).d(j-1))
+			u_z_p1 = 0
+			u_z    = 2*B(phi)     /(h0)*(n_old_y( i ).d( j ) - n_old_y(i-1).d( j )) / &
+						    (n_old_y(i+1).d( j ) + n_old_y(i-1).d( j ))
+		end if
 	end if
 
-	S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
-			(D_node.d(i)/2)*(u_z_mh+abs(u_z_mh))/(2*dphi))*tau/(R)/cos(phi)
-	S_y.d(j, 2) = 1 + 0*tau*k.d(i)/2 + (D_node.d(i)/R * (A(phi-dphi/2))/(dphi**2)-transf_y_switch*(u.d(i)/2)*B(phi)/(2*dphi)- &
-			(D_node.d(i)/2)*(u_z_mh-abs(u_z_mh))/(2*dphi)) * tau/(R)/cos(phi)
-	S_y.d(j, 3) =  0
+
+	if((- cos(phi)) * u_z .ge. 0) then
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1 + (D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi)/(2*dphi) &
+				- D_node.d(i)/2*u_z/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) = 0
+
+	else
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
+				D_node.d(i)/2*u_z_m1/dphi)*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1 + (D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + transf_y_switch*(-u.d(i)/2)*B(phi)/(2*dphi) &
+				+ D_node.d(i)/2*u_z/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) = 0
+	end if
 	
 
 	n_new_y(i) = tridiagonal_matrix_algorithm(S_y, rhs_y)
@@ -427,7 +467,7 @@ do i = 1, z.n
 end do
 
 !block to output the stationary solution
-	if (t*tau .eq. 70*tau) then !86400*Ndays
+	if (t*tau .eq. 86400*Ndays) then 
 		do j = 1, Nphi
 		do i = 1, z.n
 			write(11,*) j*(5E-1)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i)
