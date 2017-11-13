@@ -34,7 +34,7 @@ Ndays = 0.5
 Niter = 800
 
 !Time step (in seconds) 5 min
-tau = 100
+tau = 50
 
 !switches for physical processes and terms of the equation
 !photochemistry switcher
@@ -48,7 +48,7 @@ transf_yz_switch = 1
 !transfer d/dphi(B(phi) n) switcher
 transf_y_switch = 1
 !switcher of schemes for the second step mixed derivative: 0 is nonlinear, 1 is 1st order, 2 is 2nd order
-second_step_scheme_type = 2
+second_step_scheme_type = 12
 
 !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
 call z.init(81)
@@ -338,10 +338,11 @@ do i = 2, z.n-1
 
 if(second_step_scheme_type .eq. 1) then
 
-	do j = 1, Nphi	
+	do j = 2, Nphi-1	
 		phi = (j-0.5)*dphi-pi/2
 
 	if(B(phi) .le. 0) then
+	!I
 
 		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi)
 		S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - &
@@ -354,6 +355,7 @@ if(second_step_scheme_type .eq. 1) then
 									B(phi+dphi)*n_old_y(i-1).d(j+1))
 
 	else
+	!II
 
 		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi)- &
 				D_node.d(i)/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
@@ -368,6 +370,95 @@ if(second_step_scheme_type .eq. 1) then
 
 	end if
 	end do
+
+	j = 1	
+	phi = (j-0.5)*dphi-pi/2
+
+	
+		S_y.d(j, 1) = 0
+		S_y.d(j, 2) = 1+(D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - &
+				D_node.d(i)/2*B(phi)/h0/dphi + (-u.d(i)/2)*B(phi)/(2*dphi)) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
+				D_node.d(i)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(-B(phi)*n_old_y(i-1).d(j)+&
+									B(phi+dphi)*n_old_y(i-1).d(j+1))
+
+	j = Nphi	
+	phi = (j-0.5)*dphi-pi/2
+
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi)- &
+				D_node.d(i)/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1+(D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + &
+				D_node.d(i)/2*B(phi)/h0/dphi - (-u.d(i)/2)*B(phi)/(2*dphi)) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  0
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(+B(phi)*n_old_y(i-1).d(j)-&
+									 B(phi-dphi)*n_old_y(i-1).d(j-1))
+
+else if(second_step_scheme_type .eq. 12) then
+
+	do j = 2, Nphi-1	
+		phi = (j-0.5)*dphi-pi/2
+
+	if(B(phi) .le. 0) then
+	!IV
+
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) + &
+				D_node.d(i)/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - &
+				D_node.d(i)/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(+B(phi)*n_old_y(i+1).d(j)-&
+									 B(phi-dphi)*n_old_y(i+1).d(j-1))
+
+	else
+	!II
+
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + &
+				D_node.d(i)/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) - &
+				D_node.d(i)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(-B(phi)*n_old_y(i+1).d(j)+&
+									 B(phi+dphi)*n_old_y(i+1).d(j+1))
+
+
+	end if
+	end do
+
+	j = 1	
+	phi = (j-0.5)*dphi-pi/2
+		S_y.d(j, 1) = 0
+		S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi+dphi/2)/(dphi**2) - &
+				D_node.d(i)/2*B(phi)/h0/dphi + (-u.d(i)/2)*B(phi)/(2*dphi) + &
+				D_node.d(i)/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(-B(phi)*n_old_y(i+1).d(j)+&
+									 B(phi)*n_old_y(i+1).d(j))
+	j = Nphi	
+	phi = (j-0.5)*dphi-pi/2
+
+		S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi)
+		S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi-dphi/2)/(dphi**2) + &
+				D_node.d(i)/2*B(phi)/h0/dphi - (-u.d(i)/2)*B(phi)/(2*dphi) - &
+				D_node.d(i)/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+		S_y.d(j, 3) = 0
+
+		rhs_y.d(j) = n_old_y(i).d(j)-&
+				tau*D_node.d(i)/(2*R*cos(phi)*h0*dphi)*(+B(phi)*n_old_y(i+1).d(j)-&
+									 B(phi)*n_old_y(i+1).d(j))
+
+
+
 
 else if (second_step_scheme_type .eq. 2) then
 
