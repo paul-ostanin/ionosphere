@@ -126,6 +126,23 @@ $$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = \dfrac{1}{\cos\varphi_j} \bigg[\dfrac{
 
 Результаты расчетов показывают, что для устойчивого счёта при $80$ узлах по высоте и $180$ узлах по широте ($h = 5$ км, $\varphi = 1^\circ$) требуется брать шаг по времени $\tau < 160$~с.
 
+\bigskip
+
+{\bf Дополнение.} Исследуем асимптотическое поведение функций $A(\varphi)$ и $B(\varphi)$ вблизи полюсов (при $\varphi = \pm\dfrac{\pi}{2}$).
+
+
+Имеют место следующие разложения при $\varphi\rightarrow\dfrac{\pi}{2}$: $$A(\varphi)=-\dfrac{1}{4}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^3-\dfrac{1}{16}\cdot\left(\varphi-\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = 1\cdot\left(\varphi-\dfrac{\pi}{2}\right)^2-\dfrac{1}{12}\cdot \left(\varphi-\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi-\dfrac{\pi}{2}\right)^5\right)$$
+
+Соответственно, при $x\rightarrow-\dfrac{\pi}{2}$: $$A(\varphi)=\dfrac{1}{4}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^3+\dfrac{1}{16}\cdot\left(\varphi+\dfrac{\pi}{2}\right)^5+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^6\right)$$ $$B(\varphi) = -1\cdot\left(\varphi+\dfrac{\pi}{2}\right)^2+\dfrac{1}{12}\cdot \left(\varphi+\dfrac{\pi}{2}\right)^4+o\left(\left(\varphi+\dfrac{\pi}{2}\right)^5\right)$$
+
+
+Графики функций $A$ и $B$ приведены ниже: 
+
+\includegraphics[scale=0.25]{A}
+
+\includegraphics[scale=0.25]{B}
+
+Обе функции в точке $\varphi = \dfrac{\pi}{2}$ касаются оси абсцисс~---~имеют нули по крайней мере второго порядка, поэтому особенность в уравнении устранимая.
 \end{document}
 
 
