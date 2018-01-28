@@ -6,13 +6,17 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) S_y, S_z
-type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401)
-integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type
-real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter
+type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_final_z_prev(1441), n_final_z_next(1441), n_reference_z(1441), error(1441), n_prev(1441), n_new_y(401), n_old_y(401)
+integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, iter
+real (8) tau, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, c_norm, l1_norm, l2_norm, c_norm_err, l1_norm_err, l2_norm_err, delta_err
 
 !opening files for writing the output
 open(unit=10, name='res.txt')
-open(unit=11, name='res_gnp.txt')
+open(unit=11, name='res_gnp_step2.txt')
+!open(unit=60, name='step2_60_day20.txt')
+!open(unit=2, name='step2_02_day20.txt')
+!open(unit=1,  name='step2_01_day20.txt')
+open(unit=99, name='error_tau=100.txt')
 
 pi = 3.141592653589793238462643
 
@@ -30,11 +34,11 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 0.5
+Ndays = 1
 Niter = 800
 
 !Time step (in seconds) 5 min
-tau = 160
+tau = 100
 
 !switches for physical processes and terms of the equation
 !photochemistry switcher
@@ -48,7 +52,7 @@ transf_yz_switch = 1
 !transfer d/dphi(B(phi) n) switcher
 transf_y_switch = 1
 !switcher of schemes for the second step mixed derivative: 0 is nonlinear, 1 is 1st order, 2 is 2nd order
-second_step_scheme_type = 0
+second_step_scheme_type = 2
 
 !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
 call z.init(81)
@@ -223,6 +227,11 @@ F_z = 0
 do j = 1, Nphi
 	call n_new_z(j).init(z.n)
 	call n_old_z(j).init(z.n)
+	call n_final_z_prev(j).init(z.n)
+	call n_final_z_next(j).init(z.n)
+	call error(j).init(z.n)
+	call n_prev(j).init(z.n)
+	call n_reference_z(j).init(z.n)
 	call n_old_z(j).gen()
 end do
 
@@ -237,8 +246,23 @@ end do
 !end do
 !	write (11, *)
 
-do t = 0, Ndays*86400/tau !Niter + 1!
-print *, t
+delta_err = 1
+
+
+do iter = 1, 2
+	if (iter .eq. 2) then
+		tau = tau/2
+	end if
+	print *, tau
+
+!do t = 0, Ndays*86400/tau !Niter + 1!
+t = 0
+do while(delta_err .ge. 0.1)
+
+!print *, t
+!t = t+1
+
+
 do j = 1, Nphi
 ! angles phi from -90 to 90; conditions in -90 and 90 are set
 
@@ -668,11 +692,29 @@ do i = 1, z.n
 	end do
 end do
 
+delta_err = 0
+do i = 1, z.n
+	do j = 1, Nphi
+		delta_err = delta_err + dphi*h0*abs(n_old_z(j).d(i) - n_prev(j).d(i))
+	end do
+end do
+
+print *, delta_err
+	
+	
+do i = 1, z.n
+	do j = 1, Nphi
+		n_prev(j).d(i) = n_old_z(j).d(i)
+	end do
+end do
+
+
+
 !block to output the stationary solution
 	if (t*tau .eq. 86400*Ndays ) then
 		do j = 1, Nphi
 		do i = 1, z.n
-			write(11,*) j*(5E-1)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i)
+			write(11,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_new_z(j).d(i)
 
 		end do
 		write (11, *)
@@ -681,10 +723,80 @@ end do
 		do j = 1, Nphi
 			call n_new_z(j).print(10)
 		end do
+
+	if (iter .eq. 1) then
+		do j = 1, Nphi
+		do i = 1, z.n
+			n_final_z_prev(j).d(i) = n_new_z(j).d(i)
+		end do
+		end do
 	end if
+
+	if (iter .eq. 2) then
+		do j = 1, Nphi
+		do i = 1, z.n
+			n_final_z_next(j).d(i) = n_new_z(j).d(i)
+		end do
+		end do
+	end if
+	end if
+
 
 end do
 
+end do
+
+
+	c_norm = 0
+	l2_norm = 0
+	l1_norm = 0
+	c_norm_err = 0
+	l2_norm_err = 0
+	l1_norm_err = 0
+
+		do j = 1, Nphi
+		do i = 1, z.n
+			error(j).d(i) = n_final_z_next(j).d(i) - n_final_z_prev(j).d(i)
+			if (c_norm_err .le. abs(error(j).d(i))) then
+				c_norm_err = abs(error(j).d(i))
+			end if
+			l1_norm_err = l1_norm_err + h0*dphi*abs(error(j).d(i))
+			l2_norm_err = l2_norm_err + h0*dphi*(abs(error(j).d(i))**2)
+
+			if (c_norm .le. abs(n_final_z_next(j).d(i))) then
+				c_norm = abs(n_final_z_next(j).d(i))
+			end if
+			l1_norm = l1_norm + h0*dphi*abs(n_final_z_next(j).d(i))
+			l2_norm = l2_norm + h0*dphi*(abs(n_final_z_next(j).d(i))**2)
+
+
+		end do
+		end do
+		l2_norm_err = sqrt(l2_norm_err)
+		l2_norm = sqrt(l2_norm)
+
+		print *, "Tau ="
+		print *, tau
+		print *, "C-norm_err ="
+		print *, c_norm_err
+		print *, "L1-norm_err ="
+		print *, l1_norm_err
+		print *, "L2-norm_err ="
+		print *, l2_norm_err
+
+		print *, "Relative C-norm_err ="
+		print *, c_norm_err/c_norm
+		print *, "Relative L1-norm_err ="
+		print *, l1_norm_err/l1_norm
+		print *, "Relative L2-norm_err ="
+		print *, l2_norm_err/l2_norm
+
+		do j = 1, Nphi
+		do i = 1, z.n
+			write(99,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), error(j).d(i)
+		end do
+		write (99, *)
+		end do
 
 
  close(unit=10)

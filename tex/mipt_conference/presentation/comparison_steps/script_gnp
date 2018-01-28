@@ -1,0 +1,7 @@
+set xlabel "phi"
+
+set ylabel "z, km"
+set zlabel ""
+set format z "%1.0e"
+unset logscale z
+splot "res_gnp_step1.txt" wi li title "step 1" linecolor rgb "purple"
