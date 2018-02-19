@@ -1,0 +1,8 @@
+set terminal png size 1600, 1200
+set output "stationary_20.png"
+set format x "%g"
+set title "Stationary solutions (phi = 20), tau = 25 s"
+set xlabel "n, cm^{-3}"
+set ylabel "z, km"
+unset logscale x
+plot "step2_20_nz_80_nphi_180_tau_25.txt" using 2:1 wi li lw 2 title "Nphi = 180, Nz = 80", "step2_20_nz_200_nphi_360_tau_25.txt" using 2:1 wi li lw 2 title "Nphi = 360, Nz = 200"

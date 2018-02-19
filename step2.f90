@@ -7,19 +7,15 @@ implicit none
 
 type (tridiagonal_matrix) S_y, S_z
 type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
-integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, convergence_test, Nphi, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
+integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
 real (8) tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
-open(unit=10, name='res.txt')
-open(unit=12, name='res_gnp.txt')
+    open(unit=1, name='res.txt')
+    open(unit=12, name='res_gnp.txt')
 
 
-!open(unit=110, name='res_gnp_step2_2day.txt')
-!open(unit=99, name='res_gnp_err.txt')
-!open(unit=60, name='step2_60_day20.txt')
-!open(unit=2, name='step2_02_day20.txt')
-!open(unit=1,  name='step2_01_day20.txt')
+
 
 pi = 3.141592653589793238462643
 
@@ -41,7 +37,7 @@ Ndays = 2
 Niter = 800
 
 !Time step (in seconds) 5 min
-tau = 3.125
+tau = 6.25
 
 !photochemistry switcher
 pk_switch = 1
@@ -61,6 +57,7 @@ upper_bound_type = 4
 monotonizator = 1
 diurnal_on = 0
 convergence_test = 0
+profile_output = 1
 
 !Initialization block
     !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
@@ -525,10 +522,40 @@ do t = 0, Ndays*86400/tau
         write (12, *)
         end do
         do j = 1, Nphi
-            call n_old_z(j).print(10)
+            call n_old_z(j).print(1)
         end do
     end if
 end do
+
+!profiles output block
+if(profile_output .eq. 1) then
+    open(unit=88, name='step2_88_nz_80_nphi_180_tau_6.txt')
+    open(unit=80, name='step2_80_nz_80_nphi_180_tau_6.txt')
+    open(unit=70, name='step2_70_nz_80_nphi_180_tau_6.txt')
+    open(unit=60, name='step2_60_nz_80_nphi_180_tau_6.txt')
+    open(unit=50, name='step2_50_nz_80_nphi_180_tau_6.txt')
+    open(unit=40, name='step2_40_nz_80_nphi_180_tau_6.txt')
+    open(unit=30, name='step2_30_nz_80_nphi_180_tau_6.txt')
+    open(unit=20, name='step2_20_nz_80_nphi_180_tau_6.txt')
+    open(unit=10, name='step2_10_nz_80_nphi_180_tau_6.txt')
+    open(unit=5,  name='step2_05_nz_80_nphi_180_tau_6.txt')
+    open(unit=2,  name='step2_02_nz_80_nphi_180_tau_6.txt')
+    open(unit=0,  name='step2_00_nz_80_nphi_180_tau_6.txt')
+    do i = 1, z.n
+        write(88,*) 100+400/(z.n-1)*(i-1), n_old_z(2).d(i)
+        write(80,*) 100+400/(z.n-1)*(i-1), n_old_z(10).d(i)
+        write(70,*) 100+400/(z.n-1)*(i-1), n_old_z(20).d(i)
+        write(60,*) 100+400/(z.n-1)*(i-1), n_old_z(30).d(i)
+        write(50,*) 100+400/(z.n-1)*(i-1), n_old_z(40).d(i)
+        write(40,*) 100+400/(z.n-1)*(i-1), n_old_z(50).d(i)
+        write(30,*) 100+400/(z.n-1)*(i-1), n_old_z(60).d(i)
+        write(20,*) 100+400/(z.n-1)*(i-1), n_old_z(70).d(i)
+        write(10,*) 100+400/(z.n-1)*(i-1), n_old_z(80).d(i)
+        write(5, *) 100+400/(z.n-1)*(i-1), n_old_z(85).d(i)
+        write(2, *) 100+400/(z.n-1)*(i-1), n_old_z(88).d(i)
+        write(0, *) 100+400/(z.n-1)*(i-1), n_old_z(90).d(i)
+    end do
+end if
 
 
 !diurnal evolution block
