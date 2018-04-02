@@ -1,0 +1,25 @@
+#! /bin/bash
+
+	compiler=ifort 
+#	flags=" -fpe0 -g -traceback -check"
+	flags=" -fpe0 -O3"
+
+#	if [ "x$exe" == "x" ]; then
+#		exe=step2
+#	fi
+
+	$compiler -c vector_class.f90 $flags
+
+	$compiler -c bcg.f $flags 
+	$compiler -c ilu0.f $flags 
+	$compiler -c matvecCSR.f $flags
+	$compiler -c io.f $flags 
+	$compiler -c dsort.f $flags 
+
+
+	$compiler -c tridiagonal_matrix_class.f90 $flags
+	$compiler -c step2.f90 $flags
+
+
+	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o -lblas $flags
+
