@@ -6,15 +6,15 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) S_y, S_z
-type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
+type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(701), n_old_y(701), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(701), n_old_y_1(701), error(1441)
 integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
 real (8) paramet, tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
     open(unit=1, name='res.txt')
     open(unit=12, name='res_gnp.txt')
-    open(unit=99, name='n_max_nO_08.txt')
-    open(unit=98, name='h_max_nO_08.txt')
+    open(unit=12, name='res_gnp.txt')
+    open(unit=1, name='res.txt')
 
 
 paramet = 1
@@ -25,9 +25,9 @@ pi = 3.141592653589793238462643
 nonlinear_scheme_type = 8
  
 !number of nodes in phi
-Nphi = 90
+Nphi = 180
 !number of nodes in z
-Nz = 81
+Nz = 141
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -43,7 +43,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 5
+tau = 100
 
 !photochemistry switcher
 pk_switch = 1
@@ -72,7 +72,7 @@ profile_output = 0
     call z.init(Nz)
 
     !Space step (in cm) 5 km
-    h0 = 400E+5 / (z.n - 1)
+    h0 = 700E+5 / (z.n - 1)
     do i = 1, z.n
         z.d(i) = 100E+3 + h0 * (i-1)/100
     end do
@@ -462,7 +462,7 @@ do t = 0, Ndays*86400/tau
     if (t*tau .eq. Ndays*86400) then
         do j = 1, Nphi
             do i = 1, z.n
-                write(12,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
+                write(12,*) (j-5E-1)*180/(Nphi)-90, 100+700/(z.n-1)*(i-1), n_old_z(j).d(i)
             end do
             write (12, *)
         end do
