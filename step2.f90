@@ -8,16 +8,16 @@ implicit none
 type (tridiagonal_matrix) S_y, S_z
 type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
 integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
-real (8) tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
+real (8) paramet, tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
     open(unit=1, name='res.txt')
     open(unit=12, name='res_gnp.txt')
-!    open(unit=99, name='n_max_not_perturbed.txt')
-!    open(unit=98, name='h_max_not_perturbed.txt')
+    open(unit=99, name='n_max_nO_08.txt')
+    open(unit=98, name='h_max_nO_08.txt')
 
 
-
+paramet = 1
 
 pi = 3.141592653589793238462643
 
@@ -25,7 +25,7 @@ pi = 3.141592653589793238462643
 nonlinear_scheme_type = 8
  
 !number of nodes in phi
-Nphi = 180
+Nphi = 90
 !number of nodes in z
 Nz = 81
 !latitude
@@ -43,7 +43,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 60
+tau = 5
 
 !photochemistry switcher
 pk_switch = 1
@@ -64,6 +64,8 @@ monotonizator = 1
 diurnal_on = 0
 convergence_test = 0
 profile_output = 0
+
+
 
 !Initialization block
     !Vector of altitudes. Step h_i = z(i) - z(i - 1). Counting from 100 km to 500 km. z.d(i) is in metres.
@@ -140,8 +142,8 @@ profile_output = 0
     call nN2.init(z.n)
 
     do i = 1, z.n
-        nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
-        nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+        nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000)) * paramet
+        nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000)) 
         nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
     end do
 
@@ -478,8 +480,8 @@ do t = 0, Ndays*86400/tau
                     h_max = z.d(i)
                 end if
             end do
-!            write(99,*) (j-5E-1)*180/(Nphi)-90, n_max, integral 
-!            write(98,*) (j-5E-1)*180/(Nphi)-90, h_max, integral 
+            write(99,*) (j-5E-1)*180/(Nphi)-90, n_max, integral 
+            write(98,*) (j-5E-1)*180/(Nphi)-90, h_max, integral 
             end do
     end if
 end do

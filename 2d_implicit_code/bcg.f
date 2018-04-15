@@ -227,9 +227,9 @@ c
              minSol=min(SOL(i),minSol)
              maxSol=max(SOL(i),maxSol)
           end do
-!          WRITE(NUNIT,9000) ITER,RESID,TMP2,minSol,maxSol
-! 9000     FORMAT('ILU: iters:',I4,', residual=',E10.3,' (|SOL|= ',E11.4,
-!     &           ', ',E11.4,' < SOL < ',E11.4,')')
+          WRITE(NUNIT,9000) ITER,RESID,TMP2,minSol,maxSol
+ 9000     FORMAT('ILU: iters:',I4,', residual=',E10.3,' (|SOL|= ',E11.4,
+     &           ', ',E11.4,' < SOL < ',E11.4,')')
         end if
 c---->------------------------------------------------------------------<
       return

@@ -15,8 +15,8 @@ integer, parameter :: max_size = 1000000
 integer, parameter :: max_nonzero = 10000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
-integer, parameter :: Nz = 81
-integer, parameter :: Nphi = 90
+integer, parameter :: Nz = 201
+integer, parameter :: Nphi = 180
 
 
 integer ia(max_size + 1), ja(max_nonzero), iw(maxwi)
@@ -62,13 +62,13 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 4
+Ndays = 0.25
 Niter = 800
 !upper boundary electron flow
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 10
+tau = 100
 
 !photochemistry switcher
 pk_switch = 1
@@ -185,7 +185,7 @@ profile_output = 1
     n = 1d0
     prev_n = 0d0
 
-do t = 0, Ndays*86400/tau
+do t = 0, 1000
     if(mod(t, 100) .eq. 0) then
         print *, t
     end if
@@ -221,7 +221,7 @@ do t = 0, Ndays*86400/tau
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [0d0, & 
-                                                 (D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
+                                               1+(D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
                                                 (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)  ]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
@@ -236,7 +236,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -249,7 +249,7 @@ do t = 0, Ndays*86400/tau
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [ (-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
-                                                 (D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi), &
+                                               1+(D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi), &
                                                0d0]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
@@ -263,9 +263,17 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j)  + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
                     enddo
                 enddo
+
+!            else if ((j == 1 .or. j == Nphi) .and. i == Nz) then
+
+!                !left and right upper corners
+!                diffusion_transfer_z(+1, :) = [0d0, 0d0, 0d0]
+!                diffusion_transfer_z( 0, :) = [0d0, 1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2, 0d0]
+!                diffusion_transfer_z(-1, :) = [0d0,   (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2, 0d0]
+
 
             else if (i == Nz) then
 
@@ -299,7 +307,7 @@ do t = 0, Ndays*86400/tau
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [(-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
-                                                (D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2))*tau/(R)/cos(phi), &
+                                                1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2))*tau/(R)/cos(phi), &
                                                (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 

@@ -19,8 +19,17 @@ C***********************************************************
 
       N = IMATVEC(1)
 
+      if (BETA .EQ. 0) then
+         do i = 1, N
+             Y(i) = BETA
+         end do
+      else
+         do i = 1, N
+             Y(i) = BETA*Y(i) 
+         end do
+      end if
+
       do i = 1, N
-         Y(i) = BETA*Y(i) 
          do j = IA(i),IA(i+1)-1
             Y(i) = Y(i) + A(j)*X(JA(j))*ALPHA
          end do

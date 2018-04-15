@@ -1,8 +1,10 @@
 #! /bin/bash
+	source /opt/intel/bin/ifortvars.sh intel64
 
 	compiler=ifort 
 #	flags=" -fpe0 -g -traceback -check"
-	flags=" -fpe0 -O3"
+	flags="-O3" 
+	libs="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core"
 
 #	if [ "x$exe" == "x" ]; then
 #		exe=step2
@@ -21,5 +23,5 @@
 	$compiler -c step2.f90 $flags
 
 
-	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o -lblas $flags
+	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
 
