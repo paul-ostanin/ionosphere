@@ -6,15 +6,27 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) S_y, S_z
-type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(701), n_old_y(701), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(701), n_old_y_1(701), error(1441)
+type (vect) F_ub, rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, gradnO, k, p, pcurr, m, n_old, n_new, delta, D, D_node, gradD, u, gradu, Tn, Ti, Te, Tr, Tp, gradTp, gradTn, gradTr, gradgradTp, n_day, tau0, model_sol(1441), n_new_z(1441), p_mod(1441), n_old_z(1441), n_new_y(701), n_old_y(701), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(701), n_old_y_1(701), error(1441)
 integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
-real (8) paramet, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
+real (8) df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f, paramet, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, dA_dphi, dB_dphi, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
-    open(unit=1, name='res_split.txt')
-    open(unit=12, name='res_split_gnp.txt')
+    open(unit=11, name='res_split_model.txt')
+    open(unit=12, name='res_split_gnp_model.txt')
+    open(unit=98, name='model_solution_gnp.txt')    
+    open(unit=99, name='model_solution_matrix.txt')
+    open(unit=198,name='diff_res_sol_gnp.txt')
+    open(unit=199,name='diff_res_sol.txt')
 
+!    open(unit=100, name='an.txt')
+!    open(unit=110, name='num.txt')
 
+!    open(unit=101, name='df_dphi_gnp.txt')
+!    open(unit=102, name='ddf_dzdz_gnp.txt')
+!    open(unit=103, name='ddf_dphidphi_gnp.txt')
+!    open(unit=104, name='ddf_dzdphi_gnp.txt')
+!    open(unit=21, name='rhs_components.txt')
+!    open(unit=22, name='approx_components.txt')
 
 paramet = 1
 
@@ -26,7 +38,7 @@ nonlinear_scheme_type = 8
 !number of nodes in phi
 Nphi = 180
 !number of nodes in z
-Nz = 81
+Nz = 401
 !maximum altitude in km
 Hmax = 500
 !latitude
@@ -38,13 +50,13 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 3
+Ndays = 1
 Niter = 800
 !upper boundary electron flow
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 100
+tau = 1
 
 !photochemistry switcher
 pk_switch = 1
@@ -59,7 +71,7 @@ transf_y_switch = 1
 !switcher of schemes for the second step mixed derivative: 0 is nonlinear, 1 is 1st order, 2 is 2nd order
 second_step_scheme_type = 2
 !switcher for the upper boundary approximation of the first splitting step
-upper_bound_type = 1
+upper_bound_type = 4
 !switcher for the monotonizator after both steps - all less or equal than zero elements are made 1
 monotonizator = 1
 diurnal_on = 0
@@ -134,6 +146,23 @@ profile_output = 0
         gradTp.d(i) = 0.5 * ((Te0 - Te.d(i)) * 9.8 / (287 * Te0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
     end do
 
+    call gradgradTp.init(z.n)
+    do i = 1, z.n
+        gradgradTp.d(i) = -0.5 * ((Te0 - Te.d(i)) * (9.8 / (287 * Te0))**2 + (Ti0 - Ti.d(i)) * (9.8 / (287 * Ti0))**2 ) * 1E-4
+    end do
+
+    call gradTr.init(z.n)
+    do i = 1, z.n
+        gradTr.d(i) = 0.5 * ((Tn0 - Tn.d(i)) * 9.8 / (287 * Tn0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
+    end do
+
+    call gradTn.init(z.n)
+    do i = 1, z.n
+        gradTn.d(i) =       (Tn0 - Tn.d(i)) * 9.8 / (287 * Tn0) * 1E-2
+    end do
+
+
+
     !print *
     !print *, "Printing dTp/dz (in K/cm) :"
     !call gradTp.print_long_frac()
@@ -146,6 +175,12 @@ profile_output = 0
         nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000)) * paramet
         nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000)) 
         nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+    end do
+
+    !grad nO(z) = nO(z) * gm/RTn ((z-140000)*1/Tn*dTn/dz - 1/100), 1/100 = 1/100 m/cm, derivative is in cm^-4
+    call gradnO.init(z.n)
+    do i = 1, z.n
+        gradnO.d(i) = nO.d(i) * (9.8*16E-3/(8.31*Tn.d(i))) * ((z.d(i)-140000)/Tn.d(i)*gradTn.d(i) - 1E-2)
     end do
 
     !print *
@@ -203,6 +238,16 @@ profile_output = 0
         D_node.d(i) = 3E+17 * Tp.d(i) / (nO.d(i) * sqrt(Tr.d(i)))
     end do
 
+    call gradD.init(z.n)
+    do i = 1, z.n
+        gradD.d(i) = D_node.d(i) * ( gradTp.d(i)/Tp.d(i) - (gradnO.d(i))/nO.d(i) - gradTr.d(i)/(2*Tr.d(i)) )
+    end do
+
+
+
+
+
+
     !print *
     !print *, "Printing D_{i+1/2} (in cm^2*s^{-1}):"
     !call D.print()
@@ -214,6 +259,14 @@ profile_output = 0
     do i = 1, z.n    
         u.d(i) = ( 3E+17 / (nO.d(i) * sqrt(Tr.d(i))) * (56E-6 + gradTp.d(i)) ) * transf_yz_switch
     end do
+
+    call gradu.init(z.n)
+    do i = 1, z.n
+        gradu.d(i) = 3E+17 * ( gradgradTp.d(i)/(nO.d(i) * sqrt(Tr.d(i))) - &
+                               (56E-6 + gradTp.d(i)) * gradnO.d(i)/ (nO.d(i)**2 * sqrt(Tr.d(i))) - &
+                               (56E-6 + gradTp.d(i)) * gradTr.d(i)/2/(nO.d(i)**2 * sqrt(Tr.d(i))) )
+    end do
+
 
     !print *
     !print *, "Printing effective velocity vector (in cm/s):"
@@ -232,16 +285,19 @@ profile_output = 0
     call n_day.init(z.n)
     call rhs_z.init(z.n) !generating RHS for S_z * n_new = rhs_z
     call rhs_y.init(Nphi)
+    call F_ub.init(Nphi)
     call pcurr.init(z.n)
 
     do j = 1, Nphi
         call n_new_z(j).init(z.n)
         call n_old_z(j).init(z.n)
+        call model_sol(j).init(z.n)
         call n_new_z_1(j).init(z.n)
         call n_old_z_1(j).init(z.n)
         call error(j).init(z.n)
         call n_old_z(j).gen()
         call n_old_z(j).gen()
+        call p_mod(j).init(z.n)
     end do
 
     do i = 1, z.n
@@ -249,6 +305,27 @@ profile_output = 0
         call n_old_y(i).init(Nphi)
         call n_new_y_1(i).init(Nphi)
         call n_old_y_1(i).init(Nphi)
+    end do
+
+    do j = 1, Nphi
+        phi = (j-0.5)*dphi-pi/2
+        sI   = sin(atan(2*tan(-pi/2+(j-0.5)*dphi)))
+        cI   = cos(atan(2*tan(-pi/2+(j-0.5)*dphi)))
+        F_ub.d(j) = D_node.d(z.n)*(sI**2)*df_dz(z.d(z.n), phi) + u.d(z.n)*(sI**2)*f(z.d(z.n), phi) - 1/R*sI*cI * df_dphi(z.d(z.n), phi)
+        do i = 1, z.n
+            
+            p_mod(j).d(i) = k.d(i)*f(z.d(i), phi) - ( &
+                            sI**2 * (gradD.d(i)*df_dz(z.d(i), phi) + ddf_dzdz(z.d(i), phi)*D_node.d(i)) + &
+                            sI**2 * (gradu.d(i)*f(z.d(i), phi) + u.d(i)*df_dz(z.d(i), phi)) - &
+                            1/R*sI*cI * (gradD.d(i)*df_dphi(z.d(i), phi) + D_node.d(i)*ddf_dzdphi(z.d(i), phi)) + &
+                            D_node.d(i)/(R**2)/cos(phi) * (dA_dphi(phi)*df_dphi(z.d(i), phi) + A(phi)*ddf_dphidphi(z.d(i), phi)) - &
+                            D_node.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*df_dz(z.d(i), phi) + B(phi)*ddf_dzdphi(z.d(i), phi)) - &
+                            u.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*f(z.d(i), phi) + B(phi)*df_dphi(z.d(i), phi)) &
+                            )
+            !if(j == 20) then
+            !    write(21, *) sI**2 * (gradD.d(i)*df_dz(z.d(i), phi) + ddf_dzdz(z.d(i), phi)*D_node.d(i))
+            !end if
+        end do
     end do
 
 
@@ -271,13 +348,13 @@ do t = 0, Ndays*86400/tau
 
         !lower boundary condition: n_1 = P_1/k_1
         S_z.d(1, 2) = 1
-        rhs_z.d(1) = p.d(1)/k.d(1)
+        rhs_z.d(1) = p_mod(j).d(1)/k.d(1)
         !upper boundary condition:
         if (j .eq. 1 .or. j .eq. Nphi .or. mixed_z_switch .eq. 0 .or. upper_bound_type .eq. 0) then
         !upper boundary type 0: no mixed derivative in the upper boundary condition
             S_z.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2
             S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2
-            rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_z + n_old_z(j).d(z.n)
+            rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_ub.d(j) + n_old_z(j).d(z.n)
     
         else 
         !complete upper flux containing mixed derivative is zero
@@ -288,7 +365,7 @@ do t = 0, Ndays*86400/tau
                 S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + &
                     0.5*D_node.d( z.n )*tau*sIph*cIph/(R*h0*dphi)
 
-                rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_z + n_old_z(j).d(z.n) + &
+                rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_ub.d(j) + n_old_z(j).d(z.n) + &
                     0.5*tau/(R*h0*dphi)*(D_node.d( z.n ) * sIph*cIph * n_old_z(j+1).d( z.n ) - &
                                          D_node.d(z.n-1) * sImh*cImh * n_old_z(j-1).d(z.n-1) )
 
@@ -299,7 +376,7 @@ do t = 0, Ndays*86400/tau
                 S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 - &
                     0.5*D_node.d(z.n)*tau*sImh*cImh/(R*h0*dphi)
 
-                rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_z + n_old_z(j).d(z.n) + &
+                rhs_z.d(z.n) = +tau/h.d(z.n-1) * F_ub.d(j) + n_old_z(j).d(z.n) + &
                     0.5*tau/(R*h0*dphi)*(-D_node.d( z.n ) * sImh*cImh * n_old_z(j-1).d( z.n ) + &
                                           D_node.d(z.n-1) * sIph*cIph * n_old_z(j+1).d(z.n-1) )
             end if
@@ -314,7 +391,7 @@ do t = 0, Ndays*86400/tau
             S_z.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2
             S_z.d(i, 3) = (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2
 
-            rhs_z.d(i) = n_old_z(j).d(i) + tau * p.d(i)
+            rhs_z.d(i) = n_old_z(j).d(i) + tau * p_mod(j).d(i)
 
             else if (nonlinear_scheme_type .eq. 8) then
                 if(sI*cI .ge. 0) then
@@ -326,7 +403,7 @@ do t = 0, Ndays*86400/tau
                     S_z.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
                         0.5*D_node.d(i+1)*tau*sIph*cIph/(R*h0*dphi)
 
-                    rhs_z.d(i) = n_old_z(j).d(i) + tau * p.d(i) - &
+                    rhs_z.d(i) = n_old_z(j).d(i) + tau * p_mod(j).d(i) - &
                         0.5*tau/(R*h0*dphi)*(-D_node.d( i ) * sImh*cImh * n_old_z(j-1).d( i ) - &
                                               D_node.d( i ) * sIph*cIph * n_old_z(j+1).d( i ) + &
                                               D_node.d(i-1) * sImh*cImh * n_old_z(j-1).d(i-1) + &
@@ -341,12 +418,18 @@ do t = 0, Ndays*86400/tau
                     S_z.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
                         0.5*D_node.d(i+1)*tau*sImh*cImh/(R*h0*dphi)
 
-                rhs_z.d(i) = n_old_z(j).d(i) + tau * p.d(i) - &
+                rhs_z.d(i) = n_old_z(j).d(i) + tau * p_mod(j).d(i) - &
                     0.5*tau/(R*h0*dphi)*( D_node.d( i ) * sImh*cImh * n_old_z(j-1).d( i ) + &
                                           D_node.d( i ) * sIph*cIph * n_old_z(j+1).d( i ) - &
                                           D_node.d(i+1) * sImh*cImh * n_old_z(j-1).d(i+1) - &
                                           D_node.d(i-1) * sIph*cIph * n_old_z(j+1).d(i-1) )
                 end if
+
+                !if(j == 20 .and. t == 1) then
+                    !write(22, *) -(-D.d(i-1)/(hmid.d(i) * h.d(i-1)) * f(z.d(i-1), phi) +&
+                    !             (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i))/hmid.d(i) * f(z.d(i), phi) -&
+                    !              D.d( i )/(hmid.d(i) * h.d( i )) * f(z.d(i+1), phi))
+                !end if
             end if
         end do
 
@@ -461,6 +544,7 @@ do t = 0, Ndays*86400/tau
 
     !output block
     if (t*tau .eq. Ndays*86400) then
+
         do j = 1, Nphi
             do i = 1, z.n
                 write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)
@@ -468,8 +552,47 @@ do t = 0, Ndays*86400/tau
             write (12, *)
         end do
         do j = 1, Nphi
-            call n_old_z(j).print(1)
+            call n_old_z(j).print(11)
         end do
+
+        do j = 1, Nphi
+            do i = 1, z.n
+                write(98,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), f(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+                model_sol(j).d(i) = f(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+            end do
+            write (98, *)
+        end do
+        do j = 1, Nphi
+            call model_sol(j).print(99)
+        end do
+
+                do j = 1, Nphi
+            do i = 1, z.n
+                write(198,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)-model_sol(j).d(i)
+            end do
+            write (198, *)
+        end do
+        do j = 1, Nphi
+            call n_old_z(j).print(199)
+        end do
+
+        ! do j = 2, Nphi - 1
+        !     do i = 2, z.n - 1
+        !         write(100,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), ddf_dzdphi(z.d(i) , (j-5E-1)*pi/(Nphi)-pi/2)
+        !     end do
+        !     write (100, *)
+        ! end do
+
+
+        ! do j = 2, Nphi - 1
+        !     do i = 2, z.n - 1
+        !         write(110,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), (f(z.d(i+1), (j+1-5E-1)*pi/(Nphi)-pi/2) + f(z.d(i-1), (j-1-5E-1)*pi/(Nphi)-pi/2) - f(z.d(i+1), (j-1-5E-1)*pi/(Nphi)-pi/2) - f(z.d(i-1), (j+1-5E-1)*pi/(Nphi)-pi/2) )/dphi/h0/4!(f(z.d(i+1), (j-5E-1)*pi/(Nphi)-pi/2) - f(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2))/h0 
+        !     end do
+        !     write (110, *)
+        ! end do
+
+
+
 
         do j = 1, Nphi
             integral = 0
@@ -775,65 +898,7 @@ if(diurnal_on .eq. 1) then
         end do
 
     !output block
-        if (t .eq. 500 ) then
-            do j = 1, Nphi
-                do i = 1, z.n
-                    write(500,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
-                end do
-                write (500, *)
-            end do
-            do j = 1, Nphi
-                call n_old_z(j).print(5001)
-            end do
-        end if
 
-        if (t .eq. 1000 ) then
-           do j = 1, Nphi
-                do i = 1, z.n
-                    write(1000,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
-                end do
-                write (1000, *)
-            end do
-            do j = 1, Nphi
-               call n_old_z(j).print(10001)
-            end do
-        end if
-
-        if (t .eq. 1500 ) then
-            do j = 1, Nphi
-                do i = 1, z.n
-                    write(1500,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
-                end do
-                write (1500, *)
-            end do
-            do j = 1, Nphi
-                call n_old_z(j).print(15001)
-            end do
-        end if
-        if (t .eq. 2000 ) then
-            do j = 1, Nphi
-                do i = 1, z.n
-                    write(2000,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
-                end do
-                write (2000, *)
-            end do
-            do j = 1, Nphi
-                call n_old_z(j).print(20001)
-            end do
-        end if
-
-
-        if (t .eq. 2500 ) then
-            do j = 1, Nphi
-                do i = 1, z.n
-                    write(2500,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), n_old_z(j).d(i)
-                end do
-                write (2500, *)
-            end do
-            do j = 1, Nphi
-                    call n_old_z(j).print(25001)
-            end do
-        end if
 
 
         do i = 1, z.n
@@ -1612,3 +1677,66 @@ real*8 function B(phi)
     return
 end
 
+real*8 function dA_dphi(phi)
+    implicit none
+    real*8 phi 
+    dA_dphi = -8*tan(phi) / cos(phi) / (1+4*(tan(phi)**2))**2 - sin(phi) / (1+4*(tan(phi)**2))
+    return
+end
+
+real*8 function dB_dphi(phi)
+    implicit none
+    real*8 phi
+    dB_dphi =  -32*tan(phi)**2 / cos(phi) / (1+4*(tan(phi)**2))**2 + 4*cos(phi) / (1+4*(tan(phi)**2))
+    return
+end
+
+real*8 function f(z, phi)
+    implicit none
+    real*8 phi, z
+    f =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2
+    !f = (cos(z)*cos(phi))**2
+    return
+end
+
+real*8 function df_dz(z, phi)
+    implicit none
+    real*8 phi, z
+    df_dz =  3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) / 133  * 1E-5
+    !df_dz = -sin(2*z)*cos(phi)**2
+    return
+end
+
+real*8 function df_dphi(z, phi)
+    implicit none
+    real*8 phi, z
+    df_dphi =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (-tan(phi/2))
+    !df_dphi = -cos(z)**2 * sin(2*phi)
+    return
+end
+
+real*8 function ddf_dzdz(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dzdz =  1E-10 * 3E+6 * cos(phi/2)**2 * &
+            (-exp((100-(z/1000))/133) - &
+            &exp((100-(z/1000))/133) * (1 - ((z/1000)-100)/133) )/133/133
+    !ddf_dzdz = -2*cos(2*z)*cos(phi)**2
+    return
+end
+
+real*8 function ddf_dphidphi(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dphidphi = 3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * (-cos(phi)/2)
+    !ddf_dphidphi = -2*cos(z)**2 * sin(2*phi)
+    return
+end
+
+real*8 function ddf_dzdphi(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dzdphi = 3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) * (-tan(phi/2)) / 133 * 1E-5
+    !ddf_dzdphi = sin(2*z)*sin(2*phi)
+    return
+end

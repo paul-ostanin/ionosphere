@@ -1,0 +1,175 @@
+\documentclass[2pt, a4paper, fleqn]{extarticle}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+%\usepackage{pscyr}
+
+%\renewcommand{\rmdefault}{ftm}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+\usepackage{geometry}
+\geometry{top=1cm,bottom=2cm,left=1cm,right=1cm}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+\begin{document}
+
+\begin{center}
+{\bf\Large Двумерная задача, неявная схема}
+\end{center}
+
+Полное двумерное уравнение: $$\dfrac{\partial n}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n}{\partial z}+\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}\right)n\bigg)-\dfrac{1}{a}D\sin I\cos I\left(\dfrac{\partial n}{\partial\varphi}+\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n\right)\bigg]+$$ $$+\dfrac{1}{a\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a}\cdot(\cos^2  I \cos\varphi)\cdot\dfrac{\partial n}{\partial \varphi}-D\cdot(\sin I\cos I\cos\varphi)\cdot \dfrac{\partial n}{\partial z} - u\cdot(\sin I \cos I \cos\varphi)\cdot n \right] +$$ $$+ [P-kn]$$
+
+Перепишем его в более компактной форме с использованием эффективной скорости $u = \dfrac{1}{T_p}\dfrac{\partial T_p}{\partial z}+\dfrac{1}{H}$ и функций $A(\varphi) = \cos^2  I \cos\varphi$, $B(\varphi) = \cos\varphi \sin 2 I$:
+$$\dfrac{\partial n}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I\dfrac{\partial n}{\partial z}\bigg]+\dfrac{\partial}{\partial z}(u\sin^2 \varphi\cdot n)-\dfrac{1}{a}\dfrac{\partial}{\partial z}\left(D\sin I\cos I\dfrac{\partial n}{\partial\varphi}\right) +\dfrac{\partial}{\partial z}\left(\dfrac{1}{T_p}\dfrac{\partial T_p}{\partial \varphi}n\right)+$$ $$+\dfrac{1}{a\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a}\cdot A(\varphi)\cdot\dfrac{\partial n}{\partial \varphi}-\dfrac{1}{2} D\cdot B(\varphi)\cdot \dfrac{\partial n}{\partial z} - \dfrac{1}{2}u\cdot B(\varphi)\cdot n \right] +$$ $$+ [P-kn]$$
+
+
+
+Используемая разностная схема внутри расчетной области:
+
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = P - k n_{i, j}^{t+1} + \sin^2 I_j\bigg[\left(D_{i+1/2}\dfrac{n_{i+1, j}^{t+1}-n_{i,j}^{t+1}}{h^2}-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}\right)+\left(\dfrac{u_{i+1}n_{i+1,j}^{t+1}-u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) + $$ $$+\dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}\left(A(\varphi_{j+1/2})\dfrac{n_{i, j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi^2}-A(\varphi_{j-1/2})\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi^2}\right)-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j+1})n_{i,j+1}^{t+1}-B(\varphi_{j-1})n_{i,j-1}^{t+1}}{2\Delta\varphi}\right)\bigg] +$$ $$+MIX_{z(i, j)} + MIX_{y(i,j)},$$
+где для смешанных производных используются следующие схемы: 
+
+\begin{center}
+\fbox{При $\sin I \geq 0$:}
+\end{center}
+
+$$MIX_{z(i, j)} = -\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\cdot$$ 
+$$\cdot\bigg[(-D_{i+1} n_{i+1, j} + D_{i+1}n_{i+1, j+1}+ D_i n_{i, j} - D_{i} n_{i, j+1})\cdot \sin I_{j+1/2}\cos I_{j+1/2} + $$
+$$ (-D_i n_{i, j-1} + D_i n_{i, j} + D_{i-1} n_{i-1, j-1} - D_{i-1} n_{i-1, j})\cdot \sin I_{j-1/2}\cos I_{j-1/2}\bigg]$$
+
+$$MIX_{y(i, j)} = -\dfrac{1}{4}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi\cos\varphi}\cdot$$
+$$\cdot\bigg[D_{i+1/2}(-B_j n_{i+1, j}+ B_{j+1} n_{i+1, j+1}+ B_{j}n_{i, j} - B_{j+1}n_{i, j+1}) +D_{i-1/2}(B_j n_{i, j} - B_{j-1}n_{i, j-1} + B_{j-1}n_{i-1, j-1} - B_j n_{i-1, j})\bigg]$$
+
+
+\begin{center}
+\fbox{При $\sin I < 0$:}
+\end{center}
+
+$$MIX_{z(i, j)} = -\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\cdot$$ 
+$$\cdot\bigg[(-D_{i+1} n_{i+1, j-1} + D_{i}n_{i, j-1}+ D_{i+1} n_{i+1, j} - D_{i} n_{i, j})\cdot \sin I_{j-1/2}\cos I_{j-1/2} + $$
+$$ (-D_i n_{i, j} + D_i n_{i, j+1} + D_{i-1} n_{i-1, j} - D_{i-1} n_{i-1, j+1})\cdot \sin I_{j+1/2}\cos I_{j+1/2}\bigg]$$
+
+$$MIX_{y(i, j)} = -\dfrac{1}{4}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi\cos\varphi}\cdot$$
+$$\cdot\bigg[D_{i+1/2}(-B_{j-1} n_{i+1, j-1}+ B_{j} n_{i+1, j}+ B_{j-1}n_{i, j-1} - B_{j}n_{i, j}) +D_{i-1/2}(B_{j+1} n_{i, j+1} - B_{j}n_{i, j} + B_{j}n_{i-1, j} - B_{j+1} n_{i-1, j+1})\bigg]$$
+
+
+Все значения сеточной функции $n$ в смешанных производных берутся неявно, со следующего временного шага $t+1$.
+
+\bigskip
+
+\begin{center}
+{\bf\Large Граничные условия}
+\end{center}
+
+\begin{itemize}
+\item[•] На нижней границе $i=1$ всюду положено $n_{i, j}^{t+1} = P/k$.
+\end{itemize}
+
+\begin{itemize}
+\item[•] Вблизи южного полюса: $j = 1$, $1<i<N_z$, $\varphi = -89{,}5^\circ$, $\sin I < 0$. Точки $-89{,}5^\circ$ и $-90{,}5^\circ$ отождествляются, а $A_{j-1/2} = 0$. В связи с этим схема запишется следующим образом: 
+\end{itemize}
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = P - k n_{i, j}^{t+1} + \sin^2 I_j\bigg[\left(D_{i+1/2}\dfrac{n_{i+1, j}^{t+1}-n_{i,j}^{t+1}}{h^2}-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}\right)+\left(\dfrac{u_{i+1}n_{i+1,j}^{t+1}-u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) + $$ $$+\dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}A(\varphi_{j+1/2})\dfrac{n_{i, j+1}^{t+1}-n_{i,j}^{t+1}}{\Delta\varphi^2}-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j+1})n_{i,j+1}^{t+1}-B(\varphi_{j})n_{i,j}^{t+1}}{2\Delta\varphi}\right)\bigg] -$$ 
+$$-\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\cdot\bigg[(-D_i n_{i, j} + D_i n_{i, j+1} + D_{i-1} n_{i-1, j} - D_{i-1} n_{i-1, j+1})\cdot \sin I_{j+1/2}\cos I_{j+1/2}\bigg]-$$
+
+$$-\dfrac{1}{4}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi\cos\varphi}\cdot\bigg[D_{i-1/2}(B_{j+1} n_{i, j+1} - B_{j}n_{i, j} + B_{j}n_{i-1, j} - B_{j+1} n_{i-1, j+1})\bigg].$$
+
+\begin{itemize}
+\item[•] Вблизи северного полюса: $j = N_{\varphi}$, $1<i<N_z$, $\varphi = +89{,}5^\circ$, $\sin I > 0$. Точки $+89{,}5^\circ$ и $+90{,}5^\circ$ отождествляются, а $A_{j+1/2} = 0$. В связи с этим схема запишется следующим образом: 
+\end{itemize}
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = P - k n_{i, j}^{t+1} + \sin^2 I_j\bigg[\left(D_{i+1/2}\dfrac{n_{i+1, j}^{t+1}-n_{i,j}^{t+1}}{h^2}-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}\right)+\left(\dfrac{u_{i+1}n_{i+1,j}^{t+1}-u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) + $$ $$+\dfrac{1}{\cos\varphi_j} \bigg[\dfrac{D}{a^2}-A(\varphi_{j-1/2})\dfrac{n_{i,j}^{t+1}-n_{i,j-1}^{t+1}}{\Delta\varphi^2}-\dfrac{u}{2a}\left(\dfrac{B(\varphi_{j})n_{i,j}^{t+1}-B(\varphi_{j-1})n_{i,j-1}^{t+1}}{2\Delta\varphi}\right)\bigg] -$$
+$$-\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\cdot\bigg[(-D_i n_{i, j-1} + D_i n_{i, j} + D_{i-1} n_{i-1, j-1} - D_{i-1} n_{i-1, j})\cdot \sin I_{j-1/2}\cos I_{j-1/2}\bigg]-$$
+$$-\dfrac{1}{4}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi\cos\varphi}\cdot\bigg[D_{i-1/2}(B_j n_{i, j} - B_{j-1}n_{i, j-1} + B_{j-1}n_{i-1, j-1} - B_j n_{i-1, j})\bigg]$$
+
+\begin{itemize}
+\item[•] Вблизи северного полюса: $j = N_{\varphi}$, $1<i<N_z$, $\varphi = +89{,}5^\circ$, $\sin I > 0$. Точки $+89{,}5^\circ$ и $+90{,}5^\circ$ отождествляются, а $A_{j+1/2} = 0$. В связи с этим схема запишется следующим образом: 
+\end{itemize}
+
+На верхней границе учитывается равенство нулю полного потока: в результате имеем уравнение: 
+$$\dfrac{n_{i,j}^{t+1}-n_{i,j}^t}{\tau} = + \bigg[-D_{i-1/2}\dfrac{n_{i,j}^{t+1}-n_{i-1,j}^{t+1}}{h^2}-\left(\dfrac{u_{i}n_{i,j}^{t+1}+u_{i-1}n_{i-1,j}^{t+1}}{2h}\right) +$$ $$+ \left(-\dfrac{u_{\varphi(i-1/2)}+|u_{\varphi(i-1/2)}|}{2h}n_{i-1,j}^{t+1}-\dfrac{u_{\varphi(i-1/2)}-|u_{\varphi(i-1/2)}|}{2h} n_{i,j}^{t+1}\right) \bigg]$$
+
+\begin{itemize}
+\item[•] На верхней границе $z = z_{ub} = 500$~км ставится условие постоянства полного потока:
+\end{itemize}
+ $$D\sin^2 I\dfrac{\partial n}{\partial z} + u\sin^2 I n - \dfrac{1}{a}D\sin I \cos I \dfrac{\partial n}{\partial \varphi} = F_{ub},$$ константа $F_{ub}$ полагается малой и при расчетах приравнивается к нулю.
+
+Аппроксимация этого граничного условия в используемой схеме имеет вид:
+$$\dfrac{n_{N,j}^{t+1}-n_{N, j}^t}{\tau} =F_{ub} -D_{N-1/2}\sin^2I_j\dfrac{n_{N, j}^{t+1} - n_{N-1, j}^{t+1}}{h^2} - \dfrac{u_N n_{N, j}-u_{N-1}n_{N-1, j}}{2h}\sin^2I_j +MIX_{z(i, j)},$$
+где $MIX_{z(i, j)}$ вычисляется, как и ранее, в зависимости от знака $\sin I$: 
+
+\begin{center}
+\fbox{При $\sin I \geq 0$:}
+\end{center}
+
+$$MIX_{z(i, j)} = -\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\bigg[(-D_N n_{N, j-1} + D_N n_{N, j} + D_{N-1} n_{N-1, j-1} - D_{N-1} n_{N-1, j})\cdot \sin I_{j-1/2}\cos I_{j-1/2}\bigg]$$
+
+
+\begin{center}
+\fbox{При $\sin I < 0$:}
+\end{center}
+
+$$MIX_{z(i, j)} = -\dfrac{1}{2}\cdot\dfrac{\tau}{a\cdot h\cdot \Delta\varphi}\cdot\bigg[(-D_N n_{N, j} + D_N n_{N, j+1} + D_{N-1} n_{N-1, j} - D_{N-1} n_{N-1, j+1})\cdot \sin I_{j+1/2}\cos I_{j+1/2}\bigg]$$
+
+\end{document}
+
+
+

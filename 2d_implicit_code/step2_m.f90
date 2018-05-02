@@ -6,16 +6,17 @@ use vector
 implicit none
 
 type (tridiagonal_matrix) S_y, S_z
-type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
+type (vect) F_ub, rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, n_day, tau0, model_sol(1441), n_new_z(1441), p_mod(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
 integer s_i, s_j, i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
-real (8) tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
-
+real (8) df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f_m, dA_dphi, dB_dphi
+real (8) tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
+type (vect) gradu, gradD, gradTp, gradTr, gradTi, gradTn, gradTe, gradgradTp, gradnO
 
 integer, parameter :: max_size = 1000000
 integer, parameter :: max_nonzero = 10000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
-integer, parameter :: Nz = 201
+integer, parameter :: Nz = 81
 integer, parameter :: Nphi = 180
 
 
@@ -44,15 +45,21 @@ real*8 rhs_z_phi(Nz, Nphi), ans(Nz, Nphi)
 real*8 o
 
 !opening files for writing the output
-!    open(unit=1, name='res.txt')
-    open(unit=12, name='res_gnp.txt')
+    open(unit=11, name='res_implicit_model.txt')
+    open(unit=12, name='res_implicit_gnp_model.txt')
+    open(unit=98, name='model_solution_gnp.txt')    
+    open(unit=99, name='model_solution_matrix.txt')
+    open(unit=198,name='diff_res_sol_gnp.txt')
+    !open(unit=199,name='diff_res_sol.txt')
+
 
 pi = 3.141592653589793238462643
 
 !nonlinear_scheme_type variable switches the u_phi-approximation. 
 !nonlinear_scheme_type = 8
  
-
+!maximum altitude in km
+Hmax = 500
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -62,13 +69,13 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 0.25
+Ndays = 2
 Niter = 800
 !upper boundary electron flow
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 100
+tau = 10
 
 !photochemistry switcher
 pk_switch = 1
@@ -95,7 +102,7 @@ profile_output = 1
     call z.init(Nz)
 
     !Space step (in cm) 5 km
-    h0 = 400E+5 / (z.n - 1)
+    h0 = (Hmax - 100) * 1E+5 / (z.n - 1)
     do i = 1, z.n
         z.d(i) = 100E+3 + h0 * (i-1)/100
     end do
@@ -142,6 +149,21 @@ profile_output = 1
         gradTp.d(i) = 0.5 * ((Te0 - Te.d(i)) * 9.8 / (287 * Te0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
     end do
 
+    call gradgradTp.init(z.n)
+    do i = 1, z.n
+        gradgradTp.d(i) = -0.5 * ((Te0 - Te.d(i)) * (9.8 / (287 * Te0))**2 + (Ti0 - Ti.d(i)) * (9.8 / (287 * Ti0))**2 ) * 1E-4
+    end do
+
+    call gradTr.init(z.n)
+    do i = 1, z.n
+        gradTr.d(i) = 0.5 * ((Tn0 - Tn.d(i)) * 9.8 / (287 * Tn0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
+    end do
+
+    call gradTn.init(z.n)
+    do i = 1, z.n
+        gradTn.d(i) =       (Tn0 - Tn.d(i)) * 9.8 / (287 * Tn0) * 1E-2
+    end do
+
     call nO.init(z.n)
     call nO2.init(z.n)
     call nN2.init(z.n)
@@ -150,6 +172,12 @@ profile_output = 1
         nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
         nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
         nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+    end do
+
+    !grad nO(z) = nO(z) * gm/RTn ((z-140000)*1/Tn*dTn/dz - 1/100), 1/100 = 1/100 m/cm, derivative is in cm^-4
+    call gradnO.init(z.n)
+    do i = 1, z.n
+        gradnO.d(i) = nO.d(i) * (9.8*16E-3/(8.31*Tn.d(i))) * ((z.d(i)-140000)/Tn.d(i)*gradTn.d(i) - 1E-2)
     end do
 
 
@@ -173,6 +201,11 @@ profile_output = 1
         D_node.d(i) = 3E+17 * Tp.d(i) / (nO.d(i) * sqrt(Tr.d(i)))
     end do
 
+    call gradD.init(z.n)
+    do i = 1, z.n
+        gradD.d(i) = D_node.d(i) * ( gradTp.d(i)/Tp.d(i) - (gradnO.d(i))/nO.d(i) - gradTr.d(i)/(2*Tr.d(i)) )
+    end do
+
     !Effective velocity vector
     !u.d(i) = u_i = D_i * (dTp/dz + mg/2k)/Tp, mg/2k ~ 5.6*10^{-5} [K/cm]
     call u.init(z.n)
@@ -180,12 +213,44 @@ profile_output = 1
         u.d(i) = ( 3E+17 / (nO.d(i) * sqrt(Tr.d(i))) * (56E-6 + gradTp.d(i)) ) * transf_yz_switch
     end do
 
+    call gradu.init(z.n)
+    do i = 1, z.n
+        gradu.d(i) = 3E+17 * ( gradgradTp.d(i)/(nO.d(i) * sqrt(Tr.d(i))) - &
+                               (56E-6 + gradTp.d(i)) * gradnO.d(i)/ (nO.d(i)**2 * sqrt(Tr.d(i))) - &
+                               (56E-6 + gradTp.d(i)) * gradTr.d(i)/2/(nO.d(i)**2 * sqrt(Tr.d(i))) )
+    end do
+
+
+    call F_ub.init(Nphi)
+    do j = 1, Nphi
+        call p_mod(j).init(z.n)
+        call model_sol(j).init(z.n)
+    end do
+
+    do j = 1, Nphi
+        phi = (j-0.5)*dphi-pi/2
+        sI   = sin(atan(2*tan(-pi/2+(j-0.5)*dphi)))
+        cI   = cos(atan(2*tan(-pi/2+(j-0.5)*dphi)))
+        F_ub.d(j) = D_node.d(z.n)*(sI**2)*df_dz(z.d(z.n), phi) + u.d(z.n)*(sI**2)*f_m(z.d(z.n), phi) - 1/R*sI*cI * df_dphi(z.d(z.n), phi)
+        do i = 1, z.n
+            
+            p_mod(j).d(i) = k.d(i)*f_m(z.d(i), phi) - ( &
+                            sI**2 * (gradD.d(i)*df_dz(z.d(i), phi) + ddf_dzdz(z.d(i), phi)*D_node.d(i)) + &
+                            sI**2 * (gradu.d(i)*f_m(z.d(i), phi) + u.d(i)*df_dz(z.d(i), phi)) - &
+                            1/R*sI*cI * (gradD.d(i)*df_dphi(z.d(i), phi) + D_node.d(i)*ddf_dzdphi(z.d(i), phi)) + &
+                            D_node.d(i)/(R**2)/cos(phi) * (dA_dphi(phi)*df_dphi(z.d(i), phi) + A(phi)*ddf_dphidphi(z.d(i), phi)) - &
+                            D_node.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*df_dz(z.d(i), phi) + B(phi)*ddf_dzdphi(z.d(i), phi)) - &
+                            u.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*f_m(z.d(i), phi) + B(phi)*df_dphi(z.d(i), phi)) &
+                            )
+        end do
+    end do    
+
 
 !initialization of n before iterations
     n = 1d0
     prev_n = 0d0
 
-do t = 0, 1000
+do t = 0, Ndays*86400/tau
     if(mod(t, 100) .eq. 0) then
         print *, t
     end if
@@ -221,13 +286,13 @@ do t = 0, 1000
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [0d0, & 
-                                               1+(D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
+                                                 (D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
                                                 (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)  ]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
                 mixed_z(+1, :) = [0d0,  0d0                                        ,  0d0                                          ]
-                mixed_z( 0, :) = [0d0, -0.5*D_node.d( i )*tau*sIph*cIph/(R*h0*dphi),  0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sIph*cIph]
-                mixed_z(-1, :) = [0d0,  0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*tau/(2*R*h0*dphi)*D_node.d(i-1)*sIph*cIph]
+                mixed_z( 0, :) = [0d0, -0.5*D_node.d( i )*tau*sIph*cIph/(R*h0*dphi),  0.5*D_node.d( i )*tau*sIph*cIph/(R*h0*dphi)]
+                mixed_z(-1, :) = [0d0,  0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
 
                 mixed_y(+1, :) = [0d0,  0d0                                           ,  0d0                                                ]
                 mixed_y( 0, :) = [0d0, -0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d(i-1)/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
@@ -236,7 +301,7 @@ do t = 0, 1000
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -249,13 +314,13 @@ do t = 0, 1000
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [ (-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) - u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
-                                               1+(D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi), &
+                                                 (D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi), &
                                                0d0]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
                 mixed_z(+1, :) = [ 0d0                                          ,  0d0                                        , 0d0]
-                mixed_z( 0, :) = [-0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sImh*cImh,  0.5*D_node.d( i )*tau*sImh*cImh/(R*h0*dphi), 0d0]
-                mixed_z(-1, :) = [ 0.5*tau/(2*R*h0*dphi)*D_node.d(i-1)*sImh*cImh, -0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi), 0d0]
+                mixed_z( 0, :) = [-0.5*D_node.d( i )*tau*sImh*cImh/(R*h0*dphi),  0.5*D_node.d( i )*tau*sImh*cImh/(R*h0*dphi), 0d0]
+                mixed_z(-1, :) = [ 0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi), 0d0]
 
                 mixed_y(+1, :) = [ 0d0                                                ,  0d0                                           ,  0d0]
                 mixed_y( 0, :) = [-0.5*D.d(i-1)/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)),  0d0]
@@ -263,17 +328,9 @@ do t = 0, 1000
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
-
-!            else if ((j == 1 .or. j == Nphi) .and. i == Nz) then
-
-!                !left and right upper corners
-!                diffusion_transfer_z(+1, :) = [0d0, 0d0, 0d0]
-!                diffusion_transfer_z( 0, :) = [0d0, 1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2, 0d0]
-!                diffusion_transfer_z(-1, :) = [0d0,   (- D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2, 0d0]
-
 
             else if (i == Nz) then
 
@@ -283,17 +340,27 @@ do t = 0, 1000
                 diffusion_transfer_z(-1, :) = [0d0, (-D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5*u.d(z.n-1)*tau/h.d(z.n-1))*sI**2   , 0d0]
 
                 if(sI*cI .ge. 0) then
-                    mixed_z(+1, :) = [0d0,                                     0d0,                                             0d0]
-                    mixed_z( 0, :) = [-0.5*tau*sI*cI/(2*R*h0*dphi)*D_node.d( z.n ),  0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi), 0d0]
-                    mixed_z(-1, :) = [ 0.5*tau*sI*cI/(2*R*h0*dphi)*D_node.d(z.n-1), -0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi), 0d0]
+                    mixed_z(+1, :) = [ 0d0                                      ,  0d0                                      , 0d0]
+                    mixed_z( 0, :) = [-0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi),  0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi), 0d0]
+                    mixed_z(-1, :) = [ 0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi), -0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi), 0d0]
+
+                    mixed_y(+1, :) = [ 0d0                                                ,  0d0                                           , 0d0]
+                    mixed_y( 0, :) = [-0.5*D.d(i-1)/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)), 0d0]
+                    mixed_y(-1, :) = [ 0.5*D.d(i-1)/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)), -0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)), 0d0]
                 else
-                    mixed_z(+1, :) = [0d0,                                        0d0,                                          0d0]
-                    mixed_z( 0, :) = [0d0, -0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi),  0.5*tau*sI*cI/(2*R*h0*dphi)*D_node.d( z.n )]
-                    mixed_z(-1, :) = [0d0,  0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi), -0.5*tau*sI*cI/(2*R*h0*dphi)*D_node.d(z.n-1)]
+                    mixed_z(+1, :) = [0d0,  0d0                                      ,  0d0                                        ]
+                    mixed_z( 0, :) = [0d0, -0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi),  0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)]
+                    mixed_z(-1, :) = [0d0,  0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi), -0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)]
+
+                    mixed_y(+1, :) = [ 0d0,  0d0                                           ,  0d0                                                ]
+                    mixed_y( 0, :) = [ 0d0, -0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d(i-1)/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
+                    mixed_y(-1, :) = [ 0d0,  0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi)), -0.5*D.d(i-1)/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
                 end if
+
+
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) !+ mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -307,22 +374,22 @@ do t = 0, 1000
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [(-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/(R)/cos(phi), &
-                                                1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2))*tau/(R)/cos(phi), &
+                                                (D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2))*tau/(R)/cos(phi), &
                                                (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/(R)/cos(phi)]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
                 if(sI .ge. 0) then
-                    mixed_z(+1, :) = [ 0d0,                                           -0.5*D_node.d(i+1)*tau*sIph*cIph/(R*h0*dphi)          ,  0.5*tau/(2*R*h0*dphi)*D_node.d(i+1)*sIph*cIph]
-                    mixed_z( 0, :) = [-0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sImh*cImh,  0.5*D_node.d(i)*tau*(sIph*cIph+sImh*cImh)/(R*h0*dphi), -0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sIph*cIph]
-                    mixed_z(-1, :) = [ 0.5*tau/(2*R*h0*dphi)*D_node.d(i-1)*sImh*cImh, -0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi)          ,  0d0                                          ]
+                    mixed_z(+1, :) = [ 0d0,                                         -0.5*D_node.d(i+1)*tau*sIph*cIph/(R*h0*dphi)          ,  0.5*D_node.d(i+1)*tau*sIph*cIph/(R*h0*dphi)]
+                    mixed_z( 0, :) = [-0.5*D_node.d( i )*tau*sImh*cImh/(R*h0*dphi),  0.5*D_node.d(i)*tau*(sIph*cIph+sImh*cImh)/(R*h0*dphi), -0.5*D_node.d( i )*tau*sIph*cIph/(R*h0*dphi)]
+                    mixed_z(-1, :) = [ 0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi)          ,  0d0                                        ]
 
                     mixed_y(+1, :) = [ 0d0                                                , -0.5*D.d( i )/2*B(phi)*tau/(h0*dphi*R*cos(phi))         ,  0.5*D.d( i )/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
                     mixed_y( 0, :) = [-0.5*D.d(i-1)/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)),  0.5*(D.d(i)+D.d(i-1))/2*B(phi)*tau/(h0*dphi*R*cos(phi)), -0.5*D.d( i )/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
                     mixed_y(-1, :) = [ 0.5*D.d(i-1)/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)), -0.5*D.d(i-1)/2*B(phi)*tau/(h0*dphi*R*cos(phi))         ,  0d0                                                ]
                 else
-                    mixed_z(+1, :) = [-0.5*tau/(2*R*h0*dphi)*D_node.d(i+1)*sImh*cImh,  0.5*D_node.d(i+1)*tau*sImh*cImh/(R*h0*dphi)          ,  0d0                                          ]
-                    mixed_z( 0, :) = [ 0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sImh*cImh, -0.5*D_node.d(i)*tau*(sImh*cImh+sIph*cIph)/(R*h0*dphi),  0.5*tau/(2*R*h0*dphi)*D_node.d( i )*sIph*cIph]
-                    mixed_z(-1, :) = [ 0d0,                                            0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi)          , -0.5*tau/(2*R*h0*dphi)*D_node.d(i-1)*sIph*cIph]
+                    mixed_z(+1, :) = [-0.5*D_node.d(i+1)*tau*sImh*cImh/(R*h0*dphi),  0.5*D_node.d(i+1)*tau*sImh*cImh/(R*h0*dphi)          ,  0d0                                          ]
+                    mixed_z( 0, :) = [ 0.5*D_node.d( i )*tau*sImh*cImh/(R*h0*dphi), -0.5*D_node.d(i)*tau*(sImh*cImh+sIph*cIph)/(R*h0*dphi),  0.5*D_node.d( i )*tau*sIph*cIph/(R*h0*dphi)]
+                    mixed_z(-1, :) = [ 0d0,                                          0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi)          , -0.5*D_node.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
 
                     mixed_y(+1, :) = [-0.5*D.d( i )/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d( i )/2*B(phi)*tau/(h0*dphi*R*cos(phi))         ,  0d0                                                ]
                     mixed_y( 0, :) = [ 0.5*D.d( i )/2*B(phi-dphi)*tau/(h0*dphi*R*cos(phi)), -0.5*(D.d(i)+D.d(i-1))/2*B(phi)*tau/(h0*dphi*R*cos(phi)),  0.5*D.d(i-1)/2*B(phi+dphi)*tau/(h0*dphi*R*cos(phi))]
@@ -331,7 +398,7 @@ do t = 0, 1000
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -353,13 +420,13 @@ do t = 0, 1000
     do i = 1, Nz
         do j = 1, Nphi
             if (i == 1) then
-                rhs_z_phi(i, j) = p.d(i)
+                rhs_z_phi(i, j) = p_mod(j).d(i) !p.d(i)
             else if ((j == 1 .or. j == Nphi) .and. i == Nz) then
-                rhs_z_phi(i, j) = tau/h.d(z.n-1) * F_z + ans(i, j)
+                rhs_z_phi(i, j) = tau/h.d(z.n-1) * F_ub.d(j) + ans(i, j)
             else if (i == Nz) then
-                rhs_z_phi(i, j) = tau/h.d(z.n-1) * F_z + ans(i, j)
+                rhs_z_phi(i, j) = tau/h.d(z.n-1) * F_ub.d(j) + ans(i, j)
             else
-                rhs_z_phi(i, j) = tau * p.d(i) + ans(i, j)
+                rhs_z_phi(i, j) = tau * p_mod(j).d(i) + ans(i, j)
             end if
         enddo
     enddo
@@ -406,12 +473,27 @@ do t = 0, 1000
     end if
 
     !Iterative solving (bi-conjugate gradients)
-        resinit = dsqrt(ddot(matrix_size, f, 1, f, 1))
+        !resinit = dsqrt(ddot(matrix_size, f, 1, f, 1))
+        !n = 0d0
+        resinit = 0
+        do i = 1, Nz
+            do j = 1, Nphi
+                eps = rhs_z_phi(i, j)
+                do s_i = -1, 1
+                    do s_j = -1, 1
+                        if (stencil(i, j, s_i, s_j) /= 0) then
+                            eps = eps - stencil(i, j, s_i, s_j) * n((j+s_j - 1) * Nz + i+s_i)
+                        endif
+                    enddo
+                enddo
+                if (abs(eps) > resinit) resinit = abs(eps);
+            enddo
+        enddo
         write(*, *) "resinit", resinit
-        n = 0d0
+
 
         ITER = 1000
-        RESID = 1d-30 * resinit
+        RESID = 1d-15 * resinit
         INFO = 0
         NUNIT = 6 ! 6 to output
         iprevec(1) = matrix_size
@@ -451,12 +533,35 @@ end do
 
 
 !Printing output
-do j = 1, Nphi
-    do i = 1, z.n
-        write(12,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), ans(i, j)
+    do j = 1, Nphi
+        do i = 1, z.n
+            write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), ans(i, j)
+        end do
+        write (12, *)
     end do
-    write (12, *)
-end do
+
+    do j = 1, Nphi
+        write (11, '(1000(e10.3))') (ans(i, j), i = 1, z.n)
+    end do
+
+
+    do j = 1, Nphi
+        do i = 1, z.n
+            write(98,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), f_m(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+            model_sol(j).d(i) = f_m(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+        end do
+        write (98, *)
+    end do
+    do j = 1, Nphi
+        call model_sol(j).print(99)
+    end do
+
+    do j = 1, Nphi
+        do i = 1, z.n
+            write(198,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), ans(i, j)-model_sol(j).d(i)
+        end do
+        write (198, *)
+    end do
 
 
 
@@ -479,5 +584,69 @@ real*8 function B(phi)
     implicit none
     real*8 phi
     B = 4*sin(phi) / (1+4*(tan(phi)**2))
+    return
+end
+
+real*8 function dA_dphi(phi)
+    implicit none
+    real*8 phi 
+    dA_dphi = -8*tan(phi) / cos(phi) / (1+4*(tan(phi)**2))**2 - sin(phi) / (1+4*(tan(phi)**2))
+    return
+end
+
+real*8 function dB_dphi(phi)
+    implicit none
+    real*8 phi
+    dB_dphi =  -32*tan(phi)**2 / cos(phi) / (1+4*(tan(phi)**2))**2 + 4*cos(phi) / (1+4*(tan(phi)**2))
+    return
+end
+
+real*8 function f_m(z, phi)
+    implicit none
+    real*8 phi, z
+    f_m =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2
+    !f = (cos(z)*cos(phi))**2
+    return
+end
+
+real*8 function df_dz(z, phi)
+    implicit none
+    real*8 phi, z
+    df_dz =  3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) / 133  * 1E-5
+    !df_dz = -sin(2*z)*cos(phi)**2
+    return
+end
+
+real*8 function df_dphi(z, phi)
+    implicit none
+    real*8 phi, z
+    df_dphi =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (-tan(phi/2))
+    !df_dphi = -cos(z)**2 * sin(2*phi)
+    return
+end
+
+real*8 function ddf_dzdz(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dzdz =  1E-10 * 3E+6 * cos(phi/2)**2 * &
+            (-exp((100-(z/1000))/133) - &
+            &exp((100-(z/1000))/133) * (1 - ((z/1000)-100)/133) )/133/133
+    !ddf_dzdz = -2*cos(2*z)*cos(phi)**2
+    return
+end
+
+real*8 function ddf_dphidphi(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dphidphi = 3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * (-cos(phi)/2)
+    !ddf_dphidphi = -2*cos(z)**2 * sin(2*phi)
+    return
+end
+
+real*8 function ddf_dzdphi(z, phi)
+    implicit none
+    real*8 phi, z
+    ddf_dzdphi = 3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) * (-tan(phi/2)) / 133 * 1E-5
+    !ddf_dzdphi = sin(2*z)*sin(2*phi)
     return
 end
