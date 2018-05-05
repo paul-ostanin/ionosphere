@@ -1,0 +1,81 @@
+\documentclass[2pt, a4paper, fleqn]{extarticle}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+%\usepackage{pscyr}
+
+%\renewcommand{\rmdefault}{ftm}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+\usepackage{geometry}
+\geometry{top=1cm,bottom=2cm,left=1cm,right=1cm}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+\begin{document}
+
+Модельное решение $f(z, \varphi) = \cos^2 \dfrac{\varphi}{2} \cdot \dfrac{z-100}{133} \cdot e^{-\frac{z-100}{133}}$.
+
+\end{document}
+
+
+

@@ -8,19 +8,19 @@ implicit none
 type (tridiagonal_matrix) S_y, S_z
 type (vect) rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, n_day, tau0, n_new_z(1441), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
 integer s_i, s_j, i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
-real (8) tau, tau_1, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
+real (8) tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 
-integer, parameter :: max_size = 1000000
-integer, parameter :: max_nonzero = 10000000
+integer, parameter :: max_size = 10000000
+integer, parameter :: max_nonzero = 100000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
 integer, parameter :: Nz = 81
-integer, parameter :: Nphi = 90
+integer, parameter :: Nphi = 18000
 
 
-integer ia(max_size + 1), ja(max_nonzero), iw(maxwi)
-double precision arr(max_nonzero), f(max_size), n(max_size), prev_n(max_size), rw(maxwr), v(max_size)
+integer, allocatable:: ia(:), ja(:), iw(:)
+double precision, allocatable:: arr(:), f(:), n(:), prev_n(:), rw(:), v(:)
 
 external matvec, prevec0
 integer ITER, INFO, NUNIT, ierr, ipalu, ipjlu, ipju, ipiw
@@ -43,16 +43,30 @@ real*8 stencil(Nz, Nphi, -1:1, -1:1), operator(-1:1, -1:1), diffusion_transfer_z
 real*8 rhs_z_phi(Nz, Nphi), ans(Nz, Nphi)
 real*8 o
 
+
+
+allocate(ia(max_size + 1))
+allocate(ja(max_nonzero))
+allocate(iw(maxwi))
+allocate(arr(max_nonzero))
+allocate(f(max_size))
+allocate(n(max_size))
+allocate(prev_n(max_size))
+allocate(rw(maxwr))
+allocate(v(max_size))
+
+
 !opening files for writing the output
-!    open(unit=1, name='res.txt')
-    open(unit=12, name='res_gnp.txt')
+    open(unit=999, name='matrix_80_90_selfadj.txt')
+
 
 pi = 3.141592653589793238462643
 
 !nonlinear_scheme_type variable switches the u_phi-approximation. 
 !nonlinear_scheme_type = 8
  
-
+!maximum altitude in km
+Hmax = 500
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -62,13 +76,13 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 4
+Ndays = 1
 Niter = 800
 !upper boundary electron flow
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 300
+tau = 1
 
 !photochemistry switcher
 pk_switch = 1
@@ -95,7 +109,7 @@ profile_output = 1
     call z.init(Nz)
 
     !Space step (in cm) 5 km
-    h0 = 400E+5 / (z.n - 1)
+    h0 = (Hmax - 100) * 1E+5 / (z.n - 1)
     do i = 1, z.n
         z.d(i) = 100E+3 + h0 * (i-1)/100
     end do
@@ -236,7 +250,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -263,7 +277,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j)  + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -295,7 +309,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) !+ mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -333,7 +347,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z(s_i, s_j) + mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -395,6 +409,16 @@ do t = 0, Ndays*86400/tau
     matrix_size = Nz * Nphi
     nonzero = counter_a - 1
 
+    !printing CSR matrix
+    if (t == 0) then
+
+        !write(999, *) matrix_size
+        !write(999, *) ia(1:matrix_size+1)
+        !write(999, *) ja(1:nonzero)
+        !write(999, *) arr(1:nonzero)
+
+    end if
+
     !Preconditioning
     if (t == 0) then
         ipalu = 1
@@ -408,8 +432,8 @@ do t = 0, Ndays*86400/tau
     end if
 
     !Iterative solving (bi-conjugate gradients)
-!        resinit = dsqrt(ddot(matrix_size, f, 1, f, 1))
-!        n = 0d0
+        !resinit = dsqrt(ddot(matrix_size, f, 1, f, 1))
+        !n = 0d0
         do i = 1, Nz
             do j = 1, Nphi
                 eps = rhs_z_phi(i, j)
@@ -463,16 +487,26 @@ do t = 0, Ndays*86400/tau
 
        print *, 'Residual = ', resinit
 
+
+    !Printing output
+
+    if(mod(t, 100) == 0) then
+        open(unit=11,  name='res_implicit_no_mixed_1sec.txt')
+        open(unit=12,  name='res_gnp_implicit_no_mixed_1sec.txt')
+        do j = 1, Nphi
+            do i = 1, z.n
+                write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), ans(i, j)
+            end do
+            write (12, *)
+            write (11, '(1000(e10.3))') (ans(i, j), i = 1, z.n)
+        end do
+        close(11)
+        close(12)
+    end if
+
 end do
 
 
-!Printing output
-do j = 1, Nphi
-    do i = 1, z.n
-        write(12,*) (j-5E-1)*180/(Nphi)-90, 100+400/(z.n-1)*(i-1), ans(i, j)
-    end do
-    write (12, *)
-end do
 
 
 

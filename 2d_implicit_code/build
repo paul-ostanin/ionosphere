@@ -21,7 +21,9 @@
 
 	$compiler -c tridiagonal_matrix_class.f90 $flags
 	$compiler -c step2.f90 $flags
+        $compiler -c step2_m.f90 $flags
 
 
 	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
+	$compiler -o step2_m step2_m.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
 

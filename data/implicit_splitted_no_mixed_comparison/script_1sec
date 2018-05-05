@@ -1,0 +1,1 @@
+splot '<paste res_gnp_implicit_no_mixed_100sec.txt res_split_gnp_no_mixed_100sec.txt' using 1:2:($3-$6) wi li title "Problem without mixed derivatives. Difference between 2D implicit problem solution and splitted scheme solution. Tau = 1 sec"
