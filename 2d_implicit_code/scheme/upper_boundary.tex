@@ -1,0 +1,123 @@
+\documentclass[2pt, a4paper, fleqn]{extarticle}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+%\usepackage{pscyr}
+
+%\renewcommand{\rmdefault}{ftm}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+\usepackage{geometry}
+\geometry{top=1cm,bottom=2cm,left=1cm,right=1cm}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+\begin{document}
+
+{\bf 1.} Аналитическое решение: $f(z, \varphi) = 3\cdot10^6\left(\dfrac{z-100}{133}\right)e^{\left(\frac{100-z}{133}\right)}\cdot \cos^2 \dfrac{\varphi}{2}$. Область: $(z, \varphi) \in [100;500]\times\left[-\dfrac{\pi}{2}; +\dfrac{\pi}{2}\right]$.
+
+Уравнение: $$\dfrac{\partial n}{\partial t} = \dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial n}{\partial z}+u\cdot n\bigg)\bigg]+$$ $$+\dfrac{1}{a\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a}\cdot A(\varphi)\cdot\dfrac{\partial n}{\partial \varphi} - \dfrac{u}{2}\cdot B(\varphi)\cdot n \right] +$$ $$+ [P-kn]$$
+
+Функция $P(z, \varphi)$ подобрана так, чтобы $f(z, \varphi)$ была стационарным решением уравнения: 
+$$P(z, \varphi) = k f(z, \varphi) - \left(\dfrac{\partial}{\partial z}\bigg[D\sin^2 I \bigg(\dfrac{\partial f}{\partial z}+u\cdot f\bigg)\bigg]+\dfrac{1}{a\cos\varphi} \dfrac{\partial }{\partial \varphi}\left[\dfrac{D}{a}\cdot A(\varphi)\cdot\dfrac{\partial f}{\partial \varphi} - \dfrac{u}{2}\cdot B(\varphi)\cdot f \right]\right)$$
+
+На верхней границе задаётся поток $F(\varphi) = D\cdot\sin^2 I\cdot \left(\dfrac{\partial n}{\partial z}\right) + u\cdot\sin^2 I \cdot n$. Функция $F$ задана так, чтобы $f(z, \varphi)$ тождественно удовлетворяла этому условию.
+
+Разностная схема для уравнения: $$\dfrac{n_{i, j}^{t+1}-n_{i, j}^t}{\tau} = P_{i, j} + k_{i}n_{i, j}^{t+1} + \sin^2 I_j \left( D_{i+1/2}\dfrac{n_{i+1, j}^{t+1} - n_{i, j}^{t+1}}{h^2} - D_{i-1/2}\dfrac{n_{i, j}^{t+1} - n_{i-1, j}^{t+1}}{h^2} + \dfrac{u_{i+1}n_{i+1, j}^{t+1} - u_{i-1}n_{i-1, j}^{t+1}}{2h} \right) + $$ $$+ \dfrac{D_i}{a^2\cos\varphi_j} \left(A_{j+1/2}\dfrac{n_{i, j+1}^{t+1}-n_{i, j}^{t+1}}{\Delta\varphi^2} - A_{j-1/2}\dfrac{n_{i, j}^{t+1}-n_{i, j-1}^{t+1}}{\Delta\varphi^2}\right) -\dfrac{u_j}{2a\cos\varphi_j} \left(\dfrac{B_{j+1} n_{i, j+1}^{t+1} - B_{j-1}n_{i, j-1}^{t+1}}{2\Delta\varphi} \right)$$
+
+\bigskip
+
+{\bf 2.} Рассмотрим далее два случая аппроксимации верхнего граничного условия.
+
+\begin{itemize}
+
+\item[•] Граничное условие аппроксимируется и включается в систему уравнений отдельно.
+
+\end{itemize}
+
+В этом случае записываем уравнение системы на предпоследнем слое по $z$ (захватывающем последний $N$-ый слой одной точкой шаблона).
+
+$$\dfrac{n_{N-1, j}^{t+1}-n_{N-1, j}^t}{\tau} = P_{N-1, j} + k_{N-1}n_{N-1, j}^{t+1} +$$ $$+ \sin^2 I_j \left( D_{N-1/2}\dfrac{n_{N, j}^{t+1} - n_{N-1, j}^{t+1}}{h^2} - D_{N-3/2}\dfrac{n_{N-1, j}^{t+1} - n_{N-2, j}^{t+1}}{h^2} + \dfrac{u_{N}n_{N, j}^{t+1} - u_{N-2}n_{N-2, j}^{t+1}}{2h} \right) + $$ $$+ \dfrac{D_{N-1}}{a^2\cos\varphi_j} \left(A_{j+1/2}\dfrac{n_{N-1, j+1}^{t+1}-n_{N-1, j}^{t+1}}{\Delta\varphi^2} - A_{j-1/2}\dfrac{n_{N-1, j}^{t+1}-n_{N-1, j-1}^{t+1}}{\Delta\varphi^2}\right) -\dfrac{u_j}{2a\cos\varphi_j} \left(\dfrac{B_{j+1} n_{N-1, j+1}^{t+1} - B_{j-1}n_{N-1, j-1}^{t+1}}{2\Delta\varphi} \right)$$
+
+Граничное условие запишем в форме $F_j/h = D_{N-1/2} \cdot \sin^2 I_j\dfrac{n_{N, j}^{t+1} - n_{N-1, j}^{t+1}}{h^2} + \dfrac{1}{2h}\cdot \sin^2 I_j\cdot(u_{N-1}n_{N-1, j}^{t+1} + u_N n_{N, j}^{t+1})$, поток в программе задаём по формуле $F_j = \left(D_{N-1/2} \cdot \dfrac{\partial f}{\partial z}(500 - h/2, \varphi) + u_{N-1/2}\cdot f(500-h/2, \varphi)\right)\cdot \sin^2 I_j$.
+
+В этом случае расчет идет нормально, $C$-норма ошибки вычисленного стационарного решения равна $7000$ при $C$-норме точного аналитического решения порядка $3\cdot 10^{6}$.
+
+\begin{itemize}
+
+\item[•] Граничное условие используется для выражения $n_{N+1}$, после чего исключается из системы.
+
+\end{itemize}
+
+$$\dfrac{n_{N, j}^{t+1}-n_{N, j}^t}{\tau} = P_{N, j} + \dfrac{F_j}{h} + k_{N}n_{N, j}^{t+1} + \sin^2 I_j \left(- D_{N-1/2}\dfrac{n_{N, j}^{t+1} - n_{N-1, j}^{t+1}}{h^2} - \dfrac{u_{N}n_{N, j}^{t+1} - u_{N-1}n_{N-1, j}^{t+1}}{2h} \right) + $$ $$+ \dfrac{D_N}{a^2\cos\varphi_j} \left(A_{j+1/2}\dfrac{n_{N, j+1}^{t+1}-n_{N, j}^{t+1}}{\Delta\varphi^2} - A_{j-1/2}\dfrac{n_{N, j}^{t+1}-n_{N, j-1}^{t+1}}{\Delta\varphi^2}\right) -\dfrac{u_j}{2a\cos\varphi_j} \left(\dfrac{B_{j+1} n_{N, j+1}^{t+1} - B_{j-1}n_{N, j-1}^{t+1}}{2\Delta\varphi} \right)$$
+
+Поток $F_j$ задается формулой $F_j = u_{N+1/2}\cdot\sin^2 I_j \cdot f(500+h/2, \varphi) + D_{N+1/2}\sin^2 I_j\cdot \dfrac{\partial f}{\partial z}(500 + h/2, \varphi)$
+
+В этом случае $C$-норма ошибки численного решения уже не $7000$, а $300 000$ (0{\_}о).
+
+\bigskip
+
+
+\end{document}
+
+
+

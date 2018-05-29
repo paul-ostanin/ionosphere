@@ -7,10 +7,11 @@ implicit none
 
 type (tridiagonal_matrix) S_y, S_z
 type (vect) F_ub, rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, gradnO, k, p, pcurr, m, n_old, n_new, delta, D, D_node, gradD, u, gradu, Tn, Ti, Te, Tr, Tp, gradTp, gradTn, gradTr, gradgradTp, n_day, tau0, model_sol(1801), n_new_z(1801), p_mod(1801), n_old_z(1801), n_new_y(701), n_old_y(701), n_new_z_1(1801), n_old_z_1(1801), n_new_y_1(701), n_old_y_1(701), error(1801)
-integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, upper_bound_type, monotonizator
+integer i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
 real (8) u_analytical, D_analytical, df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f, paramet, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, dA_dphi, dB_dphi, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
+
 
 !    open(unit=100, name='an.txt')
 !    open(unit=110, name='num.txt')
@@ -26,7 +27,8 @@ paramet = 1
 
 pi = 3.141592653589793238462643
 
-
+!nonlinear_scheme_type variable switches the u_phi-approximation. 
+nonlinear_scheme_type = 8
  
 !number of nodes in phi
 Nphi = 180
@@ -54,13 +56,15 @@ tau = 100
 !photochemistry switcher
 pk_switch = 1
 !mixed derivative u_phi switcher
-mixed_z_switch = 1
+mixed_z_switch = 0
 !mixed derivative u_z switcher
-mixed_y_switch = 1
+mixed_y_switch = 0
 !transfer d/dz(u n) and d/dphi(B(phi) n) switcher (multiplyer of u)
 transf_yz_switch = 1
 !transfer d/dphi(B(phi) n) switcher
 transf_y_switch = 1
+!switcher of schemes for the second step mixed derivative: 0 is nonlinear, 1 is 1st order, 2 is 2nd order
+second_step_scheme_type = 2
 !switcher for the upper boundary approximation of the first splitting step
 upper_bound_type = 4
 !switcher for the monotonizator after both steps - all less or equal than zero elements are made 1
@@ -233,10 +237,10 @@ profile_output = 0
             p_mod(j).d(i) = k.d(i)*f(z.d(i), phi) - ( &
                             sI**2 * (gradD.d(i)*df_dz(z.d(i), phi) + ddf_dzdz(z.d(i), phi)*D_node.d(i)) + &
                             sI**2 * (gradu.d(i)*f(z.d(i), phi) + u.d(i)*df_dz(z.d(i), phi)) - &
-                            mixed_z_switch*1/R*sI*cI * (gradD.d(i)*df_dphi(z.d(i), phi) + D_node.d(i)*ddf_dzdphi(z.d(i), phi)) + &
-                            D_node.d(i)/(R**2)/cos(phi) * (dA_dphi(phi)*df_dphi(z.d(i), phi) + A(phi)*ddf_dphidphi(z.d(i), phi)) - &
-                            mixed_y_switch*D_node.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*df_dz(z.d(i), phi) + B(phi)*ddf_dzdphi(z.d(i), phi)) - &
-                            u.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*f(z.d(i), phi) + B(phi)*df_dphi(z.d(i), phi)) &
+                            mixed_z_switch*1/R*sI*cI * (gradD.d(i)*df_dphi(z.d(i), phi) + D_node.d(i)*ddf_dzdphi(z.d(i), phi)) &!+ &
+                            !D_node.d(i)/(R**2)/cos(phi) * (dA_dphi(phi)*df_dphi(z.d(i), phi) + A(phi)*ddf_dphidphi(z.d(i), phi)) - &
+                            !mixed_y_switch*D_node.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*df_dz(z.d(i), phi) + B(phi)*ddf_dzdphi(z.d(i), phi)) - &
+                            !u.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*f(z.d(i), phi) + B(phi)*df_dphi(z.d(i), phi)) &
                             )
             !if(j == 20) then
             !    write(21, *) sI**2 * (gradD.d(i)*df_dz(z.d(i), phi) + ddf_dzdz(z.d(i), phi)*D_node.d(i))
@@ -252,6 +256,7 @@ do t = 0, Ndays*86400/tau
     end if
     do j = 1, Nphi
     ! first splitting step
+
 
         !sinus and cosinus of magnetic inclination angle I
         sI   = sin(atan(2*tan(-pi/2+(j-0.5)*dphi)))
@@ -269,7 +274,7 @@ do t = 0, Ndays*86400/tau
         !upper boundary type 0: no mixed derivative in the upper boundary condition
             S_z.d(z.n, 1) =    (- D.d(z.n-1)*tau/(h0**2) + 0.5*u.d(z.n-1)*tau/h0) * sI**2
             S_z.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h0**2) + 0.5*u.d( z.n )*tau/h0) * sI**2
-            rhs_z.d(z.n) = +tau/h0*F_ub.d(j) + n_old_z(j).d(z.n) + tau * p_mod(j).d(z.n)
+            rhs_z.d(z.n) = +tau/h0*F_ub.d(j) + n_old_z(j).d(z.n) + tau * p_mod(j).d(i)
     
         else 
         !complete upper flux containing mixed derivative is zero
@@ -305,7 +310,7 @@ do t = 0, Ndays*86400/tau
 
             rhs_z.d(i) = n_old_z(j).d(i) + tau * p_mod(j).d(i)
 
-            else
+            else if (nonlinear_scheme_type .eq. 8) then
                 if(sI .ge. 0) then
                     S_z.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
                         0.5*D_node.d(i-1)*tau*sImh*cImh/(R*h0*dphi)
@@ -327,11 +332,11 @@ do t = 0, Ndays*86400/tau
                     S_z.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
                         0.5*D_node.d(i+1)*tau*sImh*cImh/(R*h0*dphi)
 
-                    rhs_z.d(i) = n_old_z(j).d(i) + tau*p_mod(j).d(i) - &
-                        0.5*tau/(R*h0*dphi)*( D_node.d( i ) * sImh*cImh * n_old_z(j-1).d( i ) + &
-                                              D_node.d( i ) * sIph*cIph * n_old_z(j+1).d( i ) - &
-                                              D_node.d(i+1) * sImh*cImh * n_old_z(j-1).d(i+1) - &
-                                              D_node.d(i-1) * sIph*cIph * n_old_z(j+1).d(i-1) )
+                rhs_z.d(i) = n_old_z(j).d(i) + tau*p_mod(j).d(i) - &
+                    0.5*tau/(R*h0*dphi)*( D_node.d( i ) * sImh*cImh * n_old_z(j-1).d( i ) + &
+                                          D_node.d( i ) * sIph*cIph * n_old_z(j+1).d( i ) - &
+                                          D_node.d(i+1) * sImh*cImh * n_old_z(j-1).d(i+1) - &
+                                          D_node.d(i-1) * sIph*cIph * n_old_z(j+1).d(i-1) )
                 end if
             end if
         end do
@@ -358,78 +363,78 @@ do t = 0, Ndays*86400/tau
     end do
 
     !simulating block for the 2nd step
-        ! do i = 2, z.n-1
-        ! do j = 1, Nphi
-        !    n_new_y(i).d(j) = n_old_y(i).d(j)
-        ! end do
-        ! end do
-
     do i = 2, z.n-1
-    !second splitting step
-        do j = 2, Nphi-1    
-            phi = (j-0.5)*dphi-pi/2
-
-            if(B(phi) .le. 0) then
-                S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) + &
-                    0.5*mixed_y_switch*D.d( i )/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
-                S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - &
-                    0.5*mixed_y_switch*(D.d(i)+D.d(i-1))/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
-                S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
-                    0.5*mixed_y_switch*D.d(i-1)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
-
-                rhs_y.d(j) = n_old_y(i).d(j)-&
-                    0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*( &
-                        B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) + &
-                        B(   phi  ) * D.d( i ) * n_old_y(i+1).d( j ) - &
-                        B(phi+dphi) * D.d(i-1) * n_old_y(i-1).d(j+1) - &
-                        B(phi-dphi) * D.d( i ) * n_old_y(i+1).d(j-1) )
-            else
-
-                S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi)- &
-                    0.5*mixed_y_switch*D.d(i-1)/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
-                S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + &
-                    0.5*mixed_y_switch*(D.d(i)+D.d(i-1))/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
-                S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi)- &
-                    0.5*mixed_y_switch*D.d( i )/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
-
-                rhs_y.d(j) = n_old_y(i).d(j)-&
-                    0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  - &
-                        B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) - &
-                        B(   phi  ) * D.d( i ) * n_old_y(i+1).d( j ) + &
-                        B(phi-dphi) * D.d(i-1) * n_old_y(i-1).d(j-1) + &
-                        B(phi+dphi) * D.d( i ) * n_old_y(i+1).d(j+1) )
-            end if    
-        end do
-
-        j = 1
-            phi = (j-0.5)*dphi-pi/2
-
-            S_y.d(j, 1) =  0
-            S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi+dphi/2)/(dphi**2) - &
-                    0.5*mixed_y_switch*D.d(i-1)/2*B(phi)/h0/dphi + (-u.d(i)/2)*B(phi)/(2*dphi)) * tau/(R)/cos(phi)
-            S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
-                    0.5*mixed_y_switch*D.d(i-1)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
-
-            rhs_y.d(j) = n_old_y(i).d(j)-&
-                    0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  + &
-                        B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) - &
-                        B(phi+dphi) * D.d(i-1) * n_old_y(i-1).d(j+1) )
-        j = Nphi
-            phi = (j-0.5)*dphi-pi/2
-
-            S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
-                    0.5*mixed_y_switch*D.d( i )/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
-            S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi-dphi/2)/(dphi**2) + &
-                    0.5*mixed_y_switch*D.d(i)/2*B(phi)/h0/dphi - (-u.d(i)/2)*B(phi)/(2*dphi))*tau/(R)/cos(phi)
-            S_y.d(j, 3) =  0
-
-            rhs_y.d(j) = n_old_y(i).d(j)-&
-                    0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  - &
-                        B(   phi  ) * D.d( i ) * n_old_y(i-1).d( j ) + &
-                        B(phi-dphi) * D.d( i ) * n_old_y(i-1).d(j-1)   )
-
-        n_new_y(i) = tridiagonal_matrix_algorithm(S_y, rhs_y)
+    do j = 1, Nphi
+       n_new_y(i).d(j) = n_old_y(i).d(j)
     end do
+    end do
+
+    ! do i = 2, z.n-1
+    ! !second splitting step
+    !     do j = 2, Nphi-1    
+    !         phi = (j-0.5)*dphi-pi/2
+
+    !         if(B(phi) .le. 0) then
+    !             S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) + &
+    !                 0.5*mixed_y_switch*D.d( i )/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
+    !             S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) - &
+    !                 0.5*mixed_y_switch*(D.d(i)+D.d(i-1))/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+    !             S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
+    !                 0.5*mixed_y_switch*D.d(i-1)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
+
+    !             rhs_y.d(j) = n_old_y(i).d(j)-&
+    !                 0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*( &
+    !                     B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) + &
+    !                     B(   phi  ) * D.d( i ) * n_old_y(i+1).d( j ) - &
+    !                     B(phi+dphi) * D.d(i-1) * n_old_y(i-1).d(j+1) - &
+    !                     B(phi-dphi) * D.d( i ) * n_old_y(i+1).d(j-1) )
+    !         else
+
+    !             S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi)- &
+    !                 0.5*mixed_y_switch*D.d(i-1)/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
+    !             S_y.d(j, 2) = 1+(D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2) + &
+    !                 0.5*mixed_y_switch*(D.d(i)+D.d(i-1))/2*B(phi)/h0/dphi) * tau/(R)/cos(phi)
+    !             S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi)- &
+    !                 0.5*mixed_y_switch*D.d( i )/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
+
+    !             rhs_y.d(j) = n_old_y(i).d(j)-&
+    !                 0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  - &
+    !                     B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) - &
+    !                     B(   phi  ) * D.d( i ) * n_old_y(i+1).d( j ) + &
+    !                     B(phi-dphi) * D.d(i-1) * n_old_y(i-1).d(j-1) + &
+    !                     B(phi+dphi) * D.d( i ) * n_old_y(i+1).d(j+1) )
+    !         end if    
+    !     end do
+
+    !     j = 1
+    !         phi = (j-0.5)*dphi-pi/2
+
+    !         S_y.d(j, 1) =  0
+    !         S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi+dphi/2)/(dphi**2) - &
+    !                 0.5*mixed_y_switch*D.d(i-1)/2*B(phi)/h0/dphi + (-u.d(i)/2)*B(phi)/(2*dphi)) * tau/(R)/cos(phi)
+    !         S_y.d(j, 3) =  (-D_node.d(i)/R * A(phi+dphi/2)/(dphi**2) - (-u.d(i)/2)*B(phi+dphi)/(2*dphi) + &
+    !                 0.5*mixed_y_switch*D.d(i-1)/2*B(phi+dphi)/h0/dphi)*tau/(R)/cos(phi)
+
+    !         rhs_y.d(j) = n_old_y(i).d(j)-&
+    !                 0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  + &
+    !                     B(   phi  ) * D.d(i-1) * n_old_y(i-1).d( j ) - &
+    !                     B(phi+dphi) * D.d(i-1) * n_old_y(i-1).d(j+1) )
+    !     j = Nphi
+    !         phi = (j-0.5)*dphi-pi/2
+
+    !         S_y.d(j, 1) =  (-D_node.d(i)/R * A(phi-dphi/2)/(dphi**2) + (-u.d(i)/2)*B(phi-dphi)/(2*dphi) - &
+    !                 0.5*mixed_y_switch*D.d( i )/2*B(phi-dphi)/h0/dphi)*tau/(R)/cos(phi)
+    !         S_y.d(j, 2) = 1+(D_node.d(i)/R *A(phi-dphi/2)/(dphi**2) + &
+    !                 0.5*mixed_y_switch*D.d(i)/2*B(phi)/h0/dphi - (-u.d(i)/2)*B(phi)/(2*dphi))*tau/(R)/cos(phi)
+    !         S_y.d(j, 3) =  0
+
+    !         rhs_y.d(j) = n_old_y(i).d(j)-&
+    !                 0.5*mixed_y_switch*tau/(2*R*cos(phi)*h0*dphi)*(  - &
+    !                     B(   phi  ) * D.d( i ) * n_old_y(i-1).d( j ) + &
+    !                     B(phi-dphi) * D.d( i ) * n_old_y(i-1).d(j-1)   )
+
+    !     n_new_y(i) = tridiagonal_matrix_algorithm(S_y, rhs_y)
+    ! end do
 
 
     !sending the result back to the 1-st step
