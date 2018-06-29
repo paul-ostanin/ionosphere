@@ -1,0 +1,18 @@
+Splitted:
+
+tau = 100
+8sec
+tau = 10
+80sec
+
+Implicit: 
+tau = 300
+48sec
+tau = 100
+32sec
+tau = 10
+180sec
+tau = 1
+1400sec
+tau=0.1
+12800sec

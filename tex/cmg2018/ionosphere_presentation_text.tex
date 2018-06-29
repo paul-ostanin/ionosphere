@@ -1,0 +1,123 @@
+\documentclass[2pt, a4paper, fleqn]{extarticle}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url}
+%\usepackage{pscyr}
+
+%\renewcommand{\rmdefault}{ftm}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{changepage}
+\usepackage{indentfirst} %первый абзац
+%%\usepackage{moreverb}
+\usepackage[noend]{algorithmic}
+\usepackage{amssymb, amsmath, multicol,amsthm}
+%%
+\usepackage{enumitem, multicol}
+\usepackage{titleps,lipsum}
+%%
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{pb-diagram}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\definecolor{new}{RGB}{255,184,92}
+\definecolor{news}{RGB}{112,112,112}
+\usepackage{wallpaper}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+%colorlinks=true,%
+%linkcolor=news,%
+linkbordercolor=new,
+}
+
+
+
+\usepackage{geometry}
+\geometry{top=1cm,bottom=2cm,left=1cm,right=1cm}
+
+%\flushbottom
+%\ruggedbottom
+
+\binoppenalty=5000
+\parindent=0pt
+
+\newcommand{\EDS}{\ensuremath{\mathscr{E}}}
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}%
+{\hbox{$\mathsurround=0pt #1$}}{}}
+\newcommand{\divisible}{\mathop{\raisebox{-2pt}{\vdots}}}
+\renewcommand{\theequation}{\arabic{equation}}
+\def\hm#1{#1\nobreak\discretionary{}{\hbox{$#1$}}{}}
+\newcommand{\bbskip}{\bigskip \bigskip}
+
+
+
+%%\DeclareMathOperator{\tg}{tg}
+%%\DeclareMathOperator{\ctg}{ctg}
+
+\let\leq\leqslant
+\let\geq\geqslant
+
+
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+\begin{document}
+
+{\bf Slide 2: Formulation of the problem; vector equation}
+
+This work is aimed at developing the dynamical 3D Earth ionosphere model, considering the F layer. It is a part of a research, carried out in INM RAS, connected with developing the coupled ionosphere and thermosphere model. The overall goal is a combined model of Earth system from 0 to 500 km and effective methods for solving the equations.
+
+Ionosphere is the ionized part of the upper atmosphere approximately from 60 to 1000 km. The problem of modelling this region is important for the radiocommunications, satellite location and the whole cosmic branch.
+
+The main equation of the model is the continuity equation for the electron concentration $n$, which in taken assumptions can be written in the form presented on the slide.
+
+\medskip
+
+{\bf Slide 3: Equation in spherical coordinates in the assumption of a thin spherical layer}
+
+The vector equation via projection is rewritten in spherical coordinates in the assumption of a thin spherical layer. There are several reasons to choose this system: we are going to build a coupled model, so it gives its restrictions. Splitting is possible with this system, and also the coefficients and parameters in the equation are also set depending on the spherical coordinates. %In this work the main processes, taken into account, are ambipolar diffusion and photochemistry, 3D transfer components are omitted.
+
+The problem has several specific issues: firstly, it contains mixed derivatives with coefficients, changing their signs. Secondly, the solution is highly sensitive to the upper boundary condition~---~setting the upper electron flux. This flux is usually assumed to be close to zero and is taken zero in this work.
+
+\medskip
+
+{\bf Slide 4: Spatial approximation}
+
+For the diffusion and transfer components standard conservative approximation with central difference is used. The non-standard approximation is used for mixed derivatives~---~in dependency on the sign of the coefficient it is approximated as a semi-sum of mixed derivatives in the centres of small squares I and IV or squares II and III.
+
+
+\medskip
+
+{\bf Slide 5: Two time approximation methods and model solution}
+
+In this work two time approximation methods are compared and tested on a model solution. First method is completely implicit~---~it is highly accurate, but linear system is solved iteratively, which is not as effective as the second method~---~splitting method. Still, the time approximation error in splitting method is significant.
+
+Both solutions are tested on a model solution, and the convergence properties are investigated. The model solution is shown on the slide.
+
+\medskip
+
+{\bf Slide 6: Time approximation comparison}
+
+As we can see on the slide, implicit scheme on the model solution gives the error less than 1\%, but the splitting scheme gives 17\% with time step 100 seconds. This error gets close to the implicit scheme error at time steps about 1 second.
+
+\medskip
+
+{\bf Slide 7: Daytime stationary solution and diurnal evolution}
+
+Finally, the diurnal evolution of the electron concentration can also be modelled with the discussed equations. In this experiment photoionization function is changed in time according to the formula including the zenith angle $\chi$.
+
+
+\end{document}
+
+
+

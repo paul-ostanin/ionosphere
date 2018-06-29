@@ -43,14 +43,14 @@ end subroutine vec_init
 subroutine vec_print_old(this)
 	class(vect)::this
 	integer(4) j
-	write(*, '(1000(e10.3))') (this.d(j), j = 1, this.n)
+	write(*, '(1000(e13.3))') (this.d(j), j = 1, this.n)
 end subroutine vec_print_old
 
 subroutine vec_print(this, descriptor)
 	class(vect)::this
 	integer(4) j, descriptor
 !	write(*, '("Printing vector:")')
-	write(descriptor, '(1000(e10.3))') (this.d(j), j = 1, this.n)
+	write(descriptor, '(1000(e13.3))') (this.d(j), j = 1, this.n)
 end subroutine vec_print
 
 subroutine vec_print_column_with_z(this, descriptor)
