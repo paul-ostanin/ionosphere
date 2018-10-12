@@ -8,7 +8,7 @@ implicit none
 type (tridiagonal_matrix) S_y, S_z
 type (vect) F_ub, rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, gradnO, k, p, pcurr, m, n_old, n_new, delta, D, D_node, gradD, u, gradu, Tn, Ti, Te, Tr, Tp, gradTp, gradTn, gradTr, gradgradTp, n_day, tau0, model_sol(1801), n_new_z(1801), p_mod(1801), n_old_z(1801), n_new_y(701), n_old_y(701), n_new_z_1(1801), n_old_z_1(1801), n_new_y_1(701), n_old_y_1(701), error(1801)
 integer continuous_output_delay, latitude_node, printing_mode, model_solution, continuous_output, i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, Nphi, Nz, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, upper_bound_type, monotonizator
-real (8) u_analytical, D_analytical, df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f, paramet, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, dA_dphi, dB_dphi, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
+real (8) l2_norm, u_analytical, D_analytical, df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f, paramet, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, integral, n_max, h_max, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, dA_dphi, dB_dphi, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 
 !opening files for writing the output
 
@@ -43,13 +43,13 @@ sI = 1
 !Earth radius
 R = 637100000
 !number of calculation days
-Ndays = 10
+Ndays = 5
 Niter = 800
 !upper boundary electron flow
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 1
+tau = 30
 
 !photochemistry switcher
 pk_switch = 1
@@ -68,7 +68,7 @@ monotonizator = 0
 diurnal_on = 0
 convergence_test = 0
 profile_output = 0
-model_solution = 0
+model_solution = 1
 continuous_output = 0
 printing_mode = 1
 continuous_output_delay = 500/tau
@@ -79,6 +79,7 @@ continuous_output_delay = 500/tau
         open(unit=930, name='evolution_matrix_30.txt')
         open(unit=900, name='evolution_matrix_0.txt')
         latitude_node = 30 !this is -60
+        open(unit=800, name='norm_convergence_l2.txt')
     end if
 
 
@@ -263,9 +264,10 @@ do j = 1, Nphi
                             mixed_y_switch*D_node.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*df_dz(z.d(i), phi) + B(phi)*ddf_dzdphi(z.d(i), phi)) - &
                             u.d(i)/R/cos(phi)/2 * (dB_dphi(phi)*f(z.d(i), phi) + B(phi)*df_dphi(z.d(i), phi)) &
                             )
+            p_mod(j).d(i) = p_mod(j).d(i)*1.00
         end do
     else
-        F_ub.d(j) = 0
+        F_ub.d(j) = 0 !upper boundary flux
         do i = 1, z.n     
             p_mod(j).d(i) = p.d(i)
         end do
@@ -404,8 +406,8 @@ do t = 0, Ndays*86400/tau/2
     if(mod(t, 100) == 0 .and. printing_mode == 1) then
 
         if(model_solution == 1) then
-            open(unit=11, name='res_split_model.txt')
-            open(unit=12, name='res_split_gnp_model.txt')
+            open(unit=11, name='res_split_model_fz_0.txt')
+            open(unit=12, name='res_split_gnp_model_fz_0.txt')
             do j = 1, Nphi
                 do i = 1, z.n
                     write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)
@@ -435,8 +437,8 @@ do t = 0, Ndays*86400/tau/2
                 close(unit=99)
             end if
 
-            open(unit=198,name='diff_res_sol_gnp.txt')
-            open(unit=199,name='diff_res_sol.txt')
+            open(unit=198,name='diff_res_sol_gnp_fz_0.txt')
+            open(unit=199,name='diff_res_sol_fz_0.txt')
             do j = 1, Nphi
                 do i = 1, z.n
                     write(198,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)-model_sol(j).d(i)
@@ -463,6 +465,85 @@ do t = 0, Ndays*86400/tau/2
             close(unit=11)
             close(unit=12)
         end if
+
+        !profiles output block
+        if(profile_output .eq. 1) then
+            open(unit=88, name='step2_88_fz_+15.txt')
+            open(unit=80, name='step2_80_fz_+15.txt')
+            open(unit=70, name='step2_70_fz_+15.txt')
+            open(unit=60, name='step2_60_fz_+15.txt')
+            open(unit=50, name='step2_50_fz_+15.txt')
+            open(unit=40, name='step2_40_fz_+15.txt')
+            open(unit=30, name='step2_30_fz_+15.txt')
+            open(unit=20, name='step2_20_fz_+15.txt')
+            open(unit=10, name='step2_10_fz_+15.txt')
+            open(unit=5,  name='step2_05_fz_+15.txt')
+            open(unit=2,  name='step2_02_fz_+15.txt')
+            open(unit=0,  name='step2_00_fz_+15.txt')
+            do i = 1, z.n
+                write(88,*) 100+400/(z.n-1)*(i-1), n_old_z(2 ).d(i)
+                write(80,*) 100+400/(z.n-1)*(i-1), n_old_z(10).d(i)
+                write(70,*) 100+400/(z.n-1)*(i-1), n_old_z(20).d(i)
+                write(60,*) 100+400/(z.n-1)*(i-1), n_old_z(30).d(i)
+                write(50,*) 100+400/(z.n-1)*(i-1), n_old_z(40).d(i)
+                write(40,*) 100+400/(z.n-1)*(i-1), n_old_z(50).d(i)
+                write(30,*) 100+400/(z.n-1)*(i-1), n_old_z(60).d(i)
+                write(20,*) 100+400/(z.n-1)*(i-1), n_old_z(70).d(i)
+                write(10,*) 100+400/(z.n-1)*(i-1), n_old_z(80).d(i)
+                write(5, *) 100+400/(z.n-1)*(i-1), n_old_z(85).d(i)
+                write(2, *) 100+400/(z.n-1)*(i-1), n_old_z(88).d(i)
+                write(0, *) 100+400/(z.n-1)*(i-1), n_old_z(90).d(i)
+            end do
+            close(88)
+            close(80)
+            close(70)
+            close(60)
+            close(50)
+            close(40)
+            close(30)
+            close(20)
+            close(10)
+            close(5 )
+            close(2 )
+            close(0 )
+        end if
+
+        !maximum altitude and maximum concentration
+        open(unit=9000, name='n_max_0.txt')
+        open(unit=9001, name='h_max_0.txt')
+        do j = 1, Nphi
+            n_max = 1
+            h_max = 1
+            do i = 1, z.n
+                if (n_old_z(j).d(i) .ge. n_max) then
+                    n_max = n_old_z(j).d(i)
+                    h_max = z.d(i)
+                end if
+            end do
+            write(9000, *) (j-5E-1)*180/(Nphi)-90, n_max
+            write(9001, *) (j-5E-1)*180/(Nphi)-90, h_max/1000
+        end do
+        close(9000)
+        close(9001)
+
+        if(continuous_output .eq. 1 .and. mod(t, continuous_output_delay) .eq. 0) then
+            L2_norm = 0
+            do i = 1, Nz
+                do j = 1, Nphi
+                    L2_norm = L2_norm + abs(n_old_z(j).d(i)-model_sol(j).d(i))
+                end do
+            end do
+            write (800, *) t*tau, L2_norm
+            do i = 1, z.n
+                write(900,*) t*tau, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(90).d(i)
+                write(930,*) t*tau,  100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(60).d(i)
+                write(960,*) t*tau,  100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(30).d(i)
+            end do
+            write (900, *)
+            write (930, *)
+            write (960, *)
+        end if
+
 
     end if
 
@@ -680,6 +761,68 @@ do t = 0, Ndays*86400/tau/2
 
 
 end do
+
+
+        if(model_solution == 1) then
+            open(unit=11, name='res_split_model_fz_0.txt')
+            open(unit=12, name='res_split_gnp_model_fz_0.txt')
+            do j = 1, Nphi
+                do i = 1, z.n
+                    write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)
+                end do
+                write (12, *)
+            end do
+            do j = 1, Nphi
+                call n_old_z(j).print(11)
+            end do
+            close(unit=11)
+            close(unit=12)
+
+            if(t .eq. 0) then
+                open(unit=98, name='model_solution_gnp.txt')    
+                open(unit=99, name='model_solution_matrix.txt')
+                do j = 1, Nphi
+                    do i = 1, z.n
+                        write(98,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), f(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+                        model_sol(j).d(i) = f(z.d(i), (j-5E-1)*pi/(Nphi)-pi/2)
+                    end do
+                    write (98, *)
+                end do
+                do j = 1, Nphi
+                    call model_sol(j).print(99)
+                end do
+                close(unit=98)
+                close(unit=99)
+            end if
+
+            open(unit=198,name='diff_res_sol_gnp_fz_0.txt')
+            open(unit=199,name='diff_res_sol_fz_0.txt')
+            do j = 1, Nphi
+                do i = 1, z.n
+                    write(198,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)-model_sol(j).d(i)
+                end do
+                write (198, *)
+            end do
+            do j = 1, Nphi
+                call n_old_z(j).print(199)
+            end do
+            close(unit=198)
+            close(unit=199)
+        else
+            open(unit=11, name='res_split.txt')
+            open(unit=12, name='res_split_gnp.txt')
+            do j = 1, Nphi
+                do i = 1, z.n
+                    write(12,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), n_old_z(j).d(i)
+                end do
+                write (12, *)
+            end do
+            do j = 1, Nphi
+                call n_old_z(j).print(11)
+            end do
+            close(unit=11)
+            close(unit=12)
+        end if
 
 
 !diurnal_on

@@ -1,0 +1,8 @@
+set terminal png size 1600, 1200
+set output "sensitivity_split_f_z_phi_00.png"
+set format x "%g"
+set title "F_z sensitivity, splitted model, phi = 0"
+set xlabel "n, cm^{-3}"
+set ylabel "z, km"
+set logscale x
+plot "step2_00_fz_+1e9.txt" using 2:1 wi li lw 2 title "F_z = 10^9", "step2_00_fz_+5e8.txt" using 2:1 wi li lw 2 title "F_z = 5*10^8", "step2_00_fz_25e7.txt" using 2:1 wi li lw 2 title "F_z = 25*10^7", "step2_00_fz_0.txt" using 2:1 wi li lw 2 title "F_z = 0", "step2_00_fz_-25e7.txt" using 2:1 wi li lw 2 title "F_z = -25*10^7", "step2_00_fz_-5e8.txt" using 2:1 wi li lw 2 title "F_z = -5*10^8", "step2_00_fz_-1e9.txt" using 2:1 wi li lw 2 title "F_z = -10^9"
