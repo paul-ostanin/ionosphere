@@ -16,7 +16,7 @@ integer, parameter :: max_size = 10000000
 integer, parameter :: max_nonzero = 100000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
-integer, parameter :: Nz = 61
+integer, parameter :: Nz = 81
 integer, parameter :: Nphi = 90
 
 
@@ -62,7 +62,7 @@ pi = 3.141592653589793238462643
 !nonlinear_scheme_type = 8
  
 !maximum altitude in km
-Hmax = 700
+Hmax = 500
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -78,7 +78,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 5
+tau = 100
 
 !photochemistry switcher
 pk_switch = 1
