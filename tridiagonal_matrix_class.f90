@@ -45,9 +45,9 @@ subroutine matrix_print(this)
 !The first row starts with a zero element d(1,1), as the last row ends with zero d(n, 3).
 	class(tridiagonal_matrix)::this
 	integer(4) j
-	write(*, '("Printing matrix:")')
+	!write(*, '("Printing matrix:")')
 	do j = 1, this.n
-		write(*, '(150(e15.2))') this.d(j, :)
+		write(*, '(150(e15.7))') this.d(j, :)
 	end do
 end subroutine matrix_print
 

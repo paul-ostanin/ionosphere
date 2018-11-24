@@ -21,11 +21,13 @@
 
 	$compiler -c tridiagonal_matrix_class.f90 $flags
 	$compiler -c step2.f90 $flags
+	$compiler -c step2_model.f90 $flags
 #        $compiler -c step2_m_no_bndcond_no_mixed.f90 $flags
 #        $compiler -c step2_m_bndcond_mixed.f90 $flags
 
 
 	$compiler -o step2 step2.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
+	$compiler -o step2_model step2_model.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
 #	$compiler -o step2_m_no_bndcond_no_mixed step2_m_no_bndcond_no_mixed.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
 #	$compiler -o step2_m_bndcond_mixed step2_m_bndcond_mixed.o tridiagonal_matrix_class.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o $flags $libs
 

@@ -7,7 +7,7 @@ implicit none
 
 type (tridiagonal_matrix) S_y, S_z
 type (vect) F_ub, rhs_z, rhs_y, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, n_old, n_new, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, n_day, tau0, model_sol(18001), n_new_z(1441), p_mod(18001), n_old_z(1441), n_new_y(401), n_old_y(401), n_new_z_1(1441), n_old_z_1(1441), n_new_y_1(401), n_old_y_1(401), error(1441)
-integer hours, convergence_profile_output, latitude_node, continuous_output, model_solution, printing_mode, s_i, s_j, i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
+integer eq_multiplyer, upper_dirichlet, mean_phi, mean_counter, max_mean_counter, num_mean, hours, convergence_profile_output, latitude_node, continuous_output, model_solution, printing_mode, s_i, s_j, i, j, t, Te0, Tn0, Ti0, day, nonlinear_scheme_type, profile_output, diurnal_on, convergence_test, pk_switch, mixed_z_switch, mixed_y_switch, transf_yz_switch, transf_y_switch, second_step_scheme_type, upper_bound_type, monotonizator
 real (8) D_analytical, u_analytical, df_dz, df_dphi, ddf_dzdz, ddf_dphidphi, ddf_dzdphi, f_m, dA_dphi, dB_dphi
 real (8) n_max, h_max, tau, tau_1, Hmax, h0, F_z, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_1, u_phi_2, u_phi_3, u_phi_4, u_z, u_z_mh, u_z_ph, u_z_m1, u_z_p1, x, A, B, u_phi_ph, u_phi_mh, Ndays, Niter, delta_err, sIph, cIph, sImh, cImh, l1_norm, l1_norm_err
 type (vect) gradu, gradD, gradTp, gradTr, gradTi, gradTn, gradTe, gradgradTp, gradnO
@@ -16,7 +16,7 @@ integer, parameter :: max_size = 10000000
 integer, parameter :: max_nonzero = 100000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
-integer, parameter :: Nz = 60
+integer, parameter :: Nz = 61
 integer, parameter :: Nphi = 90
 
 
@@ -43,7 +43,7 @@ real*8 C_norm, L2_norm
 real*8 prev, analytical_solution, cubature_formula
 
 real*8 stencil(Nz, Nphi, -1:1, -1:1), operator(-1:1, -1:1), diffusion_transfer_z(-1:1, -1:1), diffusion_transfer_y(-1:1, -1:1), mixed_z(-1:1, -1:1), mixed_y(-1:1, -1:1)
-real*8 rhs_z_phi(Nz, Nphi), ans(Nz, Nphi), rhs_z_phi_analytical(Nz, Nphi)
+real*8 rhs_z_phi(Nz, Nphi), ans(Nz, Nphi), n_mean(Nz, Nphi), rhs_z_phi_analytical(Nz, Nphi)
 
 allocate(ia(max_size + 1))
 allocate(ja(max_nonzero))
@@ -62,7 +62,7 @@ pi = 3.141592653589793238462643
 !nonlinear_scheme_type = 8
  
 !maximum altitude in km
-Hmax = 700
+Hmax = 500
 !latitude
 dphi = pi / Nphi
 !angle velocity of the Earth 
@@ -78,7 +78,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau = 1
+tau =  100
 
 !photochemistry switcher
 pk_switch = 1
@@ -102,7 +102,7 @@ profile_output = 0
 printing_mode = 1
 model_solution = 0
 continuous_output = 0
-convergence_profile_output = 1
+convergence_profile_output = 0
 
     if(continuous_output .eq. 1) then
         !open(unit=988, name='evolution_matrix_88.txt')
@@ -117,6 +117,8 @@ convergence_profile_output = 1
         open(unit=1030, name='convergence_C_norm_gnp.txt')
         open(unit=1040, name='convergence_C_norm_60_gnp.txt')
     end if
+
+
 
 
 !Initialization block
@@ -252,6 +254,13 @@ convergence_profile_output = 1
         gradD.d(i) = D_node.d(i) * ( gradTp.d(i)/Tp.d(i) - (gradnO.d(i))/nO.d(i) - gradTr.d(i)/(2*Tr.d(i)) )
     end do
 
+    !open(unit=50, name='k.txt')
+    !open(unit=60, name='Ddivhdivh.txt')
+    !    do i = 1, z.n
+    !        write (50, *) k.d(i)
+    !        write (60, *) D.d(i)/h0/h0
+    !    end do
+
     !Effective velocity vector
     !u.d(i) = u_i = D_i * (dTp/dz + mg/2k)/Tp, mg/2k ~ 5.6*10^{-5} [K/cm]
     call u.init(z.n+1)
@@ -294,7 +303,7 @@ do j = 1, Nphi
             p_mod(j).d(i) = p_mod(j).d(i)*1
         end do
     else
-        F_ub.d(j) = -1e9*0.8
+        F_ub.d(j) = 0
         do i = 1, z.n     
             p_mod(j).d(i) = p.d(i)
         end do
@@ -331,6 +340,8 @@ do t = 0, Ndays*86400/tau
         print *, t
         !write (*, *) "Files written."
     end if
+
+
 
     !printing series of files in time evolution
     if(1+0*mod(t, 610) .eq. 0) then
@@ -386,6 +397,12 @@ do t = 0, Ndays*86400/tau
             sImh = sin(atan(2*tan(phi-dphi/2)))
             cImh = cos(atan(2*tan(phi-dphi/2)))
 
+            if (abs(phi) < pi/180) then 
+                eq_multiplyer = 0
+            else
+                eq_multiplyer = 1
+            end if
+
             if (i == 1) then
 
                 !lower boundary: n = P/k at z = 100 km
@@ -396,15 +413,15 @@ do t = 0, Ndays*86400/tau
             else if (j == 1 .and. i /= Nz) then
 
                 !south pole
-                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 0*u.d(i+1)/(2*h0))*tau*sI**2       , 0d0]
+                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 1*u.d(i+1)/(2*h0))*tau*sI**2       , 0d0]
                 diffusion_transfer_z( 0, :) = [0d0, 1 + k.d(i)*tau + (D.d(i-1) + D.d(i))*tau/(h0**2)*sI**2, 0d0]
-                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 0*u.d(i-1)/(2*h0))*tau*sI**2       , 0d0]
+                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 1*u.d(i-1)/(2*h0))*tau*sI**2       , 0d0]
 
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
                 diffusion_transfer_y( 0, :) = [0d0, & 
-                                                 (D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - 0*u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
-                                                (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) + 0*u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/R/cos(phi)  ]
+                                                 (D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - 1*u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
+                                                (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) + 1*u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/R/cos(phi)  ]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
                 mixed_z(+1, :) = [0d0,  0d0                                        ,  0d0                                        ]
@@ -425,13 +442,13 @@ do t = 0, Ndays*86400/tau
             else if (j == Nphi .and. i /= Nz) then
 
                 !north pole
-                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 0*u.d(i+1)/(2*h0))*tau*sI**2       , 0d0]
+                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 1*u.d(i+1)/(2*h0))*tau*sI**2       , 0d0]
                 diffusion_transfer_z( 0, :) = [0d0, 1 + k.d(i)*tau + (D.d(i-1) + D.d(i))*tau/(h0**2)*sI**2, 0d0]
-                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 0*u.d(i-1)/(2*h0))*tau*sI**2       , 0d0]
+                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 1*u.d(i-1)/(2*h0))*tau*sI**2       , 0d0]
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
-                diffusion_transfer_y( 0, :) = [ (-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) - 0*u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
-                                                 (D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + 0*u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/R/cos(phi), &
+                diffusion_transfer_y( 0, :) = [ (-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) - 1*u.d(i)/2*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
+                                                 (D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + 1*u.d(i)/2*B(phi+dphi)/(2*dphi))*tau/R/cos(phi), &
                                                0d0]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
@@ -452,8 +469,8 @@ do t = 0, Ndays*86400/tau
             else if (i == Nz .and. upper_bound_type == 1) then
 
                 diffusion_transfer_z(+1, :) = [0d0, 0d0, 0d0]
-                diffusion_transfer_z( 0, :) = [0d0, ( D.d(i-1)/(h0**2) + 0*u.d( i )/(2*h0))*tau*sI**2, 0d0] 
-                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 0*u.d(i-1)/(2*h0))*tau*sI**2, 0d0] 
+                diffusion_transfer_z( 0, :) = [0d0, ( D.d(i-1)/(h0**2) + 1*u.d( i )/(2*h0))*tau*sI**2, 0d0] 
+                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 1*u.d(i-1)/(2*h0))*tau*sI**2, 0d0] 
 
                 if(j == 1 .or. j == Nphi) then
                     if(sI*cI .ge. 0) then
@@ -467,36 +484,43 @@ do t = 0, Ndays*86400/tau
                     end if
                 else
                     if(sI*cI .ge. 0) then
-                        mixed_z(+1, :) = [ 0d0                                        ,  0d0                                        ,                                          0d0]
-                        mixed_z( 0, :) = [ 0d0                                        ,  0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
-                        mixed_z(-1, :) = [ 0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi),  0d0                                        ]
+                        mixed_z(+1, :) = [ 0d0                                   ,  0d0                                   ,  0d0                                   ]
+                        mixed_z( 0, :) = [ 0d0                                   ,  0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
+                        mixed_z(-1, :) = [ 0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi),  0d0                                   ]
                     else
-                        mixed_z(+1, :) = [ 0d0                                        ,  0d0                                        ,  0d0                                        ]
-                        mixed_z( 0, :) = [ 0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi),  0d0                                        ]
-                        mixed_z(-1, :) = [ 0d0                                        ,  0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
+                        mixed_z(+1, :) = [ 0d0                                   ,  0d0                                   ,  0d0                                   ]
+                        mixed_z( 0, :) = [ 0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi), -0.5*D.d(i-1)*tau*sImh*cImh/(R*h0*dphi),  0d0                                   ]
+                        mixed_z(-1, :) = [ 0d0                                   ,  0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi), -0.5*D.d(i-1)*tau*sIph*cIph/(R*h0*dphi)]
                     end if
                 end if
 
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + eq_multiplyer*mixed_z_switch*mixed_z(s_i, s_j)
                     enddo
                 enddo
 
+                upper_dirichlet = 0
+                if(upper_dirichlet .eq. 1) then
+                    !Dirichlet boundary
+                    operator(+1, :) = [0d0,  0d0  , 0d0]
+                    operator( 0, :) = [0d0, k.d(i), 0d0]
+                    operator(-1, :) = [0d0,  0d0  , 0d0]
+                end if
 
             else
 
                 !the main part of the operator
 
-                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 0*u.d(i+1)/(2*h0))*tau*sI**2        , 0d0]
+                diffusion_transfer_z(+1, :) = [0d0, (-D.d( i )/(h0**2) - 1*u.d(i+1)/(2*h0))*tau*sI**2        , 0d0]
                 diffusion_transfer_z( 0, :) = [0d0, 1 + k.d(i)*tau + (D.d(i-1) + D.d(i))*tau/(h0**2)*sI**2 , 0d0]
-                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 0*u.d(i-1)/(2*h0))*tau*sI**2        , 0d0]
+                diffusion_transfer_z(-1, :) = [0d0, (-D.d(i-1)/(h0**2) + 1*u.d(i-1)/(2*h0))*tau*sI**2        , 0d0]
 
                 diffusion_transfer_y(+1, :) = [0d0, 0d0, 0d0]
-                diffusion_transfer_y( 0, :) = [(-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + (-0*u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
+                diffusion_transfer_y( 0, :) = [(-D_node.d(i)/R*A(phi-dphi/2)/(dphi**2) + (-1*u.d(i)/2)*B(phi-dphi)/(2*dphi))*tau/R/cos(phi), &
                                                 (D_node.d(i)/R *(A(phi-dphi/2) + A(phi+dphi/2))/(dphi**2))*tau/(R)/cos(phi), &
-                                               (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - (-0*u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/R/cos(phi)]
+                                               (-D_node.d(i)/R*A(phi+dphi/2)/(dphi**2) - (-1*u.d(i)/2)*B(phi+dphi)/(2*dphi))*tau/R/cos(phi)]
                 diffusion_transfer_y(-1, :) = [0d0, 0d0, 0d0]
 
 
@@ -521,7 +545,7 @@ do t = 0, Ndays*86400/tau
 
                 do s_i = -1, 1
                     do s_j = -1, 1
-                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + mixed_z_switch*mixed_z(s_i, s_j) + mixed_y_switch*mixed_y(s_i, s_j)
+                        operator(s_i, s_j) = diffusion_transfer_z(s_i, s_j) + diffusion_transfer_y(s_i, s_j) + eq_multiplyer*mixed_z_switch*mixed_z(s_i, s_j) + eq_multiplyer*mixed_y_switch*mixed_y(s_i, s_j)
                     enddo
                 enddo
 
@@ -547,7 +571,7 @@ do t = 0, Ndays*86400/tau
             else if (i == Nz) then
                 rhs_z_phi(i, j) = F_ub.d(j) * tau/h0 !+ tau * p_mod(j).d(i) + ans(i, j)
             else
-                rhs_z_phi(i, j) = tau * p_mod(j).d(i) + ans(i, j)
+                rhs_z_phi(i, j) = tau * p_mod(j).d(i) + n((j - 1) * Nz + i) !ans(i, j) - it was before it became mean value
             end if
         enddo
     enddo
@@ -650,7 +674,7 @@ do t = 0, Ndays*86400/tau
         end if
 
         ITER = 1000
-        RESID = 1d-2 * resinit
+        RESID = 1d-10 * resinit
         INFO = 0
         if(printing_mode .eq. 1) then
             NUNIT = 6 ! 6 to output
@@ -669,11 +693,56 @@ do t = 0, Ndays*86400/tau
             print *, 'INFO =', INFO
         end if
 
+
+
         do i = 1, Nz
             do j = 1, Nphi
                 ans(i, j) = n((j - 1) * Nz + i)
             enddo
         enddo
+
+        mean_phi = 0
+        num_mean = 0
+        max_mean_counter = 0
+        !mean value
+        if(mod(t, 50) == 0) then
+            do mean_counter = 1, max_mean_counter
+                if(num_mean == 5) then
+                    do i = 1, Nz
+                        do j = 3, Nphi - 2
+                            phi = (j-0.5)*dphi-pi/2
+                            if(abs(phi)>60*pi/90) n((j - 1) * Nz + i) = ( ans(i, j) + ans(i, j-1) + ans(i, j+1) + ans(i, j-2) + ans(i, j+2) ) / 5
+                        enddo
+                        n((  1  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) + ans(i,    3    ) ) / 3
+                        n((Nphi - 1) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) + ans(i, Nphi - 2) ) / 3
+                        n((  2  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) + ans(i,    3    ) + ans(i,    4    ) ) / 4
+                        n((Nphi - 2) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) + ans(i, Nphi - 2) + ans(i, Nphi - 3) ) / 4
+                    enddo
+                else if (num_mean == 3) then
+                    do i = 1, Nz
+                        do j = 2, Nphi - 1
+                            phi = (j-0.5)*dphi-pi/2
+                            if(abs(phi)>60*pi/90) n((j - 1) * Nz + i) = ( ans(i, j) + ans(i, j-1) + ans(i, j+1)) / 3
+                        enddo
+                        n((  1  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) ) / 2
+                        n((Nphi - 1) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) ) / 2
+                    enddo
+                else if (num_mean == 7) then
+                    do i = 1, Nz
+                        do j = 3, Nphi - 3
+                            phi = (j-0.5)*dphi-pi/2
+                            if(abs(phi)>mean_phi*pi/90) n((j - 1) * Nz + i) = ( ans(i, j) + ans(i, j-1) + ans(i, j+1) + ans(i, j-2) + ans(i, j+2) + ans(i, j-3) + ans(i, j+3) ) / 7
+                        enddo
+                        n((  1  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) + ans(i,    3    ) + ans(i,    4    ) ) / 4
+                        n((Nphi - 1) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) + ans(i, Nphi - 2) + ans(i, Nphi - 3) ) / 4
+                        n((  2  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) + ans(i,    3    ) + ans(i,    4    ) + ans(i,    5    ) ) / 5
+                        n((Nphi - 2) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) + ans(i, Nphi - 2) + ans(i, Nphi - 3) + ans(i, Nphi - 4) ) / 5
+                        n((  3  - 1) * Nz + i) = ( ans(i,   1 ) + ans(i,     2   ) + ans(i,    3    ) + ans(i,    4    ) + ans(i,    5    ) + ans(i,    6    ) ) / 6
+                        n((Nphi - 3) * Nz + i) = ( ans(i, Nphi) + ans(i, Nphi - 1) + ans(i, Nphi - 2) + ans(i, Nphi - 3) + ans(i, Nphi - 4) + ans(i, Nphi - 5) ) / 6
+                    enddo
+                end if
+            end do
+        end if
 
 
         resinit = 0
@@ -701,7 +770,7 @@ do t = 0, Ndays*86400/tau
     if(mod(t, 100) == 0 .and. printing_mode == 1) then
 
         if(t == 0) then
-            open(unit=530, name='csr_matrix_no_transfer_60_90_700.txt')
+            open(unit=530, name='csr_matrix.txt')
             write(530, '(5(I8))'), matrix_size
             write(530, '(5(I8))'), (ia(i), i = 1, counter_rhs)
             write(530, '(5(I8))'), (ja(i), i = 1, counter_a - 1)
@@ -810,6 +879,24 @@ do t = 0, Ndays*86400/tau
             close(5 )
             close(2 )
             close(0 )
+
+            !maximum altitude and maximum concentration
+            open(unit=900, name='n_max.txt')
+            open(unit=901, name='h_max.txt')
+            do j = 1, Nphi
+                n_max = 1
+                h_max = 1
+                do i = 1, z.n
+                    if (ans(i, j) .ge. n_max) then
+                        n_max = ans(i, j)
+                        h_max = z.d(i)
+                    end if
+                end do
+                write(900, *) (j-5E-1)*180/(Nphi)-90, n_max
+                write(901, *) (j-5E-1)*180/(Nphi)-90, h_max/1000
+            end do
+            close(900)
+            close(901)
         end if
 
         if(convergence_profile_output .eq. 1) then ! .and. t*tau .ge. 86400*2
@@ -842,23 +929,7 @@ do t = 0, Ndays*86400/tau
             write (1040, *) t*tau/86400, C_norm
         end if
 
-        !maximum altitude and maximum concentration
-        open(unit=900, name='n_max.txt')
-        open(unit=901, name='h_max.txt')
-        do j = 1, Nphi
-            n_max = 1
-            h_max = 1
-            do i = 1, z.n
-                if (ans(i, j) .ge. n_max) then
-                    n_max = ans(i, j)
-                    h_max = z.d(i)
-                end if
-            end do
-            write(900, *) (j-5E-1)*180/(Nphi)-90, n_max
-            write(901, *) (j-5E-1)*180/(Nphi)-90, h_max/1000
-        end do
-        close(900)
-        close(901)
+
     end if
 
     if(continuous_output .eq. 1 .and. diurnal_on .eq. 0) then
@@ -1260,7 +1331,7 @@ end
 real*8 function f_m(z, phi)
     implicit none
     real*8 phi, z
-    f_m =  1E+6 * ((z/1000)-100)/440 * exp((100-(z/1000))/440) * cos(phi/2)**2
+    f_m =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2
     !f = (cos(z)*cos(phi))**2
     return
 end
@@ -1268,7 +1339,7 @@ end
 real*8 function df_dz(z, phi)
     implicit none
     real*8 phi, z
-    df_dz =  1E+6 * exp((100-(z/1000))/440) * cos(phi/2)**2 * (1 - ((z/1000)-100)/440) / 440  * 1E-5
+    df_dz =  3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) / 133  * 1E-5
     !df_dz = -sin(2*z)*cos(phi)**2
     return
 end
@@ -1276,7 +1347,7 @@ end
 real*8 function df_dphi(z, phi)
     implicit none
     real*8 phi, z
-    df_dphi =  1E+6 * ((z/1000)-100)/440 * exp((100-(z/1000))/440) * cos(phi/2)**2 * (-tan(phi/2))
+    df_dphi =  3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (-tan(phi/2))
     !df_dphi = -cos(z)**2 * sin(2*phi)
     return
 end
@@ -1284,9 +1355,9 @@ end
 real*8 function ddf_dzdz(z, phi)
     implicit none
     real*8 phi, z
-    ddf_dzdz =  1E-10 * 1E+6 * cos(phi/2)**2 * &
-            (-exp((100-(z/1000))/440) - &
-            &exp((100-(z/1000))/440) * (1 - ((z/1000)-100)/440) )/440/440
+    ddf_dzdz =  1E-10 * 3E+6 * cos(phi/2)**2 * &
+            (-exp((100-(z/1000))/133) - &
+            &exp((100-(z/1000))/133) * (1 - ((z/1000)-100)/133) )/133/133
     !ddf_dzdz = -2*cos(2*z)*cos(phi)**2
     return
 end
@@ -1294,7 +1365,7 @@ end
 real*8 function ddf_dphidphi(z, phi)
     implicit none
     real*8 phi, z
-    ddf_dphidphi = 1E+6 * ((z/1000)-100)/440 * exp((100-(z/1000))/440) * (-cos(phi)/2)
+    ddf_dphidphi = 3E+6 * ((z/1000)-100)/133 * exp((100-(z/1000))/133) * (-cos(phi)/2)
     !ddf_dphidphi = -2*cos(z)**2 * sin(2*phi)
     return
 end
@@ -1302,7 +1373,7 @@ end
 real*8 function ddf_dzdphi(z, phi)
     implicit none
     real*8 phi, z
-    ddf_dzdphi = 1E+6 * exp((100-(z/1000))/440) * cos(phi/2)**2 * (1 - ((z/1000)-100)/440) * (-tan(phi/2)) / 440 * 1E-5
+    ddf_dzdphi = 3E+6 * exp((100-(z/1000))/133) * cos(phi/2)**2 * (1 - ((z/1000)-100)/133) * (-tan(phi/2)) / 133 * 1E-5
     !ddf_dzdphi = sin(2*z)*sin(2*phi)
     return
 end

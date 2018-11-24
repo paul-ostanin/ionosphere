@@ -1,7 +1,0 @@
-set xlabel "phi"
-
-set ylabel "z, km"
-set zlabel ""
-set format z "%1.0e"
-unset logscale z
-splot "res_gnp_linear_scheme_2nd_order.txt" wi li title "step 2" linecolor rgb "purple

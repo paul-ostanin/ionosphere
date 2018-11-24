@@ -61,26 +61,26 @@ call z.init(81)
 h0 = 400E+5 / (z.n - 1)
 
 do i = 1, z.n
-	z.d(i) = 100E+3 + h0 * (i-1)/100
+    z.d(i) = 100E+3 + h0 * (i-1)/100
 end do
 
 !Vector of middles of [z(i), z(i+1)].  m.d(i) = z_{i+1/2} (in metres)
 call m.init(z.n)
 do i = 1, z.n - 1
-	m.d(i) = 0.5 * (z.d(i) + z.d(i + 1))
+    m.d(i) = 0.5 * (z.d(i) + z.d(i + 1))
 end do
-	m.d(z.n) = z.d(z.n) + (z.d(z.n) - m.d(z.n - 1))
+    m.d(z.n) = z.d(z.n) + (z.d(z.n) - m.d(z.n - 1))
 
 call h.init(z.n - 1)
 do i = 1, z.n - 1
-	h.d(i) = 100 * (z.d(i + 1) - z.d(i))
+    h.d(i) = 100 * (z.d(i + 1) - z.d(i))
 end do
 
 call hmid.init(z.n - 1)
 do i = 1, z.n - 2
-	hmid.d(i) = 100 * (m.d(i + 1) - m.d(i))
+    hmid.d(i) = 100 * (m.d(i + 1) - m.d(i))
 end do
-	hmid.d(z.n - 1) = hmid.d(z.n - 2)
+    hmid.d(z.n - 1) = hmid.d(z.n - 2)
 
 call Ti.init(z.n)
 call Tn.init(z.n)
@@ -103,7 +103,7 @@ end do
 !dT/dz = s(T_\infty - T_0)exp(-s(z-z0)) = (T_\infty - T)*s - for Te, Tn, Ti. This derivative is in [K/cm].
 call gradTp.init(z.n)
 do i = 1, z.n
-	gradTp.d(i) = 0.5 * ((Te0 - Te.d(i)) * 9.8 / (287 * Te0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
+    gradTp.d(i) = 0.5 * ((Te0 - Te.d(i)) * 9.8 / (287 * Te0) + (Ti0 - Ti.d(i)) * 9.8 / (287 * Ti0) ) * 1E-2
 end do
 
 call nO.init(z.n)
@@ -111,9 +111,9 @@ call nO2.init(z.n)
 call nN2.init(z.n)
 
 do i = 1, z.n
-	nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
-	nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
-	nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+    nO.d(i)  = 2.8E+10 * exp(-9.8 * 16E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+    nO2.d(i) = 5.6E+9  * exp(-9.8 * 32E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
+    nN2.d(i) = 5.2E+10 * exp(-9.8 * 28E-3 / (8.31 * Tn.d(i)) * (z.d(i) - 140000))
 end do
 
 !P = P_0 exp(tau_0(z)*(1-sec chi))
@@ -125,29 +125,29 @@ sigma_O  = 1E-17
 call tau0.init(z.n)
 
 do i = 1, z.n
-	tau0.d(i)  = sigma_N2 * (8.31 * 100 * Tn.d(i))/(28E-3 * 9.8) * nN2.d(i) + &
-		     sigma_O2 * (8.31 * 100 * Tn.d(i))/(32E-3 * 9.8) * nO2.d(i) + &
-		     sigma_O  * (8.31 * 100 * Tn.d(i))/(16E-3 * 9.8) * nO.d(i)
+    tau0.d(i)  = sigma_N2 * (8.31 * 100 * Tn.d(i))/(28E-3 * 9.8) * nN2.d(i) + &
+             sigma_O2 * (8.31 * 100 * Tn.d(i))/(32E-3 * 9.8) * nO2.d(i) + &
+             sigma_O  * (8.31 * 100 * Tn.d(i))/(16E-3 * 9.8) * nO.d(i)
 end do
 
 call p.init(z.n)
 call k.init(z.n)
 do i = 1, z.n
-	p.d(i) = 4E-7 * nO.d(i)
-	k.d(i) = 1.2E-12 * nN2.d(i) + 2.1E-11 * nO2.d(i)
+    p.d(i) = 4E-7 * nO.d(i)
+    k.d(i) = 1.2E-12 * nN2.d(i) + 2.1E-11 * nO2.d(i)
 end do
 
 
 !Diffusion coefficients vector. D.d(i) = D_{i+1/2}
 call D.init(z.n)
 do i = 1, z.n - 1
-	D.d(i) = 3E+17 * Tp.interp(z, m.d(i)) / (nO.interp(z, m.d(i)) * sqrt(Tr.interp(z, m.d(i))))
+    D.d(i) = 3E+17 * Tp.interp(z, m.d(i)) / (nO.interp(z, m.d(i)) * sqrt(Tr.interp(z, m.d(i))))
 end do
-	D.d(z.n) = D.d(z.n - 1) + (D.d(z.n - 1) - D.d(z.n - 2)) !extrapolation
+    D.d(z.n) = D.d(z.n - 1) + (D.d(z.n - 1) - D.d(z.n - 2)) !extrapolation
 
 call D_node.init(z.n)
 do i = 1, z.n
-	D_node.d(i) = 3E+17 * Tp.d(i) / (nO.d(i) * sqrt(Tr.d(i)))
+    D_node.d(i) = 3E+17 * Tp.d(i) / (nO.d(i) * sqrt(Tr.d(i)))
 end do
 
 
@@ -155,7 +155,7 @@ end do
 !u.d(i) = u_i = D_i * (dTp/dz + mg/2k)/Tp, mg/2k ~ 5.6*10^{-5} [K/cm]
 call u.init(z.n)
 do i = 1, z.n
-	u.d(i) = 3E+17 / (nO.d(i) * sqrt(Tr.d(i))) * (56E-6 + gradTp.d(i))
+    u.d(i) = 3E+17 / (nO.d(i) * sqrt(Tr.d(i))) * (56E-6 + gradTp.d(i))
 end do
 
 !System matrix for the poles boundary (phi = +- 90). n(first) and n(last) will be known from boundary conditions.
@@ -171,9 +171,9 @@ S.d(z.n, 2) = +1 + D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n
 do i = 2, z.n - 1
 
 ! symmetric scheme
-	S.d(i, 1) = -D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))
-	S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i)
-	S.d(i, 3) = -D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))
+    S.d(i, 1) = -D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))
+    S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i)
+    S.d(i, 3) = -D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))
 
 end do
 
@@ -190,36 +190,36 @@ delta_norm = 1
 
 
 !calculating the solution at the north and the south poles: phi = +- 90
-	do while (delta_norm > 1E-5)
+    do while (delta_norm > 1E-5)
 
-		!Setting RHS in the middle
-	        do i = 2, z.n - 1
-	                b.d(i) = njold.d(i) + tau * p.d(i)
-	        end do
+        !Setting RHS in the middle
+            do i = 2, z.n - 1
+                    b.d(i) = njold.d(i) + tau * p.d(i)
+            end do
 
-		!Setting boundary conditions for the RHS
-		b.d(z.n) = tau/h.d(z.n-1) * Fub + njold.d(z.n)
-		b.d(1) = P.d(1)/ k.d(1)
+        !Setting boundary conditions for the RHS
+        b.d(z.n) = tau/h.d(z.n-1) * Fub + njold.d(z.n)
+        b.d(1) = P.d(1)/ k.d(1)
 
-		!Solving the system
-	        njnew = tridiagonal_matrix_algorithm(S, b)
+        !Solving the system
+            njnew = tridiagonal_matrix_algorithm(S, b)
 
-		delta = njnew - njold
-		delta_norm = delta.norm()
-		njold = njnew
+        delta = njnew - njold
+        delta_norm = delta.norm()
+        njold = njnew
 
-	end do
+    end do
 
-	nday = njold
+    nday = njold
 
 do j = 1, Nphi
-	call nnew(j).init(z.n)
-	call nold(j).init(z.n)
-	call nold(j).gen()
+    call nnew(j).init(z.n)
+    call nold(j).init(z.n)
+    call nold(j).gen()
 end do
 
-	nold( 1) = nday
-	nold(Nphi) = nday
+    nold( 1) = nday
+    nold(Nphi) = nday
 
 diurnal_on = 0
 
@@ -228,7 +228,7 @@ b.d(1) = p.d(1)/k.d(1)
 do j = 0, 86400/tau*10
 !print *, j
 if(mod(j, 100) .eq. 0) then
-	print *, j
+    print *, j
 end if
 
 
@@ -237,146 +237,146 @@ do q = 2, Nphi-1
 ! angles phi from -90 to 90; conditions in -90 and 90 are set
 
 
-	!sinus and cosinus of magnetic inclination angle I
-	sI = sin(atan(2*tan(-pi/2+(q-1)*dphi)))
-	cI = cos(atan(2*tan(-pi/2+(q-1)*dphi)))
+    !sinus and cosinus of magnetic inclination angle I
+    sI = sin(atan(2*tan(-pi/2+(q-1)*dphi)))
+    cI = cos(atan(2*tan(-pi/2+(q-1)*dphi)))
 
-	!lower boundary condition: n_1 = P_1/k_1
-	S.d(1, 2) = 1
-	!upper boundary condition:
-	if (nonlinear_scheme_type .eq. 8) then
+    !lower boundary condition: n_1 = P_1/k_1
+    S.d(1, 2) = 1
+    !upper boundary condition:
+    if (nonlinear_scheme_type .eq. 8) then
 
-	if(sI*cI .le. 0) then
+    if(sI*cI .le. 0) then
 
-		S.d(z.n, 1) =  (-D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 - &
-				0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
-		S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + &
-				0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
+        S.d(z.n, 1) =  (-D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 - &
+                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
+        S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + &
+                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
 
-		b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
-				0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(z.n)*nold(q-1).d(z.n) + D_node.d(z.n-1)*nold(q-1).d(z.n-1))
-
-
-	else
-
-		S.d(z.n, 1) =  (-D.d(i-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + &
-				0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
-		S.d(z.n, 2) = 1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 - &
-				0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
-
-		b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
-				0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(z.n)*nold(q+1).d(z.n) - D_node.d(z.n-1)*nold(q+1).d(z.n-1))
-	end if
+        b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(z.n)*nold(q-1).d(z.n) + D_node.d(z.n-1)*nold(q-1).d(z.n-1))
 
 
-	end if
+    else
 
-	do i = 2, z.n - 1
-	if (nonlinear_scheme_type .eq. 8) then
+        S.d(z.n, 1) =  (-D.d(i-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + &
+                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
+        S.d(z.n, 2) = 1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 - &
+                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
 
-	if(sI*cI .le. 0) then
-
-		S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
-				0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
-		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 + &
-				    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
-		S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
-				0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
-
-		b.d(i) = nold(q).d(i) + tau * p.d(i) - &
-				0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) + &
-									     D_node.d(i-1)*nold(q-1).d(i-1) + &
-									     D_node.d(i+1)*nold(q+1).d(i+1))
-
-	else
-
-		S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
-				0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
-		S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 - &
-				    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
-		S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
-				0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
-
-		b.d(i) = nold(q).d(i) + tau * p.d(i) - &
-				0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) - &
-									     D_node.d(i+1)*nold(q-1).d(i+1) - &
-									     D_node.d(i-1)*nold(q+1).d(i-1))
-	end if
+        b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(z.n)*nold(q+1).d(z.n) - D_node.d(z.n-1)*nold(q+1).d(z.n-1))
+    end if
 
 
-	end if
-	end do
+    end if
 
-	nnew(q) = tridiagonal_matrix_algorithm(S, b)
-!		if(j .eq. 100) then
-!		do i = 1, z.n
-!			write(11,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (11, *)
-!		end if
+    do i = 2, z.n - 1
+    if (nonlinear_scheme_type .eq. 8) then
 
-!		if(j .eq. 200) then
-!		do i = 1, z.n
-!			write(12,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (12, *)
-!		end if
+    if(sI*cI .le. 0) then
 
-!		if(j .eq. 300) then
-!		do i = 1, z.n
-!			write(13,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (13, *)
-!		end if
+        S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
+                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
+        S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 + &
+                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
+        S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
+                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
 
-!		if(j .eq. 400) then
-!		do i = 1, z.n
-!			write(14,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (14, *)
-!		end if
+        b.d(i) = nold(q).d(i) + tau * p.d(i) - &
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) + &
+                                         D_node.d(i-1)*nold(q-1).d(i-1) + &
+                                         D_node.d(i+1)*nold(q+1).d(i+1))
 
-!		if(j .eq. 500) then
-!		do i = 1, z.n
-!			write(15,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (15, *)
-!		end if
+    else
 
-!		if(j .eq. 1300) then
-!		do i = 1, z.n
-!			write(130,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (130, *)
-!		end if
+        S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
+                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
+        S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 - &
+                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
+        S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
+                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
 
-!		if(j .eq. 1400) then
-!		do i = 1, z.n
-!			write(140,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (140, *)
-!		end if
+        b.d(i) = nold(q).d(i) + tau * p.d(i) - &
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) - &
+                                         D_node.d(i+1)*nold(q-1).d(i+1) - &
+                                         D_node.d(i-1)*nold(q+1).d(i-1))
+    end if
 
-!		if(j .eq. 9000) then
-!		do i = 1, z.n
-!			write(150,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!		end do
-!		write (150, *)
-!		end if
 
-		if(j*tau .eq. 86400*10) then
-		do i = 1, z.n
-			write(10,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-		end do
-		write (10, *)
-		end if
+    end if
+    end do
+
+    nnew(q) = tridiagonal_matrix_algorithm(S, b)
+!        if(j .eq. 100) then
+!        do i = 1, z.n
+!            write(11,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (11, *)
+!        end if
+
+!        if(j .eq. 200) then
+!        do i = 1, z.n
+!            write(12,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (12, *)
+!        end if
+
+!        if(j .eq. 300) then
+!        do i = 1, z.n
+!            write(13,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (13, *)
+!        end if
+
+!        if(j .eq. 400) then
+!        do i = 1, z.n
+!            write(14,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (14, *)
+!        end if
+
+!        if(j .eq. 500) then
+!        do i = 1, z.n
+!            write(15,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (15, *)
+!        end if
+
+!        if(j .eq. 1300) then
+!        do i = 1, z.n
+!            write(130,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (130, *)
+!        end if
+
+!        if(j .eq. 1400) then
+!        do i = 1, z.n
+!            write(140,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (140, *)
+!        end if
+
+!        if(j .eq. 9000) then
+!        do i = 1, z.n
+!            write(150,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+!        end do
+!        write (150, *)
+!        end if
+
+        if(j*tau .eq. 86400*10) then
+        do i = 1, z.n
+            write(10,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
+        end do
+        write (10, *)
+        end if
 
 
 end do
 
-	do i = 2, Nphi-1
-		nold(i) = nnew(i)
-	end do
+    do i = 2, Nphi-1
+        nold(i) = nnew(i)
+    end do
 
 end do
 
