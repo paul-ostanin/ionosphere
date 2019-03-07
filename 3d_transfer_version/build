@@ -1,0 +1,31 @@
+	source /opt/intel/bin/ifortvars.sh intel64
+
+	compiler=ifort 
+	flags=" -fpe0 -g -traceback -check -heap-arrays"
+#	flags="-O3 -heap-arrays" 
+	libs="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core"
+
+
+	$compiler -c vector_class.f90 $flags
+
+	$compiler -c bcg.f $flags 
+	$compiler -c ilu0.f $flags 
+	$compiler -c matvecCSR.f $flags
+	$compiler -c io.f $flags 
+	$compiler -c dsort.f $flags
+	$compiler -c cabadv.f90 $flags
+	$compiler -c restore_pwind.f90 $flags
+	$compiler -c wind_ini.f90 $flags
+	$compiler -c mass_calc.f90 $flags
+	$compiler -c flux_ini.f90 $flags
+	$compiler -c forcing_calc.f90 $flags
+	$compiler -c constants.f90 $flags
+	$compiler -c transfer_mod.f90 $flags
+
+
+
+	$compiler -c step2.f90 $flags
+
+
+	$compiler -o step2 step2.o vector_class.o bcg.o ilu0.o io.o dsort.o matvecCSR.o transfer_mod.o constants.o cabadv.o wind_ini.o flux_ini.o restore_pwind.o mass_calc.o forcing_calc.o $flags $libs
+
