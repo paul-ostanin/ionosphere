@@ -1,0 +1,22 @@
+	source /opt/intel/bin/ifortvars.sh intel64
+
+	compiler=ifort 
+#	flags=" -fpe0 -g -traceback -check -warn all"
+	flags="-O3 -heap-arrays" 
+	libs="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core"
+
+	$compiler -c restore_pwind.f90
+	$compiler -c cabadv.f90
+	$compiler -c wind_ini.f90
+	$compiler -c mass_calc.f90
+	$compiler -c flux_ini.f90
+	$compiler -c forcing_calc.f90
+	$compiler -c constants.f90
+	$compiler -c transfer_mod.f90
+
+
+	$compiler -c cabaret3d_2l_pc_spher_vr.f90
+
+
+	$compiler -o cab cabaret3d_2l_pc_spher_vr.o transfer_mod.o constants.o cabadv.o wind_ini.o flux_ini.o restore_pwind.o mass_calc.o forcing_calc.o $flags $libs
+
