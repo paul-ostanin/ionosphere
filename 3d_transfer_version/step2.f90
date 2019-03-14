@@ -14,9 +14,9 @@ integer, parameter :: max_size    = 10000000
 integer, parameter :: max_nonzero = 100000000
 integer, parameter :: maxwr = max_nonzero + 8 * max_size
 integer, parameter :: maxwi = max_nonzero + 2 * max_size + 1
-integer, parameter :: Nz = 81
-integer, parameter :: Nphi = 180
-integer, parameter :: Nlambda = 145
+integer, parameter :: Nz = 41!81
+integer, parameter :: Nphi = 90!180
+integer, parameter :: Nlambda = 37!145
 
 integer, allocatable:: ia(:), ja(:), iw(:)
 double precision, allocatable:: arr(:), f(:, :), n(:, :), rw(:)
@@ -35,11 +35,11 @@ integer counter_a, counter_ia, counter_rhs
 real*8 C_norm, L2_norm
 
 real*8 stencil(Nz, Nphi, -1:1, -1:1), operator(-1:1, -1:1), diffusion_transfer_z(-1:1, -1:1), diffusion_transfer_y(-1:1, -1:1), mixed_z(-1:1, -1:1), mixed_y(-1:1, -1:1)
-real*8 rhs(Nz, Nphi, Nlambda), ans(Nz, Nphi, Nlambda), rhs_analytical(Nz, Nphi)
+real*8 rhs(Nz, Nphi, Nlambda), ans(Nz, Nphi, Nlambda), ans_prev(Nz, Nphi, Nlambda), rhs_analytical(Nz, Nphi)
 
 allocate(ia(max_size + 1), ja(max_nonzero), iw(maxwi), arr(max_nonzero), f((Nz+1)*(Nphi+1), Nlambda), n((Nz+1)*(Nphi+1), Nlambda), rw(maxwr))
 
-call init_transfer()
+
 
 pi = 3.141592653589793238462643
 
@@ -63,7 +63,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau =  60
+tau =  45
 
 !Before diurnal_start_time - stationary daytime, after - diurnal evolution, depending on lambda
 diurnal_start_time = 0
@@ -226,9 +226,11 @@ printing_mode = 1
     end do
 
 allocate(z_arr(1:z.n-1))
-do i = 1, z.n-1
-    z_arr(z.n-i) = z.d(i)
+do i = 2, z.n
+    z_arr(z.n-i+1) = z.d(i) !0.5*(z.d(i)+z.d(i+1))
 end do
+
+call init_transfer(z_arr)
 
 call F_ub.init(Nphi)
 do j = 1, Nphi
@@ -559,7 +561,8 @@ do t = 0, Ndays*86400/tau
 
         do i = 1, Nz
             do j = 1, Nphi
-                ans(i, j, lambda) = n((j - 1) * Nz + i, lambda)
+                ans_prev(i, j, lambda) = ans(i, j, lambda) 
+                ans(i, j, lambda)      = n((j - 1) * Nz + i, lambda)
             enddo
         enddo
 
@@ -588,7 +591,8 @@ do t = 0, Ndays*86400/tau
 
     do i = 1, Nz
         do j = 1, Nphi
-            ans(i, j, Nlambda) = ans(i, j, 1)
+            ans_prev(i, j, Nlambda) = ans(i, j, Nlambda)
+            ans(i, j, Nlambda)      = ans(i, j, 1)
         enddo
     enddo
 
@@ -598,11 +602,11 @@ do t = 0, Ndays*86400/tau
     ! - edit the init procedure in transfer_mod
     ! - correct the mesh
     ! - synchronize the upper boundary conditions
-    call step_of_transfer(z_arr, ans(2:Nz, 1:Nphi, 1:Nlambda-1))
-    do i = 2, Nz
+    call step_of_transfer(ans(1:Nz-1, 1:Nphi, 1:Nlambda-1), t, ans_prev(1:Nz-1, 1:Nphi, 1:Nlambda-1), tau) !ans at z = 500 is not sent to the transfer code
+    do i = 1, Nz-1
         do j = 1, Nphi
             do lambda = 1, Nlambda-1
-                ans(i, j, lambda) = uout(lambda, j, Nz-i+1)
+                ans(i, j, lambda) = uout(lambda, j, Nz-i)
             enddo
         enddo
     enddo

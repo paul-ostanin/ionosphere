@@ -10,7 +10,7 @@ use flux_ini_mod
 real, allocatable :: lambda(:), lambda_m(:), phi(:), phi_m(:), cphi_m(:), cphi(:), z_m(:), z(:), t(:), ue(:, :, :), c(:,:,:,:,:), v(:,:,:,:), u(:,:,:,:), fu(:,:,:), ux(:,:,:,:), uy(:,:,:,:), uz(:,:,:,:), uef(:,:,:), kurant(:), dphi(:), dlev(:), dlam(:)
 real*4, allocatable :: res(:), uout(:,:,:), uinp(:)
 integer i, j, k, n, m, p, nrec, r
-real max_val, min_val, mass(3), mom2(2), mass_rel, mom2_rel, h, rad, rad_tot, s1, s2, cgrid, mass_rel1
+real max_val, min_val, mass(3), mom2(2), mass_rel, mom2_rel, h, rad, rad_tot, s1, s2, mass_rel1
 
 character(2) spc
 character(1) phic
@@ -19,41 +19,18 @@ character(3) lamc
 
 contains
 
-subroutine init_transfer()
+subroutine init_transfer(z1)
+
+    real z1(:)
 
     allocate(lambda(1:Nx), lambda_m(1:Nx+1), phi(1:Ny1), phi_m(1:Ny), cphi_m(1:Ny), cphi(1:Ny1), z_m(1:Nz))
     allocate(t(1:Nt), c(1:Nx, 1:Ny, 1:Nz, 1:3, 1:2), v(1:Nx1, 1:Ny1, 1:Nz1, 3))
     allocate(u(1:Nx1, 1:Ny1, 1:Nz1, 1:2), fu(1:Nx1, 1:Ny1, 1:Nz1), ux(1:Nx, 1:Ny1, 1:Nz1, 1:2), uy(1:Nx, 1:Ny, 1:Nz1, 1:2))
     allocate(uz(1:Nx, 1:Ny1, 1:Nz, 1:2), ue(1:Nx1, 1:Ny1, 1:Nz1), uef(1:Nx1, 1:Ny1, 1:Nz1), kurant(1:3), dphi(1:Ny1), dlev(1:Nz1), dlam(1:Nx))
     allocate(res(1:Nnorms), uout(1:Nx1, 1:Ny1, 1:Nz1), uinp(1:Nz1))
+    allocate(z(1:Nz1))
 
-
-
-end subroutine init_transfer
-
-subroutine step_of_transfer(z, arr_input)
-
-    real z(:)
-    real*8 arr_input(:, :, :)
-
-    write(spc, '(i2)') ic
-    write(phic, '(i1)') nint(phi_c*180/pi)
-    write(lamc, '(i3)') nint(lambda_c*180/pi)
-
-    print*, maska
-
-    !open (20, file = 'res/res_'//maska//'.dat', status = 'replace', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
-    !open (21, file = 'res/norms_'//maska//'.txt', status = 'replace', access = 'sequential', form = 'formatted')
-
-    ! initialize grid
-
-    ! read vertical levels
-    !open (22, file = 'ion_wind/zet.dat', status = 'old', access = 'sequential', form = 'formatted')
-    !do i = 1, Nz1
-    !    read(22, '(i12, f11.2)') k, z(i)
-    !end do
-    print*, z
-
+    z = z1
 
     do i = 1, Nx+1
         lambda_m(i) = (i-1)*dx
@@ -63,8 +40,6 @@ subroutine step_of_transfer(z, arr_input)
         lambda(i) = 0.5*(lambda_m( i ) + lambda_m(i+1))
         dlam(i)   =      lambda_m(i+1) - lambda_m( i )
     end do
-
-    cgrid = 2.
 
     do j = 1, Ny
         phi_m(j) = -pi/2 + (j-1)*dy
@@ -90,6 +65,46 @@ subroutine step_of_transfer(z, arr_input)
 
     cphi   = cos( phi )
     cphi_m = cos(phi_m)
+
+    open(10, file = 'ion_wind/upb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
+    open(11, file = 'ion_wind/vpb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
+    open(12, file = 'ion_wind/wpb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
+
+    read(10, rec = 1)uout
+    v(:, :, :, 1) = uout
+    read(11, rec = 1)uout
+    v(:, :, :, 2) = uout
+    read(12, rec = 1)uout
+    v(:, :, :, 3) = uout
+
+
+end subroutine init_transfer
+
+subroutine step_of_transfer( arr_input, time_diffusion, arr_prev, tau)
+
+    integer time_diffusion
+
+    real*8 arr_input(:, :, :), arr_prev(:, :, :)
+    real*8 tau
+
+    write(spc, '(i2)') ic
+    write(phic, '(i1)') nint(phi_c*180/pi)
+    write(lamc, '(i3)') nint(lambda_c*180/pi)
+
+    print*, maska
+
+    !open (20, file = 'res/res_'//maska//'.dat', status = 'replace', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
+    !open (21, file = 'res/norms_'//maska//'.txt', status = 'replace', access = 'sequential', form = 'formatted')
+
+    ! initialize grid
+
+    ! read vertical levels
+    !open (22, file = 'ion_wind/zet.dat', status = 'old', access = 'sequential', form = 'formatted')
+    !do i = 1, Nz1
+    !    read(22, '(i12, f11.2)') k, z(i)
+    !end do
+    print*, z
+
 
     ! initialize tracer
 
@@ -118,28 +133,21 @@ subroutine step_of_transfer(z, arr_input)
 
     ! read wind
 
-    open(10, file = 'ion_wind/upb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
-    open(11, file = 'ion_wind/vpb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
-    open(12, file = 'ion_wind/wpb.std', status = 'old', access = 'direct', form = 'unformatted', recl = Nx1*Ny1*Nz1)
-
-    read(10, rec = 1)uout
-    v(:, :, :, 1) = uout
-    read(11, rec = 1)uout
-    v(:, :, :, 2) = uout
-    read(12, rec = 1)uout
-    v(:, :, :, 3) = uout
 
     !initialization of tracer variables and velocity components
     n = 0
 
+
     ! define velocities
      call wind_ini(Nx, Ny, Nz, Nx1, Ny1, Nz1, v, c(:, :, :, :, 1), lambda, lambda_m, phi, z, z_m, u0, w0, alpha, Omega, eps, a, dt, pi, n)            
 
-    !   to define tracer at cell boundaries (flux variables)
+    if(time_diffusion .eq. 0) then
+        !   to define tracer at cell boundaries (flux variables)
 
-    call flux_ini(Nx, Ny, Nz, Nx1, Ny1, Nz1, u(:, :, :, 1), ux(:, :, :, 1), uy(:, :, :, 1), uz(:, :, :, 1), lambda, phi, z, z_m, dlam, dphi, dlev, cphi, pi)
+        call flux_ini(Nx, Ny, Nz, Nx1, Ny1, Nz1, u(:, :, :, 1), ux(:, :, :, 1), uy(:, :, :, 1), uz(:, :, :, 1), lambda, phi, z, z_m, dlam, dphi, dlev, cphi, pi)
+    end if
 
-    uef(1:Nx1, 1:Ny1, 1:Nz1) = u(1:Nx1, 1:Ny1, 1:Nz1, 1)
+    uef(1:Nx1, 1:Ny1, 1:Nz1) = u(1:Nx1, 1:Ny1, 1:Nz1, 1) !??? is this needed every iteration?
 
     ! define Courant numbers
 
@@ -166,7 +174,7 @@ subroutine step_of_transfer(z, arr_input)
     do n = 1, 1!Nt**************************
 
         call wind_ini(Nx, Ny, Nz, Nx1, Ny1, Nz1, v, c(:, :, :, :, 2), lambda, lambda_m, phi, z, z_m, u0, w0, alpha, Omega, eps, a, dt, pi, n)
-        call forcing_calc(Nx, Ny, Nz, Nx1, Ny1, Nz1, c, u, fu, dlam, dphi, dlev, cphi, cphi_m, a, dt)
+        call forcing_calc(Nx, Ny, Nz, Nx1, Ny1, Nz1, c, u, fu, dlam, dphi, dlev, cphi, cphi_m, a, dt, arr_input, arr_prev, tau)
         call cab_adv(Nx, Ny, Nz, Nx1, Ny1, Nz1, c, u, fu, ux, uy, uz, dlam, dphi, dlev, phi_m, cphi, cphi_m, lambda, lambda_m, z_m, a, pi, dt)
 
         u( 1:Nx1, 1:Ny1, 1:Nz1, 1) = u( 1:Nx1, 1:Ny1, 1:Nz1, 2)
