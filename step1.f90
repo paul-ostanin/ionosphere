@@ -7,36 +7,17 @@ implicit none
 
 type (tridiagonal_matrix) A, S
 type (vect) b, z, h, hmid, nO, nO2, nN2, k, p, pcurr, m, njold, njnew, delta, D, D_node, u, Tn, Ti, Te, Tr, Tp, gradTp, nday, tau0, nnew(721), nold(721)
-integer i, j, q, Te0, Tn0, Ti0, day, nonlinear_scheme_type, diurnal_on, Nphi
+integer i, j, q, Te0, Tn0, Ti0, day, diurnal_on, Nphi, mixed_switch
 real (8) tau, h0, Fub, delta_norm, eps, tgdelta, sindelta, cosdelta, dphi, phi, coschi, pi, omega, sigma_O2, sigma_N2, sigma_O, sI, cI, R, u_phi, u_phi_N, u_phi_Nm1, u_phi_mh, u_phi_ph, u_phi_p1, u_phi_m1, u_phi_Np1
 
 !opening files for writing the output
 open(unit=10, name='res_gnp.txt')
 !open(unit=105, name='new_flux_scheme_Nphi=180_tau=1_day05.txt')
 !open(unit=11, name='new_flux_scheme_Nphi=180_tau=1_day1.txt')
-!open(unit=11, name='res_gnp_100.txt')
-!open(unit=12, name='res_gnp_200.txt')
-!open(unit=13, name='res_gnp_300.txt')
-!open(unit=14, name='res_gnp_400.txt')
-!open(unit=15, name='res_gnp_500.txt')
-!open(unit=130, name='res_gnp_1300.txt')
-!open(unit=140, name='res_gnp_1400.txt')
-!open(unit=150, name='res_gnp_1500.txt')
-!open(unit=160, name='res_gnp_1600.txt')
-!open(unit=15, name='new_flux_scheme_Nphi=180_tau=1_day5.txt')
-!open(unit=110, name='new_flux_scheme_Nphi=180_tau=1_day10.txt')
-!open(unit=115, name='new_flux_scheme_Nphi=180_tau=1_day15.txt')
-!open(unit=120, name='new_flux_scheme_Nphi=180_tau=1_day20.txt')
+
 
 
 pi = 3.141592653589793238462643
-
-!nonlinear_scheme_type variable switches the u_phi-approximation.
-!If n_s_t = 1, u_phi = 1/n d(ln n)/dphi
-!If n_s_t = 2, u_phi = (n(phi+dphi)-n(phi-dphi))/(n(phi+dphi)+n(phi-dphi)) * 1/dphi
-!If n_s_t = 3, u_phi 1/n d(ln n)/dphi and the directed difference scheme is used in the equation approximation
-!If n_s_t = 4, u_phi = 1/n d(ln n)/dphi, bnd_cond and equation are approximated with directed difference
-nonlinear_scheme_type = 8
 
 !number of nodes in phi
 Nphi = 181
@@ -48,6 +29,8 @@ omega = 2*pi/24/60/60
 sI = 1
 !Earth radius
 R = 637100000
+
+mixed_switch = 0
 
 
 
@@ -244,125 +227,61 @@ do q = 2, Nphi-1
     !lower boundary condition: n_1 = P_1/k_1
     S.d(1, 2) = 1
     !upper boundary condition:
-    if (nonlinear_scheme_type .eq. 8) then
-
     if(sI*cI .le. 0) then
 
         S.d(z.n, 1) =  (-D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 - &
-                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(z.n, 2) = +1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 + &
-                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)*mixed_switch
 
         b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
-                0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(z.n)*nold(q-1).d(z.n) + D_node.d(z.n-1)*nold(q-1).d(z.n-1))
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(z.n)*nold(q-1).d(z.n) + D_node.d(z.n-1)*nold(q-1).d(z.n-1))*mixed_switch
 
 
     else
 
         S.d(z.n, 1) =  (-D.d(i-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d(z.n-1)*tau/h.d(z.n-1)) * sI**2 + &
-                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(z.n-1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(z.n, 2) = 1 + (D.d(z.n-1)*tau/(h.d(z.n-1)**2) + 0.5 * u.d( z.n )*tau/h.d(z.n-1)) * sI**2 - &
-                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d( z.n )*tau*sI*cI/(R*h0*dphi)*mixed_switch
 
         b.d(z.n) = +tau/h.d(z.n-1) * Fub + nold(q).d(z.n) - &
-                0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(z.n)*nold(q+1).d(z.n) - D_node.d(z.n-1)*nold(q+1).d(z.n-1))
-    end if
-
-
+                0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(z.n)*nold(q+1).d(z.n) - D_node.d(z.n-1)*nold(q+1).d(z.n-1))*mixed_switch
     end if
 
     do i = 2, z.n - 1
-    if (nonlinear_scheme_type .eq. 8) then
-
     if(sI*cI .le. 0) then
 
         S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
-                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 + &
-                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
+                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 - &
-                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
 
         b.d(i) = nold(q).d(i) + tau * p.d(i) - &
                 0.5*tau*sI*cI/(2*R*h0*dphi)*(-D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) + &
                                          D_node.d(i-1)*nold(q-1).d(i-1) + &
-                                         D_node.d(i+1)*nold(q+1).d(i+1))
-
+                                         D_node.d(i+1)*nold(q+1).d(i+1))*mixed_switch
     else
 
         S.d(i, 1) =  (-D.d(i-1)*tau/(hmid.d(i) * h.d(i-1)) + u.d(i-1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
-                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(i-1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(i, 2) = 1 + k.d(i)*tau + (D.d(i-1)/h.d(i-1) + D.d(i)/h.d(i)) * tau / hmid.d(i) * sI**2 - &
-                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)
+                    D_node.d(i)*tau*sI*cI/(R*h0*dphi)*mixed_switch
         S.d(i, 3) =  (-D.d( i )*tau/(hmid.d(i) * h.d( i )) - u.d(i+1)*tau/(h.d(i) + h.d(i-1))) * sI**2 + &
-                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)
+                0.5*D_node.d(i+1)*tau*sI*cI/(R*h0*dphi)*mixed_switch
 
         b.d(i) = nold(q).d(i) + tau * p.d(i) - &
                 0.5*tau*sI*cI/(2*R*h0*dphi)*(D_node.d(i)*(nold(q-1).d(i)+nold(q+1).d(i)) - &
                                          D_node.d(i+1)*nold(q-1).d(i+1) - &
-                                         D_node.d(i-1)*nold(q+1).d(i-1))
+                                         D_node.d(i-1)*nold(q+1).d(i-1))*mixed_switch
     end if
 
-
-    end if
     end do
 
     nnew(q) = tridiagonal_matrix_algorithm(S, b)
-!        if(j .eq. 100) then
-!        do i = 1, z.n
-!            write(11,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (11, *)
-!        end if
 
-!        if(j .eq. 200) then
-!        do i = 1, z.n
-!            write(12,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (12, *)
-!        end if
-
-!        if(j .eq. 300) then
-!        do i = 1, z.n
-!            write(13,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (13, *)
-!        end if
-
-!        if(j .eq. 400) then
-!        do i = 1, z.n
-!            write(14,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (14, *)
-!        end if
-
-!        if(j .eq. 500) then
-!        do i = 1, z.n
-!            write(15,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (15, *)
-!        end if
-
-!        if(j .eq. 1300) then
-!        do i = 1, z.n
-!            write(130,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (130, *)
-!        end if
-
-!        if(j .eq. 1400) then
-!        do i = 1, z.n
-!            write(140,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (140, *)
-!        end if
-
-!        if(j .eq. 9000) then
-!        do i = 1, z.n
-!            write(150,*) (q)*180/(Nphi-1)-90, 100+400/(z.n-1)*(i-1), nnew(q).d(i)
-!        end do
-!        write (150, *)
-!        end if
 
         if(j*tau .eq. 86400*10) then
         do i = 1, z.n

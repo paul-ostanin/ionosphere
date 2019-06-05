@@ -258,7 +258,7 @@ enddo
 !********************
 !Main time loop
 !********************
-do t = 0, 1!Ndays*86400/tau
+do t = 0, Ndays*86400/tau
     if(mod(t, 100) .eq. 0) then
         print *, t
     end if

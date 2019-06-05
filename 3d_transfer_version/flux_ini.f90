@@ -3,9 +3,10 @@ implicit none
 
 contains
 
-subroutine flux_ini(Nx,Ny,Nz,Nx1,Ny1,Nz1,u,ux,uy,uz,lambda,phi,z,z_m,dlam,dphi,dlev,cphi,pi)
+subroutine flux_ini(Nx,Ny,Nz,Nx1,Ny1,Nz1,u,ux,uy,uz,u1,u2,lambda,phi,z,z_m,dlam,dphi,dlev,cphi,pi)
 use mass_calc_mod
 ! interpolate function on the flux variables grid
+! Dirichle boundary condition
 
 implicit none
 
@@ -13,7 +14,8 @@ logical,parameter::mcorr=.true.
 integer i,j,k,i0,i1,Nx,Ny,Nz,Nx1,Ny1,Nz1
 real pi,mr
 real lambda(1:Nx),phi(1:Ny1),z_m(1:Nz),z(1:Nz1),dphi(1:Ny1),dlev(1:Nz1),dlam(1:Nx),cphi(1:Ny1),&
-& u(1:Nx1,1:Ny1,1:Nz1),ux(1:Nx,1:Ny1,1:Nz1),uy(1:Nx,1:Ny,1:Nz1),uz(1:Nx,1:Ny1,1:Nz),mass(1:2)
+& u(1:Nx1,1:Ny1,1:Nz1),ux(1:Nx,1:Ny1,1:Nz1),uy(1:Nx,1:Ny,1:Nz1),uz(1:Nx,1:Ny1,1:Nz),mass(1:2),&
+& u1(1:Nx1,1:Ny1),u2(1:Nx1,1:Ny1)
 
 
 do k=1,Nz1
@@ -45,8 +47,8 @@ do i=1,Nx1
     do k=2,Nz1
        uz(i,j,k)=((z(k)-z_m(k))*u(i,j,k-1)+(z_m(k)-z(k-1))*u(i,j,k))/(z(k)-z(k-1))
     end do
-    uz(i,j,1)=u(i,j,1)
-    uz(i,j,Nz)=u(i,j,Nz1)
+    uz(i,j,1)=u1(i,j)
+    uz(i,j,Nz)=u2(i,j)
   end do
 end do
 
