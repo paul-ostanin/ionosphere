@@ -23,20 +23,20 @@ do k=1,Nz1
         fu(i,j,k)=arr_inc(Nz-k, j, i)/tau
 
 
-        ! z_curr = z(k)
-        ! phi_curr = phi(j)
+        z_curr = z(k)
+        phi_curr = phi(j)
 
-        ! n_mod = f_m(z_curr, phi_curr)
-        ! dn_dz = df_dz(z_curr, phi_curr)
-        ! dn_dphi = df_dphi(z_curr, phi_curr)
+        n_mod = f_m(z_curr, phi_curr)
+        dn_dz = df_dz(z_curr, phi_curr)
+        dn_dphi = df_dphi(z_curr, phi_curr)
 
-        ! vphi = vel_phi(z_curr, phi_curr)
-        ! dvphi_dphi = dvelphi_dphi(z_curr, phi_curr)
-        ! vz = vel_z(z_curr, phi_curr)
-        ! dvz_dz = dvelz_dz(z_curr, phi_curr)
+        vphi = vel_phi(z_curr, phi_curr)
+        dvphi_dphi = dvelphi_dphi(z_curr, phi_curr)
+        vz = vel_z(z_curr, phi_curr)
+        dvz_dz = dvelz_dz(z_curr, phi_curr)
 
-        ! fu(i,j,k) = fu(i,j,k) + (dvphi_dphi*n_mod*cos(phi_curr) + vphi*dn_dphi*cos(phi_curr) - vphi*n_mod*sin(phi_curr))/a/cos(phi_curr) + &
-        !                          (dvz_dz*n_mod + vz*dn_dz)
+        fu(i,j,k) = fu(i,j,k) + (dvphi_dphi*n_mod*cos(phi_curr) + vphi*dn_dphi*cos(phi_curr) - vphi*n_mod*sin(phi_curr))/a/cos(phi_curr) + &
+                                 (dvz_dz*n_mod + vz*dn_dz)
       end do
     end do
 end do

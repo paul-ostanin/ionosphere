@@ -78,8 +78,8 @@ subroutine init_transfer(z1,arr)
                 z_curr = z(k)
                 phi_curr = phi(j)
                 v(i, j, k, 1) = 0!10000*cos(phi_curr)
-                v(i, j, k, 2) = 0*vel_phi(z_curr, phi_curr)
-                v(i, j, k, 3) = 0*  vel_z(z_curr, phi_curr)
+                v(i, j, k, 2) = vel_phi(z_curr, phi_curr)
+                v(i, j, k, 3) =   vel_z(z_curr, phi_curr)
             enddo
         enddo
     enddo

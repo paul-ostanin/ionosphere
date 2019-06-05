@@ -66,7 +66,7 @@ Niter = 800
 F_z = 0
 
 !Time step (in seconds) 5 min
-tau =  10
+tau =  30
 
 !Before diurnal_start_time - stationary daytime, after - diurnal evolution, depending on lambda
 diurnal_start_time = 0
@@ -701,7 +701,7 @@ do t = 0, Ndays*3600*24/tau
 
         do j = 1, Nphi
             do i = 1, z.n
-                write(30,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), model_sol(j).d(i) - ans(i, j, 1)
+                write(30,*) (j-5E-1)*180/(Nphi)-90, 100+(Hmax - 100)/(z.n-1)*(i-1), ans(i, j, 1) - model_sol(j).d(i)
             end do
             write (30, *)
         end do
