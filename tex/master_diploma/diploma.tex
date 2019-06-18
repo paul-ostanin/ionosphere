@@ -4,9 +4,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}
 \usepackage{url}
-\usepackage{pscyr}
+%\usepackage{pscyr}
 
-\renewcommand{\rmdefault}{ftm}
+%\renewcommand{\rmdefault}{ftm}
 \usepackage{setspace}
 \onehalfspacing
 
@@ -549,105 +549,9 @@ K_1K_2 & K_2^2 \end{pmatrix}\end{equation} вырождена в каждой т
 
 \subsection{Решение уравнения переноса}
 
-В рамках предложенной поэтапной реализации решения системы (\ref{main_eq}), учет процессов переноса реализован на отдельном шаге расщепления с помощью схемы <<кабаре>>. 
+Для решения уравнения переноса использовалась схема <<кабаре>>, являющаяся схемой второго порядка по пространству и времени на гладких решениях и при решении однородного уравнения переноса. В случае использования монотонной версии этой схемы порядок аппроксимации схемы по пространству несколько понижается. Также порядок аппроксимации схемы по времени понижается до первого при использовании схемы расщепления по физическим процессам при решении неоднородного уравнения переноса. Численные эксперименты показали устойчивость и монотонность данной схемы при числах Куранта меньше 0.5.
 
-Опишем подробно используемую схему. В целом данный метод соответствует описанию схемы <<кабаре>>, приведённому в монографии [6], однако имеется и некоторые отличия, касающиеся специфики сферической системы координат, а также процедур инициализации решения, его нелинейной коррекции и учета правой части уравнения переноса.
-Запишем схему <<кабаре>> для решения уравнения переноса в тонком сферическом слое высотой $h$. В сферической системе координат $(\lambda, \varphi, z)$ данное уравнение имеет следующий вид: \begin{equation}\label{transf_eq}\dfrac{\partial \rho}{\partial t} + \dfrac{1}{a\cos\varphi} \dfrac{\partial u\rho}{\partial \lambda} + \dfrac{1}{a\cos\varphi} \dfrac{\partial v\cos\varphi\rho}{\partial \varphi} + \dfrac{\partial w\rho}{\partial z} = f. 
-\end{equation} Здесь $(u, v, w)$~---~компоненты вектора скорости $\vec{u}$, $f(\lambda, \varphi, z, t)$~---~функция, описывающая источники-стоки, а также диффузию трассера, $a$~---~радиус сферы. Стоит отметить, что в точной записи уравнения переноса на сфере в (\ref{transf_eq}) вместо множителя $\dfrac{1}{a}$ должен стоять множитель $\dfrac{1}{a+z}$. Однако, поскольку сферический слой~---~тонкий, выполнено условие $\dfrac{h}{a}<<1$, и поэтому с точностью до $O\left(\dfrac{h}{a}\right)$ можно пренебречь этим отличием множителей.
-
-Перепишем уравнение (\ref{transf_eq}) в адвективной форме по каждой из координат: 
-
-
-\begin{gather}
-\dfrac{D_\lambda \rho}{d t} = \dfrac{\partial \rho}{\partial t} + \dfrac{u}{a\cos\varphi}\dfrac{\partial\rho}{\partial\lambda} = f - \left(\dfrac{\rho}{a\cos\varphi} \dfrac{\partial u}{\partial\lambda} + \dfrac{1}{a\cos\varphi} \dfrac{\partial\rho v\cos\varphi}{\partial \varphi} + \dfrac{\partial \rho w}{\partial z}\right); \nonumber\\
-\dfrac{D_\varphi \rho}{d t} = \dfrac{\partial \rho}{\partial t} + \dfrac{v}{a}\dfrac{\partial\rho}{\partial\varphi}  = f - \left(\dfrac{1}{a\cos\varphi}\dfrac{\partial \rho u}{\partial \lambda} + \dfrac{\rho}{a\cos\varphi} \dfrac{\partial v\cos\varphi}{\partial\varphi} + \dfrac{\partial \rho w}{\partial z}\right);\nonumber\\
-\dfrac{D_z \rho}{d t} = \dfrac{\partial \rho}{\partial t} + w\dfrac{\partial\rho}{\partial z}  = f - \left(\dfrac{1}{a\cos\varphi}\dfrac{\partial \rho u}{\partial \lambda} + \dfrac{1}{a\cos\varphi} \dfrac{\partial\rho v\cos\varphi}{\partial \varphi} + \rho \dfrac{\partial w}{\partial z}\right).\label{adv_form}
-\end{gather}
-
-Будем считать, что уравнение (\ref{transf_eq}) решается с помощью разностной схемы, выписанной на сетке C, причём консервативные переменные расположим в центрах кубических ячеек сетки, а потоковые и соответствующие компоненты вектора скорости~---~в центрах граней ячеек так, как показано на рис. 2. 
-
-
-\begin{figure}[H]
-\center{
-\includegraphics[scale=1.5]{C-grid}}
-
-\caption{Сетка, используемая в схеме <<кабаре>>}
-\end{figure}
-
-Координаты границ ячеек $(\lambda_{i+1/2}, \varphi_{j+1/2}, z_{k+1/2})$ связаны с координатами центров ячеек $(\lambda_i, \varphi_j, z_k)$ следующими уравнениями: \begin{gather}
-\lambda_i = \dfrac{1}{2}(\lambda_{i+1/2}+\lambda_{i-1/2})\nonumber\\
-\varphi_j = \dfrac{1}{2}(\varphi_{j+1/2}+\varphi_{j-1/2})\nonumber\\
-z_k       = \dfrac{1}{2}(z_{k+1/2} + z_{k-1/2})\nonumber
-\end{gather}
-
-Важно также отметить, что для удобства расчетов на сетке С в точку полюса следует поместить меридиональную скорость и соответствующую потоковую переменную. Такой выбор полуцелых узлов совпадает с выбором сетки вдоль широты в задаче амбиполярной диффузии: полуцелые узлы попадают в полюсные точки, что позволяет использовать равенство нулю соответствующих потоковых слагаемых в полюсных точках и исключить из разностной схемы переход через полюс, оставив только узлы внутри расчетной области.
-
-Запишем схему <<кабаре>> для рассматриваемой расчетной области в сферической системе координат. Для этого сначала инициализируем потоковые переменные. Пусть в начальный момент времени дано поле консервативной переменной $\rho_{i, j, k}^0 = \tilde{\rho}_{i, j, k}^0$. Для определения потоковой переменной  вдоль координаты $\lambda$ используем формулу
-\begin{equation}
-\rho_{i+1/2, j, k}^0 = \dfrac{1}{\lambda_{i-1}-\lambda_i}\left(\tilde{\rho}_{i,j,k}^0(\lambda_{i+1}-\lambda_{i+1/2}) + \tilde{\rho}_{i+1, j, k}^0(\lambda_{i+1/2}-\lambda_i)\right)
-\end{equation}
-
-Аналогичным образом строятся интерполяционные формулы вдоль координат $\varphi$, $z$.
-
-После определения всех потоковых переменных переопределим консервативные переменные по формуле
-\begin{equation}
-\rho_{i, j, k}^0 = \dfrac{1}{6}(\rho_{i+1/2, j, k}^0 + \rho_{i-1/2, j, k}^0 + \rho_{i, j+1/2, k}^0 + \rho_{i, j-1/2, k}^0 + \rho_{i, j, k+1/2}^0+\rho_{i, j, k-1/2}^0)
-\end{equation}
-
-Как и в одномерном случае [7], это условие, по-видимому, является необходимым для обеспечения монотонности решения, получаемого с помощью данной схемы.
-
-Возможное изменение глобальной массы трассера при такой инициализации можно исключить, если домножить поля консервативной и потоковых переменных на коэффициент  $\dfrac{\tilde{M_0}}{M_0}$, где $\tilde{M_0}$ и $M_0$~---~глобальная масса трассера до и после инициализации соответственно. Для вычисления $\tilde{M_0}$ и $M_0$ используются формулы:
-\begin{gather}
-M_0 = a^2\displaystyle\sum \rho_{i, j, k}^0 \cos\varphi_j \Delta \lambda_j \Delta \varphi_j \Delta z_k,\nonumber\\
-\tilde{M_0} = a^2\displaystyle\sum \tilde{\rho}_{i, j, k}^0 \cos\varphi_j \Delta \lambda_j \Delta \varphi_j \Delta z_k,\nonumber\\
-\Delta \lambda_i = \lambda_{i+1/2}-\lambda_{i-1/2}, \ \Delta \varphi_j = \varphi_{j+1/2}-\varphi_{j-1/2}, \ \Delta z_k = z_{k+1/2} - z_{k-1/2}. \nonumber
-\end{gather}
-
-Далее в алгоритме следует циклическая последовательность шагов для вычисления переменных в момент времени $t_{n+1}$ по известным их значениям в момент времени $t_n$. 
-\begin{itemize}
-\item[1.] Она начинается с шага <<предиктор>> для определения предварительных значений консервативных переменных: \begin{gather} 
-\dfrac{\rho_{i,j,k}^{n+1/2}-\rho_{i,j,k}^n}{\tau/2}+\dfrac{(u\rho)_{i+1/2, j,k}^n-(u\rho)_{i-1/2, j,k}^n}{a\cos\varphi_j \Delta \lambda_i} +\nonumber\\+\dfrac{(v\cos\varphi \rho)_{i,j+1/2,k}^n-(v\cos\varphi \rho)_{i,j-1/2,k}^n}{a\cos\varphi_j \Delta\varphi_j}+ \dfrac{((w\rho)_{i,j,k+1/2})^n-(w\rho)_{i,j,k-1/2}^n}{\Delta z_k} =\nonumber \\=f_{i,j,k}^n \label{predictor}
-\end{gather}
-
-\item[2.] Далее находятся промежуточные значения потоковых переменных в момент времени $t_{n+1}$ согласно уравнениям (\ref{adv_form}), но без учета правой части:
-\begin{gather}
-\hat{\rho}_{i+1/2, j, k}^{n+1} = 2\rho_{i+p, j, k}^{n+1/2} - \rho_{i+2p-1/2, j, k}^n, \ p = \dfrac{1}{2}\left(1-\sign\left(u_{i+1/2, j, k}^{n+1}\right)\right);\nonumber\\
-\hat{\rho}_{i, j+1/2, k}^{n+1} = 2\rho_{i, j+q, k}^{n+1/2} - \rho_{i, j+2q-1/2, k}^n, \ q = \dfrac{1}{2}\left(1-\sign\left(v_{i, j+1/2, k}^{n+1}\right)\right);\\
-\hat{\rho}_{i, j, k+1/2}^{n+1} = 2\rho_{i, j, k+r}^{n+1/2} - \rho_{i, j, k+2r-1/2}^n, \ r = \dfrac{1}{2}\left(1-\sign\left(w_{i, j, k+1/2}^{n+1}\right)\right).\nonumber
-\end{gather}
-
-
-\item[3.] Потом корректируются потоковые переменные с учётом правых частей уравнений (\ref{adv_form}). Здесь рассматриваются два варианта: 
-
-а) Расчетный узел сетки находится вне полюсов. Тогда
-\begin{gather}
-\rho_{i+1/2, j, k}^{n+1} = U\bigg(\hat{\rho}_{i+1/2, j, k}^{n+1}; \rho_{i+2p-1/2, j, k}^n + \tau \tilde{f}_{i+p, j, k}^n, \rho_{i+1/2, j, k}^n + \tau \tilde{f}_{i+p, j, k}^n, \nonumber\\ \rho_{i+p, j, k}^{n+1/2}+\frac{\tau}{2}\tilde{f}_{i+p, j, k}^n\bigg);\nonumber\\
-\rho_{i, j+1/2, k}^{n+1} = U\bigg(\hat{\rho}_{i, j+1/2, k}^{n+1}; \rho_{i, j+2q-1/2, k}^n + \tau \tilde{g}_{i, j+q, k}^n, \rho_{i, j+1/2, k}^n + \tau \tilde{g}_{i, j+q, k}^n, \nonumber\\ \rho_{i, j+q, k}^{n+1/2}+\frac{\tau}{2}\tilde{g}_{i, j+q, k}^n\bigg);\\
-\rho_{i, j, k+1/2}^{n+1} = U\bigg(\hat{\rho}_{i, j, k+1/2}^{n+1}; \rho_{i, j, k+2r-1/2}^n + \tau \tilde{h}_{i, j, k+r}^n, \rho_{i, j, k+1/2}^n + \tau \tilde{h}_{i, j, k+r}^n, \nonumber\\ \rho_{i, j, k+r}^{n+1/2}+\frac{\tau}{2}\tilde{h}_{i, j, k+r}^n\bigg).\nonumber
-\end{gather}
-где функция $U$ задаётся по формуле
-\begin{equation}
-U(a; b, c) = \max\left(0, \min\left(\max(a, \min\left(b, c\right)),\max\left(b, c\right)\right)\right),
-\end{equation}
-а $\tilde{f}_{i, j, k}^n$, $\tilde{g}_{i, j, k}^n$, $\tilde{k}_{i, j, k}^n$ аппроксимируют правые части уравнений (\ref{adv_form}) по следующим формулам:
-
-\begin{gather}
-\tilde{f}_{i, j, k}^n = 2\dfrac{\left(\rho_{i, j, k}^{n+1/2} - \rho_{i, j, k}^n\right)}{\tau} + \nonumber\\ + \dfrac{1}{2a\cos\varphi_j \Delta\lambda}\left(u_{i+1/2, j, k}^n - u_{i-1/2, j, k}^n\right)\left(\rho_{i+1/2, j, k}^n - \rho_{i-1/2, j, k}^n\right);\nonumber \\
-\tilde{g}_{i, j, k}^n = 2\dfrac{\left(\rho_{i, j, k}^{n+1/2} - \rho_{i, j, k}^n\right)}{\tau} + \nonumber\\ + \dfrac{1}{2a\Delta\varphi_j}            \left(v_{i, j+1/2, k}^n - v_{i, j-1/2, k}^n\right)\left(\rho_{i, j+1/2, k}^n - \rho_{i, j-1/2, k}^n\right); \\
-\tilde{h}_{i, j, k}^n = 2\dfrac{\left(\rho_{i, j, k}^{n+1/2} - \rho_{i, j, k}^n\right)}{\tau} + \nonumber\\ + \dfrac{1}{2\Delta z_k}                  \left(w_{i, j, k+1/2}^n - w_{i, j, k-1/2}^n\right)\left(\rho_{i, j, k+1/2}^n - \rho_{i, j, k-1/2}^n\right)\nonumber.
-\end{gather}
-
-б) Расчетный узел сетки совпадает с одним из полюсов. По построению в полюсной точке задаётся компонента меридиональной скорости и потоковая переменная. Для определения меридиана, вдоль которого будет интерполироваться потоковая переменная, предлагается найти ячейку сетки, содержащую в себе обратную характеристику, выпущенную из полюса. Меридиан, соответствующий центру этой ячейки сетки $\lambda_p$, задаст направление, вдоль которого будет рассчитываться искомая потоковая переменная.
-
-\item[4.] На шаге <<корректор>> определяются окончательные значения консервативных переменных:
-\begin{gather} 
-\dfrac{\rho_{i,j,k}^{n+1}-\rho_{i,j,k}^{n+1/2}}{\tau/2}+\dfrac{(u\rho)_{i+1/2, j,k}^{n+1}-(u\rho)_{i-1/2, j,k}^n}{a\cos\varphi_j \Delta \lambda_i} +\nonumber\\+\dfrac{(v\cos\varphi \rho)_{i,j+1/2,k}^{n+1}-(v\cos\varphi \rho)_{i,j-1/2,k}^{n+1}}{a\cos\varphi_j \Delta\varphi_j}+ \dfrac{((w\rho)_{i,j,k+1/2})^{n+1}-(w\rho)_{i,j,k-1/2}^{n+1}}{\Delta z_k} =\nonumber \\=f_{i,j,k}^n \label{corrector}
-\end{gather}
-
-
-\end{itemize}
-
-Схема имеет второй порядок аппроксимации по пространству на гладких монотонных профилях и первый порядок аппроксимации по времени, если  $f \neq 0$, и второй порядок аппроксимации по времени, если $f=0$.
+%Схема имеет второй порядок аппроксимации по пространству на гладких монотонных профилях и первый порядок аппроксимации по времени, если  $f \neq 0$, и второй порядок аппроксимации по времени, если $f=0$.
 
 \vspace{5mm}
 
